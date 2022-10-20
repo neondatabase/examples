@@ -15,4 +15,4 @@ The Neon community can be found on https://community.neon.tech/, where you can a
 Please see our [CONTRIBUTING.md](https://github.com/neondatabase/neon/blob/main/CONTRIBUTING.md).
 
 # Authors
-- Raouf Chebri @raoufdevrel
+- Raouf Chebri ([@raoufdevrel](https://twitter.com/raoufdevrel))
