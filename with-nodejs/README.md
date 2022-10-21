@@ -34,18 +34,14 @@ npm install
 ``
 
 Run the NodeJS application using the following command:
+
 ```
-
 node index.js
-
 ```
 
 You should expect the following result:
 
 ```
-
 Hello Neon
-
 ```
 
-```
