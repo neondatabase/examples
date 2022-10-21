@@ -1,6 +1,6 @@
 # Getting started with Neon and NodeJS
 
-Run the below command to copy the `.env.sample` file:
+Run the following command to copy the `.env.sample` file:
 
 ```
 cp .env.sample .env && rm .env.sample
@@ -27,7 +27,7 @@ where:
 
 **_Important_**: To ensure the security of your data, never expose your Neon credentials to the browser.
 
-Run the below command to install project dependencies:
+Run the following command to install project dependencies:
 
 ```
 npm install
