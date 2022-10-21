@@ -31,7 +31,7 @@ Run the below command to install project dependencies:
 
 ```
 npm install
-``
+```
 
 Run the NodeJS application using the following command:
 
