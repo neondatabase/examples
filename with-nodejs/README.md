@@ -11,19 +11,21 @@ cp .env.sample .env && rm .env.sample
 Store your Neon credentials in your `.env` file.
 
 ```
-PGHOST='<project_name>.cloud.neon.tech:<port>'
+PGHOST='<endpoint_hostname>:<port>'
 PGDATABASE='<database>'
 PGUSER='<username>'
 PGPASSWORD='<password>'
-PROJECT_NAME='<project_name>'
+ENDPOINT_ID='<endpoint_id>'
 ```
 
 where:
 
-- `<project_name>` is the ID of the Neon project, which is found on the Neon Console **Settings** tab, under **General Settings**.
-- `<dbname>` is the name of the database in your Neon project. `main` is the default database created with each Neon project.
-- `<user>` is the database user, which is found on the Neon Console **Dashboard** tab, under **Connection Details**.
+- `<endpoint_hostname>` the hostname of the branch endpoint, which is found on the Neon **Dashboard**, under **Connection Settings**.
+- `<post>` is the Postgres port number. Neon uses port `5432` by default.
+- `<database>` is the name of the database in your Neon project. `main` is the default database created with each Neon project.
+- `<username>` is the database user, which is found on the Neon Console **Dashboard** tab, under **Connection Details**.
 - `<password>` is the database user's password, which is provided to you when you create a project.
+- `<endpoint_id>` is the ID of the branch endpoint that you are connecting to, which can be found on the Neon **Dashboard**, under **Connection Settings**. The `<endpoint_id>` starts with an `ep-` prefix, as in this example: `ep-steep-forest-654321`.
 
 **_Important_**: To ensure the security of your data, never expose your Neon credentials to the browser.
 
@@ -44,4 +46,3 @@ You should expect the following result:
 ```
 Hello Neon
 ```
-
