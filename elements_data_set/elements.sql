@@ -1,6 +1,6 @@
 CREATE TABLE "Elements" (
-  AtomicNumber INTEGER PRIMARY KEY,
+  "AtomicNumber" INTEGER PRIMARY KEY,
   "Element" TEXT,
-  Symbol TEXT,
-  AtomicMass DECIMAL
+  "Symbol" TEXT,
+  "AtomicMass" DECIMAL
 );
