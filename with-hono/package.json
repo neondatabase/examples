@@ -1,0 +1,14 @@
+{
+  "name": "with-hono",
+  "scripts": {
+    "start": "vercel dev",
+    "deploy": "vercel"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.3",
+    "hono": "^4.4.2"
+  },
+  "devDependencies": {
+    "vercel": "^32.4.1"
+  }
+}

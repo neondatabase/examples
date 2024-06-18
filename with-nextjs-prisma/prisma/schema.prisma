@@ -1,0 +1,16 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  directUrl         = env("DIRECT_DATABASE_URL")
+}
+
+model Element {
+  id           String @id @default(cuid())
+  elementName  String
+  atomicNumber Int    @unique
+  symbol       String
+}
