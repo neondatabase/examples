@@ -16,6 +16,6 @@ This starter app demonstrates how to create an AI-powered chatbot with Next.js, 
 - [Llama Index documentation](https://llama.meta.com/docs/get-started/)
 - [Next.js documentation](https://nextjs.org/docs)
 
-# Authors
+## Authors
 
 - Rishi Raj Jain ([@rishi_raj_jain_](https://twitter.com/rishi_raj_jain_))
