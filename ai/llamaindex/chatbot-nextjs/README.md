@@ -2,7 +2,7 @@
   <img width="250px" src="https://user-images.githubusercontent.com/13738772/196940265-9671ea80-5d19-4bb0-ae96-8c1611472991.svg" />
 <p align="center">
 
-## AI chatbot (OpenAI + LllamaIndex)
+## AI chatbot (OpenAI + LlamaIndex)
 
 This starter app demonstrates how to create an AI-powered chatbot with Next.js, Neon Postgres, pgvector, OpenAI, and LlamaIndex.
 
