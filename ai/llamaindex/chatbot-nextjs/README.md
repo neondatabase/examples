@@ -1,18 +1,36 @@
-<p align="center">
-  <img width="250px" src="https://user-images.githubusercontent.com/13738772/196940265-9671ea80-5d19-4bb0-ae96-8c1611472991.svg" />
-<p align="center">
+<img width="250px" src="https://neon.tech/docs/og?title=QUkgQ2hhdGJvdCAoT3BlbkFJICsgTGxhbWFJbmRleCk=" />
 
 ## AI chatbot (OpenAI + LlamaIndex)
 
-This starter app demonstrates how to create an AI-powered chatbot with Next.js, Neon Postgres, pgvector, OpenAI, and LlamaIndex.
+A starter application for AI-powered chatbot with Next.js, Neon Postgres (pgvector), OpenAI, and LlamaIndex.
 
 ## How to use
+
+1. Create a `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+2. Update the environment variables with your OpenAI API Key and Neon Postgres URL.
+
+3. Install the dependencies:
+
+```bash
+npm install
+```
+
+4. Run the application:
+
+```bash
+npm run dev
+```
 
 ## Learn more
 
 - [Neon AI documentation](https://neon.tech/docs/ai/ai-intro)
 - [pgvector documentation](https://github.com/pgvector/pgvector)
-- [OpenAI documentation] (https://platform.openai.com/docs/introduction)
+- [OpenAI documentation](https://platform.openai.com/docs/introduction)
 - [Llama Index documentation](https://llama.meta.com/docs/get-started/)
 - [Next.js documentation](https://nextjs.org/docs)
 
