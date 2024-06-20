@@ -1,4 +1,4 @@
-<img width="250px" src="https://neon.tech/docs/og?title=QUkgQ2hhdGJvdCAoT3BlbkFJICsgTGxhbWFJbmRleCk=" />
+<img width="250px" src="https://cdn.svgporn.com/logos/neon.svg" />
 
 ## AI chatbot (OpenAI + LlamaIndex)
 
