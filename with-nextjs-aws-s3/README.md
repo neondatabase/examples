@@ -1,3 +1,5 @@
+<img width="250px" src="https://raw.githubusercontent.com/neondatabase/website/a898a3ff9c2786a3fd4691d083eb8f3c751e008b/src/images/logo-white.svg" />
+
 # Getting started with Neon, Next.js and AWS S3
 
 Read more on [How to upload to S3 in Next.js and save references in Postgres](https://neon.tech/guides/next-upload-aws-s3).

@@ -1,16 +1,16 @@
 <img width="250px" src="https://raw.githubusercontent.com/neondatabase/website/a898a3ff9c2786a3fd4691d083eb8f3c751e008b/src/images/logo-white.svg" />
 
-# Getting started with Neon and Next.js Server Actions
+# Getting started with Neon and Wasp
 
 Run the command below to copy the `.env.example` file:
 
 ```
-cp .env.example .env
+cp .env.example .env.server
 ```
 
 ## Store your Neon credentials
 
-Store your Neon credentials in your `.env` file.
+Store your Neon credentials in your `.env.server` file.
 
 ```
 DATABASE_URL="postgres://<user>:<password>@<endpoint_hostname>.neon.tech:<port>/<dbname>?sslmode=require"
@@ -28,11 +28,11 @@ DATABASE_URL="postgres://<user>:<password>@<endpoint_hostname>.neon.tech:<port>/
 Run the command below to install project dependencies:
 
 ```
-npm install
+wasp db migrate-dev
 ```
 
-Run the Next.js application using the following command:
+Run the Wasp application using the following command:
 
 ```
-npm run dev
+wasp start
 ```
