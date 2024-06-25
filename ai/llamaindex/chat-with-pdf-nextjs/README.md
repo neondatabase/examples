@@ -4,7 +4,7 @@
 
 A starter application for AI-powered Chat with PDF with Next.js, Neon Postgres (pgvector), OpenAI, and LlamaIndex.
 
-[![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/llamaindex/chat-with-pdf-nextjs&env=DATABASE_URL,OPENAI_API_KEY)
+[![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/llamaindex/chat-with-pdf-nextjs&env=POSTGRES_URL,OPENAI_API_KEY)
 
 ## How to use
 
