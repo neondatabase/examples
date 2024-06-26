@@ -37,4 +37,4 @@ node --env-file=.env index.js
 
 ## Deploy the application to Railway platform
 
-Follow the guide for instructions on how to deploy the application to the Railway platform, and set automatic deployments with GitHub.
+Follow the guide for instructions on how to deploy the application to the Railway platform, and set  up automatic deployments with GitHub.
