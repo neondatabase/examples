@@ -1,18 +1,18 @@
 <img width="250px" src="https://raw.githubusercontent.com/neondatabase/website/a898a3ff9c2786a3fd4691d083eb8f3c751e008b/src/images/logo-white.svg" />
 
-# Getting started with Neon and Cloudflare Pages
+# Getting started with Neon and Railway
 
-This is the code repository for the guide on how to [deploy a Cloudflare Pages web application using Neon](https://neon.tech/docs/guides/cloudflare-pages). Follow the guide to set up the Neon project and your Cloudflare Pages application.
+This is the code repository for the guide on how to [deploy a Cloudflare Pages application using Neon](https://neon.tech/docs/guides/cloudflare-pages). Follow the guide to set up the Neon project and your Cloudflare application. 
 
 ## Store your Neon credentials
 
-Run the command below to copy the `.env.example` file:
+Run the command below to copy the `.env.example` file to a `.dev.vars` file in the code directory:
 
 ```
-cp .env.example .env
+cp .env.example my-neon-page/.dev.vars
 ```
 
-Store your Neon credentials in this `.env` file.
+Store your Neon credentials in this `.dev.vars` file.
 
 ```
 DATABASE_URL="postgres://<user>:<password>@<endpoint_hostname>.neon.tech:<port>/<dbname>?sslmode=require"
@@ -29,12 +29,18 @@ DATABASE_URL="postgres://<user>:<password>@<endpoint_hostname>.neon.tech:<port>/
 
 ## Test the application locally
 
-Run the command below to deploy the application locally:
+Navigate to the `my-neon-page` directory, and install the dependencies:
+
+```bash
+cd my-neon-page && npm install
+```
+
+Now, run the command below to deploy the application locally:
 
 ```bash
 npx wrangler pages dev -- npm run dev
 ```
 
-## Deploy the application to Cloudflare Pages
+## Deploy the application to Cloudflare platform
 
-Follow the guide for instructions on how to deploy the application to the Cloudflare platform. Make sure to add the Neon credentials to the Cloudflare Pages environment variables.
+Follow the guide for instructions on how to deploy the application to Cloudflare Pages. Make sure to add the Neon connection string as an environment variable to your Pages application.
