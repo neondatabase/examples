@@ -33,12 +33,6 @@ Run the command below to install project dependencies:
 npm install
 ```
 
-Seed the database using the command below:
-
-```
-node --env-file=.env seed.js
-```
-
 Run the command below to test the application locally:
 
 ```
