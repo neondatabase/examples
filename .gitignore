@@ -1,5 +1,4 @@
 node_modules
 package-lock.json
-!ai/llamaindex/reverse-image-search-nextjs/package-lock.json
 .env
 .DS_Store
