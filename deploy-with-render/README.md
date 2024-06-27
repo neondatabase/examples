@@ -1,15 +1,15 @@
 <img width="250px" src="https://raw.githubusercontent.com/neondatabase/website/a898a3ff9c2786a3fd4691d083eb8f3c751e008b/src/images/logo-white.svg" />
 
-# Getting started with Neon and Railway
+# Getting started with Neon and Render
 
 This is the code repository for the guide on how to [deploy a Node application with Neon to Render](https://neon.tech/docs/guides/render). Follow the guide to set up the Neon project and your Render application. 
 
 ## Store your Neon credentials
 
-Run the command below to copy the `.env.example` file:
+Run the command below to copy the `.env.example` file, to the `neon-render-example` directory, and rename it to `.env`.
 
-```
-cp .env.example .env
+```bash
+cp .env.example neon-render-example/.env
 ```
 
 Store your Neon credentials in this `.env` file.
@@ -29,7 +29,13 @@ DATABASE_URL="postgres://<user>:<password>@<endpoint_hostname>.neon.tech:<port>/
 
 ## Test the application locally
 
-Run the command below to deploy the application locally:
+Change to the `neon-render-example` directory and run the command below to install project dependencies:
+
+```bash
+cd neon-render-example && npm install
+```
+
+Then, run the command below to test the application locally:
 
 ```bash
 node --env-file=.env index.js

@@ -1,7 +1,7 @@
 {
-  "name": "deploy-with-render",
+  "name": "neon-render-example",
   "version": "1.0.0",
-  "description": "<img width=\"250px\" src=\"https://raw.githubusercontent.com/neondatabase/website/a898a3ff9c2786a3fd4691d083eb8f3c751e008b/src/images/logo-white.svg\" />",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
