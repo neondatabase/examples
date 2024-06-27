@@ -4,20 +4,12 @@
 
 This is the code repository for the guide on [how to deploy a Netlify functions application with Neon](https://neon.tech/docs/guides/netlify-functions). Follow the guide to set up your Neon project and configure the Netlify CLI. 
 
-## Initialize a Netlify site
-
-Run the command below to initialize a new Netlify site:
-
-```bash
-netlify sites:create
-```
-
 ## Store your Neon credentials
 
-Run the command below to copy the `.env.example` file:
+Run the command below to copy the `.env.example` file, to the `neon-netlify-example` directory, and rename it to `.env`.
 
 ```
-cp .env.example .env
+cp .env.example neon-netlify-example/.env
 ```
 
 Store your Neon credentials in this `.env` file.
@@ -37,7 +29,21 @@ DATABASE_URL="postgres://<user>:<password>@<endpoint_hostname>.neon.tech:<port>/
 
 ## Test the application locally
 
-Run the command below to deploy the application locally:
+## Initialize a Netlify site
+
+Change to the `neon-netlify-example` directory and run the command below to install project dependencies:
+
+```bash
+cd neon-netlify-example && npm install
+```
+
+Run the command below to initialize a new Netlify site:
+
+```bash
+netlify sites:create
+```
+
+Test running the application locally by running the command below:
 
 ```bash
 netlify dev
