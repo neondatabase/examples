@@ -6,10 +6,10 @@ This is the code repository for the guide on how to [deploy a Node.js applicatio
 
 ## Store your Neon credentials
 
-Run the command below to copy the `.env.example` file:
+Run the command below to copy the `.env.example` file, to the `neon-heroku-example` directory, and rename it to `.env`.
 
 ```
-cp .env.example .env
+cp .env.example neon-heroku-example/.env
 ```
 
 Store your Neon credentials in this `.env` file.
@@ -27,18 +27,21 @@ DATABASE_URL="postgres://<user>:<password>@<endpoint_hostname>.neon.tech:<port>/
 
 **Important**: To ensure the security of your data, never expose your Neon credentials to the browser.
 
-Run the command below to install project dependencies:
 
-```
-npm install
+## Test the application locally
+
+Change to the `neon-heroku-example` directory and run the command below to install project dependencies:
+
+```bash
+cd neon-heroku-example && npm install
 ```
 
-Run the command below to test the application locally:
+Then, run the command below to test the application locally:
 
-```
+```bash
 node --env-file=.env index.js
 ```
 
 ## Deploy the application to Heroku
 
-Follow the guide for the steps to deploy the application to Heroku.
+Follow the guide for instructions on how to deploy the application to Heroku. 
