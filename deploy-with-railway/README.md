@@ -6,10 +6,10 @@ This is the code repository for the guide on how to [deploy a Node application w
 
 ## Store your Neon credentials
 
-Run the command below to copy the `.env.example` file:
+Run the command below to copy the `.env.example` file, to the `neon-railway-example` directory, and rename it to `.env`.
 
-```
-cp .env.example .env
+```bash
+cp .env.example neon-railway-example/.env
 ```
 
 Store your Neon credentials in this `.env` file.
@@ -29,7 +29,13 @@ DATABASE_URL="postgres://<user>:<password>@<endpoint_hostname>.neon.tech:<port>/
 
 ## Test the application locally
 
-Run the command below to deploy the application locally:
+Change to the `neon-railway-example` directory and run the command below to install project dependencies:
+
+```bash
+cd neon-railway-example && npm install
+```
+
+Then, run the command below to test the application locally:
 
 ```bash
 node --env-file=.env index.js
@@ -37,4 +43,4 @@ node --env-file=.env index.js
 
 ## Deploy the application to Railway platform
 
-Follow the guide for instructions on how to deploy the application to the Railway platform, and set  up automatic deployments with GitHub.
+Follow the guide for instructions on how to deploy the application to the Railway platform, and set up automatic deployments with GitHub.
