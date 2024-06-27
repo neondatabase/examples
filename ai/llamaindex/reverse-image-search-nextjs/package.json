@@ -1,6 +1,7 @@
 {
   "name": "llamaindex-reverse-image-search-nextjs",
   "scripts": {
+    "postinstall": "sed -i '' 's/\\/\\* webpackIgnore: true \\*\\///g' node_modules/llamaindex/dist/embeddings/ClipEmbedding.js",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
