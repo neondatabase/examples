@@ -45,12 +45,12 @@ export default function Page() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-lg bg-muted" aria-label="Semantic Search Playground">
+                <Button variant="ghost" size="icon" className="rounded-lg bg-muted" aria-label="Hybrid Search Playground">
                   <SquareTerminal className="size-5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right" sideOffset={5}>
-                Semantic Search Playground
+                Hybrid Search Playground
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -58,7 +58,7 @@ export default function Page() {
       </aside>
       <div className="flex flex-col">
         <header className="sticky top-0 z-10 flex h-[57px] items-center gap-1 border-b bg-background px-4">
-          <h1 className="text-xl font-semibold">Semantic Search Playground</h1>
+          <h1 className="text-xl font-semibold">Hybrid Search Playground</h1>
         </header>
         <main className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3">
           <div className="relative flex-col items-start gap-8">
