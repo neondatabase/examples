@@ -10,7 +10,7 @@ const fontSans = FontSans({
 })
 
 export const metadata: Metadata = {
-  title: 'RAG Playground',
+  title: 'Chatbot Playground',
   icons: { icon: [{ url: 'https://neon.tech/favicon/favicon.png' }] },
 }
 
