@@ -10,7 +10,7 @@ const fontSans = FontSans({
 })
 
 export const metadata: Metadata = {
-  title: 'Semantic Search Playground',
+  title: 'Hybrid Search Playground',
   icons: { icon: [{ url: 'https://neon.tech/favicon/favicon.png' }] },
 }
 

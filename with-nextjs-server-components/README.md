@@ -2,6 +2,8 @@
 
 # Getting started with Neon and Next.js Server Components
 
+[![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/with-nextjs-server-components&env=POSTGRES_URL)
+
 Run the command below to copy the `.env.example` file:
 
 ```

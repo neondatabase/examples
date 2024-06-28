@@ -4,6 +4,8 @@
 
 A starter application for AI-powered chatbot with Next.js, Neon Postgres (pgvector), OpenAI, and LlamaIndex.
 
+[![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/llamaindex/chatbot-nextjs&env=POSTGRES_URL,OPENAI_API_KEY)
+
 ## How to use
 
 1. Create a `.env` file:
