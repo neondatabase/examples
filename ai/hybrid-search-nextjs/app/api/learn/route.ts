@@ -9,14 +9,14 @@ export async function POST(request: Request) {
   const { message: input } = await request.json()
   if (!input) return new Response(null, { status: 400 })
   const queryFunction = neon(`${process.env.POSTGRES_URL}`)
+  await queryFunction(`CREATE EXTENSION vector;`)
   await queryFunction(`
   create table if not exists documents (
     id bigint primary key generated always as identity,
     content text,
     fts tsvector generated always as (to_tsvector('english', content)) stored,
     embedding vector(512)
-  );
-  `)
+  );`)
   await queryFunction(`create index on documents using gin(fts);`)
   await queryFunction(`create index on documents using hnsw (embedding vector_ip_ops);`)
   // ref: https://supabase.com/docs/guides/ai/hybrid-search#hybrid-search-in-postgres
@@ -67,8 +67,7 @@ order by
   desc
 limit
   least(match_count, 30)
-$$;
-`)
+$$;`)
   const embeddingData = await embedding({
     model: 'text-embedding-3-small',
     input,
@@ -76,7 +75,6 @@ $$;
   const embeddingVector = embeddingData.data[0].embedding.slice(0, 512)
   await queryFunction(`insert into documents (content, embedding) values (
   '${input}',
-  '[${embeddingVector}]'::vector(512)
-);`)
+  '[${embeddingVector}]'::vector(512));`)
   return new Response()
 }
