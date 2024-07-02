@@ -1,0 +1,19 @@
+{
+  "name": "my-neon-worker",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.4.5",
+    "vitest": "1.5.0",
+    "wrangler": "^3.60.3"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.4"
+  }
+}
