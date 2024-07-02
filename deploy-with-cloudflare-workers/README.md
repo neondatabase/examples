@@ -1,6 +1,6 @@
 <img width="250px" src="https://raw.githubusercontent.com/neondatabase/website/a898a3ff9c2786a3fd4691d083eb8f3c751e008b/src/images/logo-white.svg" />
 
-# Getting started with Neon and Railway
+# Getting started with Neon and Cloudflare Workers
 
 This is the code repository for the guide on how to [deploy a Cloudflare worker application using Neon](https://neon.tech/docs/guides/cloudflare-workers). Follow the guide to set up the Neon project and your Cloudflare application. 
 
