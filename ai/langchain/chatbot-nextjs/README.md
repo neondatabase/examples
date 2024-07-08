@@ -6,6 +6,12 @@ A starter application for AI-powered chatbot with Next.js, Neon Postgres (pgvect
 
 [![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/langchain/chatbot-nextjs&env=POSTGRES_URL,OPENAI_API_KEY)
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/ai/langchain/chatbot-nextjs ./chatbot-nextjs
+```
+
 ## How to use
 
 1. Create a `.env` file:

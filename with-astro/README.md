@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Astro
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-astro ./with-astro
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

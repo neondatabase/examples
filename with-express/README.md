@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Express
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-express ./with-express
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

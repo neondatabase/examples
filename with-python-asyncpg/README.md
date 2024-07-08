@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Python using asyncpg
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-python-asyncpg ./with-python-asyncpg
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

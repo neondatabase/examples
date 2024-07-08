@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Waku
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-waku ./with-waku
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

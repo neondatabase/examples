@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Next.js Server Components
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-nextjs-server-components ./with-nextjs-server-components
+```
+
 [![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/with-nextjs-server-components&env=POSTGRES_URL)
 
 Run the command below to copy the `.env.example` file:

@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Next.js Server Actions
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-nextjs-server-actions ./with-nextjs-server-actions
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

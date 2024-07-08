@@ -2,6 +2,12 @@
 
 # Getting started with Neon and SvelteKit
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-sveltekit ./with-sveltekit
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

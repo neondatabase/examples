@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Hono
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-hono ./with-hono
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

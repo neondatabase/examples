@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Astro API Routes
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-astro-api-routes ./with-astro-api-routes
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

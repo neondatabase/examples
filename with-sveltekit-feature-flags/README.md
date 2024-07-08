@@ -2,6 +2,12 @@
 
 # Feature Flags with Neon and SvelteKit
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-sveltekit-feature-flags ./with-sveltekit-feature-flags
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

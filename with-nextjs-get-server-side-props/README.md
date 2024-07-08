@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Next.js getServerSideProps
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-nextjs-get-server-side-props ./with-nextjs-get-server-side-props
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

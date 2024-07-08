@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Next.js Edge Functions
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-nextjs-edge-functions ./with-nextjs-edge-functions
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

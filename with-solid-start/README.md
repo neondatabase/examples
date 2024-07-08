@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Solid Start
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-solid-start ./with-sold-start
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

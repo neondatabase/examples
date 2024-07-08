@@ -2,6 +2,12 @@
 
 # Using pg_notify with Neon and NodeJS
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-nodejs-pg-notify ./with-nodejs-pg-notify
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

@@ -2,6 +2,12 @@
 
 # Getting started with Neon, Next.js and AWS S3
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-nextjs-aws-s3 ./with-nextjs-aws-s3
+```
+
 Read more on [How to upload to S3 in Next.js and save references in Postgres](https://neon.tech/guides/next-upload-aws-s3).
 
 Run the command below to copy the `.env.example` file:

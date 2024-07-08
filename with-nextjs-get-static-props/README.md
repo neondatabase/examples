@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Next.js getStaticProps
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-nextjs-get-static-props ./with-nextjs-get-static-props
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

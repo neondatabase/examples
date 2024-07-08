@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Remix
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-remix ./with-remix
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

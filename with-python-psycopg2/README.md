@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Python using psycopg2
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-python-psycopg2 ./with-python-psycopg2
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

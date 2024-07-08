@@ -6,6 +6,12 @@ A starter application for AI-powered Chat with PDF with Next.js, Neon Postgres (
 
 [![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/llamaindex/chat-with-pdf-nextjs&env=POSTGRES_URL,OPENAI_API_KEY)
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/ai/llamaindex/chat-with-pdf-nextjs ./chat-with-pdf-nextjs
+```
+
 ## How to use
 
 1. Create a `.env` file:

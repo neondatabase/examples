@@ -6,6 +6,12 @@ A starter application for AI-powered RAG chatbot with Next.js, Neon Postgres (pg
 
 [![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/langchain/rag-nextjs&env=POSTGRES_URL,OPENAI_API_KEY)
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/ai/langchain/rag-nextjs ./rag-nextjs
+```
+
 ## How to use
 
 1. Create a `.env` file:

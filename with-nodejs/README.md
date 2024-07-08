@@ -2,6 +2,12 @@
 
 # Getting started with Neon and NodeJS
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-nodejs ./with-nodejs
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

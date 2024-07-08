@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Analog
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-analog ./with-analog
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

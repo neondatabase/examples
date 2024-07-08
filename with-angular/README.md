@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Angular
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-angular ./with-angular
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

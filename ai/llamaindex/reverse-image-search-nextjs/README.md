@@ -6,6 +6,12 @@ A starter application for AI-powered Reverse Image Search with Next.js, Neon Pos
 
 [![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/llamaindex/reverse-image-search-nextjs&env=POSTGRES_URL,OPENAI_API_KEY)
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/ai/llamaindex/reverse-image-search-nextjs ./reverse-image-search-nextjs
+```
+
 ## How to use
 
 1. Create a `.env` file:

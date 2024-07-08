@@ -2,6 +2,12 @@
 
 # Getting started with Neon and Next.js Serverless Functions
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/with-nextjs-serverless-functions ./with-nextjs-serverless-functions
+```
+
 Run the command below to copy the `.env.example` file:
 
 ```

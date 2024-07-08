@@ -6,6 +6,12 @@ A starter application for AI-powered Hybrid Search chatbot with Next.js, Neon Po
 
 [![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/hybrid-search-nextjs&env=POSTGRES_URL,OPENAI_API_KEY)
 
+## Clone the repository
+
+```bash
+npx degit neondatabase/examples/ai/hybrid-search-nextjs ./hybrid-search-nextjs
+```
+
 ## How to use
 
 1. Create a `.env` file:
