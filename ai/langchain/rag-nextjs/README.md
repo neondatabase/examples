@@ -1,4 +1,4 @@
-<img width="250px" src="https://raw.githubusercontent.com/neondatabase/website/a898a3ff9c2786a3fd4691d083eb8f3c751e008b/src/images/logo-white.svg" />
+[![ai-banner](https://github.com/neondatabase/website/assets/22715126/1b73d601-af7e-4546-bf7a-dd52f2f0b7ef)](https://neon.tech/docs/ai/ai-intro)
 
 ## RAG Chatbot (OpenAI + LangChain)
 
