@@ -2,7 +2,9 @@
 
 ## AI Chatbot (OpenAI + LlamaIndex)
 
-A starter application for AI-powered chatbot with Next.js, Neon Postgres (pgvector), OpenAI, and LlamaIndex.
+A starter application for AI-powered chatbot with Next.js, Neon Postgres (pgvector), OpenAI, and LlamaIndex. 
+
+It implements a chat interface that takes the user's input, embeds it, and retrieves relevant information from the Neon database using similarity search. It then uses the OpenAI chat API to generate a contextually appropriate response based on the retrieved data and chat history.
 
 [![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/llamaindex/chatbot-nextjs&env=POSTGRES_URL,OPENAI_API_KEY)
 

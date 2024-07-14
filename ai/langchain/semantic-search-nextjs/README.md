@@ -4,6 +4,9 @@
 
 A starter application for AI-powered Semantic Search chatbot with Next.js, Neon Postgres (pgvector), OpenAI, and LangChain.
 
+- It allows users to input new information, embeds the input using the OpenAI text embedding API and stores it in the Neon database along with the original text. 
+- Users can then query the system through a chat interface. The app takes the user's input, embeds it, and uses a hybrid search (combining full-text and semantic search) to retrieve the most relevant stored information. It then returns a list of these relevant snippets to the user.
+
 [![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/langchain/semantic-search-nextjs&env=POSTGRES_URL,OPENAI_API_KEY)
 
 ## Prerequisites

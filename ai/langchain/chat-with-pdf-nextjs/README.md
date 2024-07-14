@@ -4,6 +4,9 @@
 
 A starter application for AI-powered Chat with PDF with Next.js, Neon Postgres (pgvector), OpenAI, and LangChain.
 
+- It allows users to upload PDF documents, which are split into chunks, embedding using the OpenAI text embedding API and stored in a Neon database.
+- Users can then ask questions about the uploaded document. It uses similarity search to retrieve relevant document chunks from the database and generates contextually appropriate responses using the OpenAI chat API. 
+
 [![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/langchain/chat-with-pdf-nextjs&env=POSTGRES_URL,OPENAI_API_KEY)
 
 ## Prerequisites

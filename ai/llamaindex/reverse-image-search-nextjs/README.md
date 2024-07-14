@@ -4,6 +4,9 @@
 
 A starter application for AI-powered Reverse Image Search with Next.js, Neon Postgres (pgvector), OpenAI, and LlamaIndex.
 
+- It allows users to uplaod images, which are embedded using the OpenAI CLIP-embedding API and stored in the Neon database along with the original image. 
+- Users can then query the system using new images, which are also embedded using the OpenAI CLIP-embedding API. The embedding vector is used to retrieve visually similar images from the Neon database. 
+
 [![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/llamaindex/reverse-image-search-nextjs&env=POSTGRES_URL,OPENAI_API_KEY)
 
 ## Prerequisites
