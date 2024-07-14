@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const { message: input } = await request.json()
   if (!input) return new Response(null, { status: 400 })
   const queryFunction = neon(`${process.env.POSTGRES_URL}`)
-  await queryFunction(`CREATE EXTENSION vector;`)
+  await queryFunction(`CREATE EXTENSION IF NOT EXISTS vector;`)
   await queryFunction(`
   create table if not exists documents (
     id bigint primary key generated always as identity,
