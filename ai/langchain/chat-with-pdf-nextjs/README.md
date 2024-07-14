@@ -2,9 +2,9 @@
 
 ## Chat with PDF (OpenAI + LangChain)
 
-A starter application for AI-powered Chat with PDF with Next.js, Neon Postgres (pgvector), OpenAI, and LangChain.
+A starter application for an AI-powered Chat with PDF with Next.js, Neon Postgres (pgvector), OpenAI, and LangChain.
 
-- It allows users to upload PDF documents, which are split into chunks, embedding using the OpenAI text embedding API and stored in a Neon database.
+- It allows users to upload PDF documents, which are then split into chunks, embedded using the OpenAI text embedding API, and stored in a Neon database.
 - Users can then ask questions about the uploaded document. It uses similarity search to retrieve relevant document chunks from the database and generates contextually appropriate responses using the OpenAI chat API. 
 
 [![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/langchain/chat-with-pdf-nextjs&env=POSTGRES_URL,OPENAI_API_KEY)
@@ -14,7 +14,7 @@ A starter application for AI-powered Chat with PDF with Next.js, Neon Postgres (
 To follow along with this guide, you will need:
 
 - A Neon account. If you do not have one, sign up at [Neon](https://neon.tech). Your Neon project comes with a ready-to-use Postgres database named `neondb`. We'll use this database in the following examples.
-- An OpenAI API key. If you do not have an OpenAI account, [sign up](https://platform.openai.com/signup) for it and navigate to [this section](https://platform.openai.com/api-keys) to create an api key.  
+- An OpenAI API key. If you do not have an OpenAI account, [sign up](https://platform.openai.com/signup) and navigate to the [API keys](https://platform.openai.com/api-keys) page to create an API key.
 - [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.com/) installed on your machine. 
 
 ## Clone the repository
