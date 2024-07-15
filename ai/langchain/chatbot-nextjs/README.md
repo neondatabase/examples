@@ -2,7 +2,7 @@
 
 ## AI Chatbot (OpenAI + LangChain)
 
-A starter application for AI-powered chatbot with Next.js, Neon Postgres (pgvector), OpenAI, and LangChain.
+A starter application for an AI-powered chatbot with Next.js, Neon Postgres (pgvector), OpenAI, and LangChain.
 
 It implements a chat interface that takes the user's input, embeds it, and retrieves relevant information from the Neon database using similarity search. It then uses the OpenAI chat API to generate a contextually appropriate response based on the retrieved data and chat history.
 
@@ -13,7 +13,7 @@ It implements a chat interface that takes the user's input, embeds it, and retri
 To follow along with this guide, you will need:
 
 - A Neon account. If you do not have one, sign up at [Neon](https://neon.tech). Your Neon project comes with a ready-to-use Postgres database named `neondb`. We'll use this database in the following examples.
-- An OpenAI API key. If you do not have an OpenAI account, [sign up](https://platform.openai.com/signup) for it and navigate to [this section](https://platform.openai.com/api-keys) to create an api key.  
+- An OpenAI API key. If you do not have an OpenAI account, [sign up](https://platform.openai.com/signup) and navigate to the [API keys](https://platform.openai.com/api-keys) page to create an API key.
 - [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.com/) installed on your machine. 
 
 ## Clone the repository
