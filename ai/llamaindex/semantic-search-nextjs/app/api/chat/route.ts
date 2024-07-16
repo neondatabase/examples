@@ -2,9 +2,16 @@ export const dynamic = 'force-dynamic'
 
 export const fetchCache = 'force-no-store'
 
-import vectorStore from '@/lib/vectorStore'
-import { NodeWithScore, VectorStoreIndex } from 'llamaindex'
 import { NextRequest } from 'next/server'
+import vectorStore from '@/lib/vectorStore'
+import { NodeWithScore, Ollama, Settings, VectorStoreIndex } from 'llamaindex'
+
+interface Message {
+  role: 'user' | 'assistant' | 'system' | 'memory'
+  content: string
+}
+
+if (process.env.OLLAMA_ENDPOINT) Settings.llm = new Ollama({ model: 'llama3', config: { host: process.env.OLLAMA_ENDPOINT } })
 
 export async function POST(request: NextRequest) {
   const { messages = [] } = (await request.json()) as { messages: { role: 'user' | 'assistant' | 'system' | 'memory'; content: string }[] }
