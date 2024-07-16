@@ -16,7 +16,7 @@ The Neon community can be found on https://neon.tech/discord, where you can ask 
 
 # Contributing
 
-Please see our [CONTRIBUTING.md](https://github.com/neondatabase/neon/blob/main/CONTRIBUTING.md).
+Please see our [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 # Authors
 
