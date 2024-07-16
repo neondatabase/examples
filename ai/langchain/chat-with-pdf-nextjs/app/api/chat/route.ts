@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store'
 
 import loadVectorStore from '@/lib/vectorStore'
+import { ChatOllama } from '@langchain/community/chat_models/ollama'
 import { AIMessage, HumanMessage } from '@langchain/core/messages'
 import type { ChatPromptTemplate } from '@langchain/core/prompts'
 import { ChatOpenAI } from '@langchain/openai'
@@ -12,7 +13,12 @@ import { createRetrievalChain } from 'langchain/chains/retrieval'
 import { pull } from 'langchain/hub'
 import { NextRequest } from 'next/server'
 
-const llm = new ChatOpenAI()
+const llm = process.env.OLLAMA_ENDPOINT
+  ? new ChatOllama({
+      model: 'llama3',
+      baseUrl: process.env.OLLAMA_ENDPOINT,
+    })
+  : new ChatOpenAI()
 const encoder = new TextEncoder()
 
 export async function POST(request: NextRequest) {

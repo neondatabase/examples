@@ -4,9 +4,14 @@ export const fetchCache = 'force-no-store'
 
 import { NextRequest } from 'next/server'
 import vectorStore from '@/lib/vectorStore'
-import { ContextChatEngine, VectorStoreIndex } from 'llamaindex'
+import { ContextChatEngine, Ollama, Settings, VectorStoreIndex } from 'llamaindex'
 
-interface Message { role: 'user' | 'assistant' | 'system' | 'memory'; content: string }
+interface Message {
+  role: 'user' | 'assistant' | 'system' | 'memory'
+  content: string
+}
+
+if (process.env.OLLAMA_ENDPOINT) Settings.llm = new Ollama({ model: 'llama3', config: { host: process.env.OLLAMA_ENDPOINT } })
 
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder()
