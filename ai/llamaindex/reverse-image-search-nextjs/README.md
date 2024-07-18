@@ -1,4 +1,4 @@
-<img width="250px" src="https://raw.githubusercontent.com/neondatabase/website/a898a3ff9c2786a3fd4691d083eb8f3c751e008b/src/images/logo-white.svg" />
+[![github-image-search-llamaindex](/assets/images/github-image-search-llamaindex.jpg)](https://console.neon.tech/signup)
 
 ## Reverse Image Search (OpenAI + LlamaIndex)
 
