@@ -1,4 +1,4 @@
-[![github-search -chatbot-lllamIndex](https://github.com/user-attachments/assets/c7bbdee0-fb74-41a8-bd2a-38bfdec9c40f)](https://console.neon.tech/signup)
+[![github-search-chatbot-llamaindex](/assets/images/github-search-chatbot-llamaindex.jpg)](https://console.neon.tech/signup)
 
 ## Semantic Search Chatbot (OpenAI + LlamaIndex)
 

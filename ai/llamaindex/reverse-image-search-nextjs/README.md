@@ -1,4 +1,4 @@
-[![github-image-search-lllamIndex](https://github.com/user-attachments/assets/16b54d8a-6a24-4794-95e5-9d2e5a9e143c)](https://console.neon.tech/signup)
+[![github-image-search-llamaindex](/assets/images/github-image-search-llamaindex.jpg)](https://console.neon.tech/signup)
 
 ## Reverse Image Search (OpenAI + LlamaIndex)
 

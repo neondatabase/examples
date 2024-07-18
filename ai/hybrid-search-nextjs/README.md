@@ -1,4 +1,4 @@
-[![github-hybrid-search](https://github.com/user-attachments/assets/fd45f59d-cd02-4be3-962c-6bb36aea26e2)](https://console.neon.tech/signup)
+[![github-hybrid-search](/assets/images/github-hybrid-search.jpg)](https://console.neon.tech/signup)
 
 ## Hybrid Search Chatbot (OpenAI)
 

@@ -1,4 +1,4 @@
-[![github-ai-chatbot-langchain](https://github.com/user-attachments/assets/3a91cd7d-54d3-40e0-b08d-ac4bd8eb2aed)](https://console.neon.tech/signup)
+[![github-ai-chatbot-langchain](/assets/images/github-ai-chatbot-langchain.jpg)](https://console.neon.tech/signup)
 
 ## AI Chatbot (OpenAI + LangChain)
 

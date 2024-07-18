@@ -1,4 +1,4 @@
-[![github-pdf-lllamIndex](https://github.com/user-attachments/assets/68983682-0e5c-4233-a9d0-9f70455b7521)](https://console.neon.tech/signup)
+[![github-pdf-llamaindex](/assets/images/github-pdf-llamaindex.jpg)](https://console.neon.tech/signup)
 
 ## Chat with PDF (OpenAI + LlamaIndex)
 

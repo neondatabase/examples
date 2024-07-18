@@ -1,4 +1,4 @@
-[![github-rag-chatbot-lllamIndex](https://github.com/user-attachments/assets/7f7768c7-a12f-4ddf-a0f0-2c5b6d2483cd)](https://console.neon.tech/signup)
+[![github-rag-chatbot-llamaindex](/assets/images/github-rag-chatbot-llamaindex.jpg)](https://console.neon.tech/signup)
 
 ## RAG Chatbot (OpenAI + LlamaIndex)
 

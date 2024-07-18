@@ -1,4 +1,4 @@
-[![github-pdf-langchain](https://github.com/user-attachments/assets/6178b069-0575-47f9-9611-0322623f7410)](https://console.neon.tech/signup)
+[![github-pdf-langchain](/assets/images/github-pdf-langchain.jpg)](https://console.neon.tech/signup)
 
 ## Chat with PDF (OpenAI + LangChain)
 

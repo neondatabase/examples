@@ -1,4 +1,4 @@
-[![github-rag-chatbot-langchain](https://github.com/user-attachments/assets/76a59603-27e2-44eb-8db3-beffc5f2dcdd)](https://console.neon.tech/signup)
+[![github-rag-chatbot-langchain](/assets/images/github-rag-chatbot-langchain.jpg)](https://console.neon.tech/signup)
 
 ## RAG Chatbot (OpenAI + LangChain)
 

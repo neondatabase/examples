@@ -1,4 +1,4 @@
-[![github-search-chatbot-langchain](https://github.com/user-attachments/assets/54c08bd8-2cfe-4f4e-8fb6-61c538fae5a1)](https://console.neon.tech/signup)
+[![github-search-chatbot-langchain](/assets/images/github-search-chatbot-langchain.jpg)](https://console.neon.tech/signup)
 
 ## Semantic Search Chatbot (OpenAI + LangChain)
 
