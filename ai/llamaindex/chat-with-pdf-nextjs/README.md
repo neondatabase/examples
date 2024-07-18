@@ -1,4 +1,4 @@
-[![ai-banner](https://github.com/neondatabase/website/assets/22715126/1b73d601-af7e-4546-bf7a-dd52f2f0b7ef)](https://console.neon.tech/signup)
+[![github-pdf-lllamIndex](https://github.com/user-attachments/assets/68983682-0e5c-4233-a9d0-9f70455b7521)](https://console.neon.tech/signup)
 
 ## Chat with PDF (OpenAI + LlamaIndex)
 

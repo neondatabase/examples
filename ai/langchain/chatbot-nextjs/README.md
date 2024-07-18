@@ -1,4 +1,4 @@
-[![ai-banner](https://github.com/neondatabase/website/assets/22715126/1b73d601-af7e-4546-bf7a-dd52f2f0b7ef)](https://console.neon.tech/signup)
+[![github-ai-chatbot-langchain](https://github.com/user-attachments/assets/3a91cd7d-54d3-40e0-b08d-ac4bd8eb2aed)](https://console.neon.tech/signup)
 
 ## AI Chatbot (OpenAI + LangChain)
 

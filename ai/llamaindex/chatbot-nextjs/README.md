@@ -1,4 +1,4 @@
-[![ai-banner](https://github.com/neondatabase/website/assets/22715126/1b73d601-af7e-4546-bf7a-dd52f2f0b7ef)](https://console.neon.tech/signup)
+[![github-ai-chatbot-lllamIndex](https://github.com/user-attachments/assets/d53c3aed-2659-412e-b4f3-2d904cd5832d)](https://console.neon.tech/signup)
 
 ## AI Chatbot (OpenAI + LlamaIndex)
 

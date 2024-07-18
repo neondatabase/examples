@@ -1,4 +1,4 @@
-[![ai-banner](https://github.com/neondatabase/website/assets/22715126/1b73d601-af7e-4546-bf7a-dd52f2f0b7ef)](https://console.neon.tech/signup)
+[![github-pdf-langchain](https://github.com/user-attachments/assets/6178b069-0575-47f9-9611-0322623f7410)](https://console.neon.tech/signup)
 
 ## Chat with PDF (OpenAI + LangChain)
 

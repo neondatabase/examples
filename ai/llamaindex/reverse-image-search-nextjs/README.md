@@ -1,4 +1,4 @@
-[![ai-banner](https://github.com/neondatabase/website/assets/22715126/1b73d601-af7e-4546-bf7a-dd52f2f0b7ef)](https://console.neon.tech/signup)
+[![github-image-search-lllamIndex](https://github.com/user-attachments/assets/16b54d8a-6a24-4794-95e5-9d2e5a9e143c)](https://console.neon.tech/signup)
 
 ## Reverse Image Search (OpenAI + LlamaIndex)
 
