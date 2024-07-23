@@ -22,8 +22,9 @@ export async function POST(request: NextRequest) {
     chunkSize: 1000,
     chunkOverlap: 200,
   })
-  const splitDocs = await textSplitter.splitDocuments(docs)
+  let splitDocs = await textSplitter.splitDocuments(docs)
   const vectorStore = await loadVectorStore()
+  splitDocs = splitDocs.map((i) => ({ ...i, pageContent: i.pageContent.replace(/\0/g, '') }))
   await vectorStore.addDocuments(splitDocs)
   return new Response()
 }
