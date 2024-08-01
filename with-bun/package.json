@@ -1,0 +1,14 @@
+{
+  "name": "with-bun",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.4"
+  }
+}
