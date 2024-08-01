@@ -8,7 +8,7 @@ const client = knex({
   },
 });
 
-const query = await client.raw("SELECT * from playing_with_neon")
+const query = await client.raw("SELECT * from playing_with_neon");
 
 console.log(query.rows);
 
