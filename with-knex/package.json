@@ -2,7 +2,8 @@
   "type": "module",
   "name": "with-knex",
   "scripts": {
-    "test": "tsx index.tsx"
+    "test": "tsx index.tsx",
+    "fmt": "prettier --write '**/*' --ignore-unknown"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
@@ -11,6 +12,7 @@
     "pg-native": "^3.1.0"
   },
   "devDependencies": {
+    "prettier": "^3.3.3",
     "tsx": "^4.16.4"
   }
 }
