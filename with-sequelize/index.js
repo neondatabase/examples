@@ -19,7 +19,6 @@ try {
       birthday: new Date(1980, 6, 20),
     }).then((res) => {
       console.log(res.toJSON());
-
       process.exit(0);
     });
   });
