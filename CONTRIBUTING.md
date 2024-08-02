@@ -8,7 +8,7 @@ Howdy! Usual good software engineering practices apply. Write tests. Write comme
 
 ```bash
 # Postgres URL retrieved here: https://console.neon.tech
-POSTGRES_URL="postgresql://...:...@...us-east-2.aws.neon.tech/neondb?sslmode=require"
+POSTGRES_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
 
 # OpenAI key retrieved here: https://platform.openai.com/api-keys
 OPENAI_API_KEY="sk-..."
