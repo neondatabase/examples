@@ -21,7 +21,7 @@ cp .env.example .env
 Store your Neon credentials in your `.env` file.
 
 ```
-POSTGRES_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
 ```
 
 - `user` is the database user.

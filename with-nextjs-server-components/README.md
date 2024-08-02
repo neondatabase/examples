@@ -8,7 +8,7 @@
 npx degit neondatabase/examples/with-nextjs-server-components ./with-nextjs-server-components
 ```
 
-[![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/with-nextjs-server-components&env=POSTGRES_URL)
+[![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/with-nextjs-server-components&env=DATABASE_URL)
 
 Run the command below to copy the `.env.example` file:
 

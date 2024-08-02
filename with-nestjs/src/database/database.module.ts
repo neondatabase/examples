@@ -6,7 +6,7 @@ config({
   path: ['.env', '.env.production', '.env.local'],
 });
 
-const sql = neon(process.env.POSTGRES_URL);
+const sql = neon(process.env.DATABASE_URL);
 
 const dbProvider = {
   provide: 'POSTGRES_POOL',

@@ -15,9 +15,9 @@ module.exports = async function (fastify, opts) {
     },
     schema: {
       type: "object",
-      required: ["POSTGRES_URL"],
+      required: ["DATABASE_URL"],
       properties: {
-        POSTGRES_URL: {
+        DATABASE_URL: {
           type: "string",
         },
       },
@@ -26,7 +26,7 @@ module.exports = async function (fastify, opts) {
 
   // This loads the Postgres plugin
   fastify.register(require("@fastify/postgres"), {
-    connectionString: process.env.POSTGRES_URL,
+    connectionString: process.env.DATABASE_URL,
   });
 
   // Do not touch the following lines
