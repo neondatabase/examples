@@ -1,14 +1,8 @@
 {
   "name": "with-nodejs",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "scripts": {
     "dev": "node index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@neondatabase/serverless": "^0.9.3",
     "dotenv": "^16.0.3"

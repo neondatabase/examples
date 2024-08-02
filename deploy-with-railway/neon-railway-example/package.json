@@ -1,15 +1,6 @@
 {
-  "name": "neon-railway-example",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "module",
+  "name": "neon-railway-example",
   "dependencies": {
     "express": "^4.19.2",
     "pg": "^8.12.0"
