@@ -1,0 +1,4 @@
+- clone this example
+- run `codecomposer install`
+- update DB_URL from the connection string in console in the .env file
+- run `php artisan migrate` to sync schema

@@ -1,4 +1,4 @@
 - clone this example
-- npm install
-- update database_url from the connection string in console in the .env file
-- run `npx prisma migrate dev --name init` sync schema
+- run `npm install`
+- update DATABASE_URL from the connection string in console in the `.env` file
+- run `npx prisma migrate dev --name init` to sync schema
