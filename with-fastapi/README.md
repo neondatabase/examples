@@ -21,5 +21,9 @@ pip install -r requirements.txt
 - run the application using:
 
 ```bash
-DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require" fastapi dev main.py
+DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require" 
+```
+
+```bash
+fastapi dev main.py
 ```
