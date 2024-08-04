@@ -21,5 +21,9 @@ pip install -r requirements.txt
 - run the application using:
 
 ```bash
-DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require" flask run --port 8000
+DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require" 
+```
+
+```bash
+flask run --port 8000
 ```
