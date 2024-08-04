@@ -41,4 +41,4 @@ const query_2 = await executeQuery('SELECT * from playing_with_neon LIMIT ?', [5
 
 console.log(performance.now() - s)
 
-process.exit(1)
+process.exit(0)
