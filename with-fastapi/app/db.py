@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from databases import Database
 from sqlalchemy import (REAL, Column, Integer, MetaData, Table, Text,

@@ -1,10 +1,12 @@
 import os
 import psycopg2
 from flask import Flask
+from dotenv import load_dotenv  
 from urllib.parse import urlparse
 
-app = Flask(__name__)
+load_dotenv()
 
+app = Flask(__name__)
 
 def get_db_connection():
     p = urlparse(os.getenv("DATABASE_URL"))
@@ -15,7 +17,6 @@ def get_db_connection():
         password=p.password,
         port=5432,
     )
-
 
 @app.route("/")
 def index():
