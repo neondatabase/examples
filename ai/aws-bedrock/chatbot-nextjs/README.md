@@ -1,10 +1,10 @@
 <img width="250px" src="https://raw.githubusercontent.com/neondatabase/website/a898a3ff9c2786a3fd4691d083eb8f3c751e008b/src/images/logo-white.svg" />
 
-## AI Chatbot (OpenAI + LlamaIndex)
+## AI Chatbot (AWS Bedrock)
 
-A starter application for AI-powered chatbot with Next.js, Neon Postgres (pgvector), OpenAI, and LlamaIndex.
+A starter application for AI-powered chatbot with Next.js, Neon Postgres, and AWS Bedrock.
 
-[![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/llamaindex/chatbot-nextjs&env=POSTGRES_URL,OPENAI_API_KEY)
+[![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/aws-bedrock/chatbot-nextjs&env=POSTGRES_URL,AWS_KEY_ID,AWS_SECRET_KEY)
 
 ## How to use
 
