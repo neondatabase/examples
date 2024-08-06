@@ -30,10 +30,7 @@ npm run dev
 
 ## Learn more
 
-- [Neon AI documentation](https://neon.tech/docs/ai/ai-intro)
-- [pgvector documentation](https://github.com/pgvector/pgvector)
-- [OpenAI documentation](https://platform.openai.com/docs/introduction)
-- [Llama Index documentation](https://llama.meta.com/docs/get-started/)
+- [Amazon Bedrock](https://docs.aws.amazon.com/pdfs/bedrock/latest/userguide/bedrock-ug.pdf#page=26&zoom=100,48,781)
 - [Next.js documentation](https://nextjs.org/docs)
 
 ## Authors
