@@ -1,0 +1,5 @@
+name: with_dart
+environment:
+  sdk: '^3.5.0'
+dependencies:
+  postgres: ^3.2.1
