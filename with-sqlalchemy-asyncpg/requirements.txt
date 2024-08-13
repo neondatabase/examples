@@ -1,0 +1,5 @@
+async-timeout==4.0.3
+asyncpg==0.29.0
+greenlet==3.0.3
+SQLAlchemy==2.0.32
+typing_extensions==4.12.2
