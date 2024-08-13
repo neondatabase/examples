@@ -30,14 +30,27 @@ DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb
 
 **Important**: To ensure the security of your data, never expose your Neon credentials to the browser.
 
+Run one of the following commands to create a virtual environment:
+
+```bash
+# Create a virtual environment
+python -m venv venv
+
+# Active the virtual environment (Windows)
+.\venv\Scripts\activate.bat
+
+# Active the virtual environment (Linux)
+source ./venv/bin/activate
+```
+
 Run the command below to install project dependencies:
 
 ```
-pip3 install asyncpg python-dotenv
+pip install -r requirements.txt
 ```
 
 Run the Python application using the following command:
 
 ```
-python3 neon-connect.py
+python neon-connect.py
 ```

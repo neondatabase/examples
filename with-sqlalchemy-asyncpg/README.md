@@ -52,5 +52,5 @@ pip install -r requirements.txt
 Run the Python application using the following command:
 
 ```
-python3 index.py
+python index.py
 ```

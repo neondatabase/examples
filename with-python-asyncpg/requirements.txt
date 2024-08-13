@@ -1,0 +1,2 @@
+asyncpg
+python-dotenv
