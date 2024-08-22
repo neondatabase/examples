@@ -1,6 +1,10 @@
-import { Pool } from '@neondatabase/serverless'
+import { neonConfig, Pool } from '@neondatabase/serverless'
 import { drizzle } from 'drizzle-orm/neon-serverless'
+import { WebSocket } from 'ws'
 
-const pool = new Pool({ connectionString: process.env.POSTGRES_URL })
+neonConfig.webSocketConstructor = WebSocket
+neonConfig.poolQueryViaFetch = true
+
+const pool = new Pool({ connectionString: process.env.POSTGRES_URL, max: 0 })
 
 export default drizzle(pool)
