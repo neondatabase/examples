@@ -16,7 +16,7 @@ export default function Table() {
       })
   }
   useEffect(() => {
-    new Array(10).fill(0).forEach(() => loadUsers())
+    loadUsers()
   }, [])
   return (
     <div className="bg-white/30 p-12 shadow-xl ring-1 ring-gray-900/5 rounded-lg backdrop-blur-lg max-w-xl mx-auto w-full">
