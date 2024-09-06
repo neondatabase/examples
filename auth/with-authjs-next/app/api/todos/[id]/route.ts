@@ -4,7 +4,7 @@ import { Pool } from "@neondatabase/serverless";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   const session = await auth();
   if (!session) {
@@ -16,7 +16,7 @@ export async function PATCH(
   try {
     const { rows } = await pool.query(
       "UPDATE todos SET completed = NOT completed WHERE id = $1 AND user_id = $2 RETURNING *",
-      [params.id, session.user.id]
+      [params.id, session.user.id],
     );
     if (rows.length === 0) {
       return NextResponse.json({ error: "Todo not found" }, { status: 404 });
@@ -25,7 +25,7 @@ export async function PATCH(
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to update todo" },
-      { status: 500 }
+      { status: 500 },
     );
   } finally {
     await pool.end();

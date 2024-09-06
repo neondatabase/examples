@@ -14,13 +14,13 @@ export async function POST(req: Request) {
   try {
     const { rows } = await pool.query(
       "INSERT INTO todos (user_id, content) VALUES ($1, $2) RETURNING *",
-      [session.user.id, content]
+      [session.user.id, content],
     );
     return NextResponse.json(rows[0]);
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to create todo" },
-      { status: 500 }
+      { status: 500 },
     );
   } finally {
     await pool.end();

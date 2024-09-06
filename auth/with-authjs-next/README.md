@@ -18,7 +18,7 @@ To run this project, you will need:
 npm install
 ```
 
-2. Copy the `.env.example` file, with the following environment variables, to create a `.env` file. 
+2. Copy the `.env.example` file, with the following environment variables, to create a `.env` file.
 
 ```bash
 DATABASE_URL=YOUR_NEON_DATABASE_URL
