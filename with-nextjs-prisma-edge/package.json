@@ -11,7 +11,7 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.9.4",
+    "@neondatabase/serverless": "^0.9.5",
     "@prisma/adapter-neon": "^5.18.0",
     "@prisma/adapter-pg": "^5.18.0",
     "@prisma/client": "^5.18.0",
