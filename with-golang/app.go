@@ -1,13 +1,13 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/jackc/pgx/v4"
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -16,14 +16,20 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 	connStr := os.Getenv("DATABASE_URL")
-	db, err := sql.Open("postgres", connStr)
+	conn, err := pgx.Connect(context.Background(), connStr)
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
-	db.Query("CREATE TABLE IF NOT EXISTS playing_with_neon(id SERIAL PRIMARY KEY, name TEXT NOT NULL, value REAL);")
-	db.Query("INSERT INTO playing_with_neon(name, value) SELECT LEFT(md5(i::TEXT), 10), random() FROM generate_series(1, 10) s(i);")
-	rows, err := db.Query("SELECT * FROM playing_with_neon")
+	defer conn.Close(context.Background())
+	_, err = conn.Exec(context.Background(), "CREATE TABLE IF NOT EXISTS playing_with_neon(id SERIAL PRIMARY KEY, name TEXT NOT NULL, value REAL);")
+	if err != nil {
+		panic(err)
+	}
+	_, err = conn.Exec(context.Background(), "INSERT INTO playing_with_neon(name, value) SELECT LEFT(md5(i::TEXT), 10), random() FROM generate_series(1, 10) s(i);")
+	if err != nil {
+		panic(err)
+	}
+	rows, err := conn.Query(context.Background(), "SELECT * FROM playing_with_neon")
 	if err != nil {
 		panic(err)
 	}
