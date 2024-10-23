@@ -1,0 +1,341 @@
+---------------------------
+================================ Human Message =================================
+
+What's the weather in NYC?
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_A7ckJOjIUJEGLL0CDDaAweSc)
+ Call ID: call_A7ckJOjIUJEGLL0CDDaAweSc
+  Args:
+    city: nyc
+================================= Tool Message =================================
+Name: get_weather
+
+It might be cloudy in nyc
+================================== Ai Message ==================================
+
+The weather in NYC is currently cloudy.
+================================ Human Message =================================
+
+What's it known for?
+================================== Ai Message ==================================
+
+New York City (NYC) is known for a variety of iconic landmarks, cultural institutions, and vibrant neighborhoods. Some of the most notable features include:
+
+1. **Statue of Liberty**: A symbol of freedom and democracy, located on Liberty Island.
+2. **Times Square**: Known for its bright lights, Broadway theaters, and bustling atmosphere.
+3. **Central Park**: A large public park offering a natural retreat in the midst of the city.
+4. **Empire State Building**: An iconic skyscraper offering panoramic views of the city.
+5. **Broadway**: Famous for its world-class theater productions.
+6. **Wall Street**: The financial hub of the United States.
+7. **Museums**: Including the Metropolitan Museum of Art, Museum of Modern Art (MoMA), and the American Museum of Natural History.
+8. **Diverse Cuisine**: A melting pot of culinary experiences from around the world.
+9. **Cultural Diversity**: A rich tapestry of cultures and communities.
+10. **Fashion**: A global fashion capital, hosting events like New York Fashion Week.
+
+NYC is a city that never sleeps, offering endless opportunities for exploration and entertainment.
+================================ Human Message =================================
+
+What's the weather in NYC?
+================================== Ai Message ==================================
+
+The weather in NYC is currently cloudy.
+================================ Human Message =================================
+
+What's the weather in NYC?
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_QXcG5epamAqChjf5uKnVRV5U)
+ Call ID: call_QXcG5epamAqChjf5uKnVRV5U
+  Args:
+    city: nyc
+================================= Tool Message =================================
+Name: get_weather
+
+It might be cloudy in nyc
+================================== Ai Message ==================================
+
+The weather in NYC is currently cloudy.
+================================ Human Message =================================
+
+What's the weather in NYC?
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_TjIbxTGssThPCoRjCbHSqdA8)
+ Call ID: call_TjIbxTGssThPCoRjCbHSqdA8
+  Args:
+    city: nyc
+================================= Tool Message =================================
+Name: get_weather
+
+It might be cloudy in nyc
+================================== Ai Message ==================================
+
+The weather in NYC is currently cloudy.
+================================ Human Message =================================
+
+What's the weather in NYC?
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_9JRVAJM3Se7P36S8ugVkJAL7)
+ Call ID: call_9JRVAJM3Se7P36S8ugVkJAL7
+  Args:
+    city: nyc
+================================= Tool Message =================================
+Name: get_weather
+
+It might be cloudy in nyc
+================================== Ai Message ==================================
+
+The weather in NYC is currently cloudy.
+================================ Human Message =================================
+
+What's it known for?
+================================== Ai Message ==================================
+
+New York City (NYC) is known for a variety of iconic landmarks, cultural institutions, and vibrant neighborhoods. Some of the most notable features include:
+
+1. **Statue of Liberty**: A symbol of freedom and democracy, located on Liberty Island.
+2. **Times Square**: Known for its bright lights, Broadway theaters, and bustling atmosphere.
+3. **Central Park**: A large public park offering a natural retreat in the midst of the city.
+4. **Empire State Building**: An iconic skyscraper offering panoramic views of the city.
+5. **Broadway**: Famous for its world-class theater productions.
+6. **Wall Street**: The financial hub of the United States.
+7. **Museums**: Including the Metropolitan Museum of Art, Museum of Modern Art (MoMA), and the American Museum of Natural History.
+8. **Diverse Cuisine**: A melting pot of culinary experiences from around the world.
+9. **Cultural Diversity**: A rich tapestry of cultures and communities.
+10. **Fashion**: A global fashion capital, hosting events like New York Fashion Week.
+
+NYC is a city that never sleeps, offering endless opportunities for exploration and entertainment.
+================================ Human Message =================================
+
+What's the weather in NYC?
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_BQwfrlLoQAtB9q1i2sqQxNt2)
+ Call ID: call_BQwfrlLoQAtB9q1i2sqQxNt2
+  Args:
+    city: nyc
+================================= Tool Message =================================
+Name: get_weather
+
+It might be cloudy in nyc
+================================== Ai Message ==================================
+
+The weather in NYC is currently cloudy.
+================================ Human Message =================================
+
+What's it known for?
+================================== Ai Message ==================================
+
+New York City (NYC) is known for a variety of iconic landmarks, cultural institutions, and vibrant neighborhoods. Some of the most notable features include:
+
+1. **Statue of Liberty**: A symbol of freedom and democracy, located on Liberty Island.
+2. **Times Square**: Known for its bright lights, Broadway theaters, and bustling atmosphere.
+3. **Central Park**: A large public park offering a natural retreat in the midst of the city.
+4. **Empire State Building**: An iconic skyscraper offering panoramic views of the city.
+5. **Broadway**: Famous for its world-class theater productions.
+6. **Wall Street**: The financial hub of the United States.
+7. **Museums**: Including the Metropolitan Museum of Art, Museum of Modern Art (MoMA), and the American Museum of Natural History.
+8. **Diverse Cuisine**: A melting pot of culinary experiences from around the world.
+9. **Cultural Diversity**: A rich tapestry of cultures and communities.
+10. **Fashion**: A global fashion capital, hosting events like New York Fashion Week.
+
+NYC is a city that never sleeps, offering endless opportunities for exploration and entertainment.
+================================ Human Message =================================
+
+What's the weather in NYC?
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_uyudw96phstDBcHqOaAcl3OZ)
+ Call ID: call_uyudw96phstDBcHqOaAcl3OZ
+  Args:
+    city: nyc
+================================= Tool Message =================================
+Name: get_weather
+
+It might be cloudy in nyc
+================================== Ai Message ==================================
+
+The weather in NYC is currently cloudy.
+---------------------------
+---------------------------
+================================ Human Message =================================
+
+What's the weather in NYC?
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_A7ckJOjIUJEGLL0CDDaAweSc)
+ Call ID: call_A7ckJOjIUJEGLL0CDDaAweSc
+  Args:
+    city: nyc
+================================= Tool Message =================================
+Name: get_weather
+
+It might be cloudy in nyc
+================================== Ai Message ==================================
+
+The weather in NYC is currently cloudy.
+================================ Human Message =================================
+
+What's it known for?
+================================== Ai Message ==================================
+
+New York City (NYC) is known for a variety of iconic landmarks, cultural institutions, and vibrant neighborhoods. Some of the most notable features include:
+
+1. **Statue of Liberty**: A symbol of freedom and democracy, located on Liberty Island.
+2. **Times Square**: Known for its bright lights, Broadway theaters, and bustling atmosphere.
+3. **Central Park**: A large public park offering a natural retreat in the midst of the city.
+4. **Empire State Building**: An iconic skyscraper offering panoramic views of the city.
+5. **Broadway**: Famous for its world-class theater productions.
+6. **Wall Street**: The financial hub of the United States.
+7. **Museums**: Including the Metropolitan Museum of Art, Museum of Modern Art (MoMA), and the American Museum of Natural History.
+8. **Diverse Cuisine**: A melting pot of culinary experiences from around the world.
+9. **Cultural Diversity**: A rich tapestry of cultures and communities.
+10. **Fashion**: A global fashion capital, hosting events like New York Fashion Week.
+
+NYC is a city that never sleeps, offering endless opportunities for exploration and entertainment.
+================================ Human Message =================================
+
+What's the weather in NYC?
+================================== Ai Message ==================================
+
+The weather in NYC is currently cloudy.
+================================ Human Message =================================
+
+What's the weather in NYC?
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_QXcG5epamAqChjf5uKnVRV5U)
+ Call ID: call_QXcG5epamAqChjf5uKnVRV5U
+  Args:
+    city: nyc
+================================= Tool Message =================================
+Name: get_weather
+
+It might be cloudy in nyc
+================================== Ai Message ==================================
+
+The weather in NYC is currently cloudy.
+================================ Human Message =================================
+
+What's the weather in NYC?
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_TjIbxTGssThPCoRjCbHSqdA8)
+ Call ID: call_TjIbxTGssThPCoRjCbHSqdA8
+  Args:
+    city: nyc
+================================= Tool Message =================================
+Name: get_weather
+
+It might be cloudy in nyc
+================================== Ai Message ==================================
+
+The weather in NYC is currently cloudy.
+================================ Human Message =================================
+
+What's the weather in NYC?
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_9JRVAJM3Se7P36S8ugVkJAL7)
+ Call ID: call_9JRVAJM3Se7P36S8ugVkJAL7
+  Args:
+    city: nyc
+================================= Tool Message =================================
+Name: get_weather
+
+It might be cloudy in nyc
+================================== Ai Message ==================================
+
+The weather in NYC is currently cloudy.
+================================ Human Message =================================
+
+What's it known for?
+================================== Ai Message ==================================
+
+New York City (NYC) is known for a variety of iconic landmarks, cultural institutions, and vibrant neighborhoods. Some of the most notable features include:
+
+1. **Statue of Liberty**: A symbol of freedom and democracy, located on Liberty Island.
+2. **Times Square**: Known for its bright lights, Broadway theaters, and bustling atmosphere.
+3. **Central Park**: A large public park offering a natural retreat in the midst of the city.
+4. **Empire State Building**: An iconic skyscraper offering panoramic views of the city.
+5. **Broadway**: Famous for its world-class theater productions.
+6. **Wall Street**: The financial hub of the United States.
+7. **Museums**: Including the Metropolitan Museum of Art, Museum of Modern Art (MoMA), and the American Museum of Natural History.
+8. **Diverse Cuisine**: A melting pot of culinary experiences from around the world.
+9. **Cultural Diversity**: A rich tapestry of cultures and communities.
+10. **Fashion**: A global fashion capital, hosting events like New York Fashion Week.
+
+NYC is a city that never sleeps, offering endless opportunities for exploration and entertainment.
+================================ Human Message =================================
+
+What's the weather in NYC?
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_BQwfrlLoQAtB9q1i2sqQxNt2)
+ Call ID: call_BQwfrlLoQAtB9q1i2sqQxNt2
+  Args:
+    city: nyc
+================================= Tool Message =================================
+Name: get_weather
+
+It might be cloudy in nyc
+================================== Ai Message ==================================
+
+The weather in NYC is currently cloudy.
+================================ Human Message =================================
+
+What's it known for?
+================================== Ai Message ==================================
+
+New York City (NYC) is known for a variety of iconic landmarks, cultural institutions, and vibrant neighborhoods. Some of the most notable features include:
+
+1. **Statue of Liberty**: A symbol of freedom and democracy, located on Liberty Island.
+2. **Times Square**: Known for its bright lights, Broadway theaters, and bustling atmosphere.
+3. **Central Park**: A large public park offering a natural retreat in the midst of the city.
+4. **Empire State Building**: An iconic skyscraper offering panoramic views of the city.
+5. **Broadway**: Famous for its world-class theater productions.
+6. **Wall Street**: The financial hub of the United States.
+7. **Museums**: Including the Metropolitan Museum of Art, Museum of Modern Art (MoMA), and the American Museum of Natural History.
+8. **Diverse Cuisine**: A melting pot of culinary experiences from around the world.
+9. **Cultural Diversity**: A rich tapestry of cultures and communities.
+10. **Fashion**: A global fashion capital, hosting events like New York Fashion Week.
+
+NYC is a city that never sleeps, offering endless opportunities for exploration and entertainment.
+================================ Human Message =================================
+
+What's the weather in NYC?
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_uyudw96phstDBcHqOaAcl3OZ)
+ Call ID: call_uyudw96phstDBcHqOaAcl3OZ
+  Args:
+    city: nyc
+================================= Tool Message =================================
+Name: get_weather
+
+It might be cloudy in nyc
+================================== Ai Message ==================================
+
+The weather in NYC is currently cloudy.
+================================ Human Message =================================
+
+What's it known for?
+================================== Ai Message ==================================
+
+New York City (NYC) is known for a variety of iconic landmarks, cultural institutions, and vibrant neighborhoods. Some of the most notable features include:
+
+1. **Statue of Liberty**: A symbol of freedom and democracy, located on Liberty Island.
+2. **Times Square**: Known for its bright lights, Broadway theaters, and bustling atmosphere.
+3. **Central Park**: A large public park offering a natural retreat in the midst of the city.
+4. **Empire State Building**: An iconic skyscraper offering panoramic views of the city.
+5. **Broadway**: Famous for its world-class theater productions.
+6. **Wall Street**: The financial hub of the United States.
+7. **Museums**: Including the Metropolitan Museum of Art, Museum of Modern Art (MoMA), and the American Museum of Natural History.
+8. **Diverse Cuisine**: A melting pot of culinary experiences from around the world.
+9. **Cultural Diversity**: A rich tapestry of cultures and communities.
+10. **Fashion**: A global fashion capital, hosting events like New York Fashion Week.
+
+NYC is a city that never sleeps, offering endless opportunities for exploration and entertainment.
+---------------------------
