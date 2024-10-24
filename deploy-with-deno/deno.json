@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "@neon/serverless": "jsr:@neon/serverless@^0.10.1"
+  }
+}

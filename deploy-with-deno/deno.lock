@@ -1,0 +1,16 @@
+{
+  "version": "4",
+  "specifiers": {
+    "jsr:@neon/serverless@~0.10.1": "0.10.1"
+  },
+  "jsr": {
+    "@neon/serverless@0.10.1": {
+      "integrity": "81f8e1349d54d9c9fb9cf21e753460c360237ab00d04a4b710b4aff891182dfb"
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@neon/serverless@~0.10.1"
+    ]
+  }
+}
