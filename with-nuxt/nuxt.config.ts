@@ -13,4 +13,8 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@nuxt/icon',
   ],
+
+  runtimeConfig: {
+    databaseUrl: process.env.DATABASE_URL,
+  },
 })
