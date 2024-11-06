@@ -1,7 +1,6 @@
 {
-  "name": "nuxt-app",
-  "private": true,
   "type": "module",
+  "name": "with-nuxt",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",

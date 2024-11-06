@@ -5,5 +5,5 @@ export default defineCachedEventHandler((event) => {
   const db = neon(databaseUrl);
   return db('SELECT version()');
 }, {
-  maxAge: 60 * 60 * 24, //cache it for a day
+  maxAge: 60 * 60 * 24,
 })
