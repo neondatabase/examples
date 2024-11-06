@@ -17,8 +17,8 @@ export default function Home() {
           Prisma
         </Link>{' '}
         as the ORM. <br /> Built with{' '}
-        <Link href="https://nextjs.org/docs" className="font-medium underline underline-offset-4 hover:text-black transition-colors">
-          Next.js App Router (on the edge)
+        <Link href="https://github.com/neondatabase/examples/tree/main/with-nextjs-prisma-cloudflare-workers" className="font-medium underline underline-offset-4 hover:text-black transition-colors">
+          Next.js App Router (on the middleware)
         </Link>
         .
       </p>
