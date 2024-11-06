@@ -1,0 +1,42 @@
+{
+  "name": "with-nextjs-prisma-cloudflare-workers",
+  "scripts": {
+    "prisma:initiate": "prisma generate && prisma db push && prisma db seed",
+    "dev": "prisma generate && next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "preview": "npm run pages:build && wrangler pages dev",
+    "deploy": "npm run pages:build && wrangler pages deploy",
+    "fmt": "prettier --write '**/*' --ignore-unknown"
+  },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.5",
+    "@prisma/adapter-neon": "^5.18.0",
+    "@prisma/adapter-pg": "^5.18.0",
+    "@prisma/client": "^5.18.0",
+    "autoprefixer": "10.4.16",
+    "next": "13.5.4",
+    "postcss": "8.4.31",
+    "prisma": "^5.18.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "tailwindcss": "3.3.3",
+    "typescript": "5.2.2",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.5",
+    "@opennextjs/cloudflare": "^0.2.1",
+    "@types/node": "^20.8.3",
+    "@types/react": "18.2.25",
+    "@types/react-dom": "18.2.11",
+    "@types/ws": "^8.5.12",
+    "prettier": "^3.3.3",
+    "ts-node": "^10.9.2",
+    "wrangler": "^3.84.1"
+  }
+}
