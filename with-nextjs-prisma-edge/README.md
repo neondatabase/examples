@@ -1,11 +1,11 @@
 <img width="250px" src="https://neon.tech/brand/neon-logo-dark-color.svg" />
 
-# Getting started with Neon and NodeJS
+# Getting started with Neon, Next.js, Prisma and Vercel Edge
 
 ## Clone the repository
 
 ```bash
-npx degit neondatabase/examples/with-nodejs ./with-nodejs
+npx degit neondatabase/examples/with-nextjs-prisma-edge ./with-nextjs-prisma-edge
 ```
 
 Run the command below to copy the `.env.example` file:
@@ -19,7 +19,8 @@ cp .env.example .env
 Store your Neon credentials in your `.env` file.
 
 ```
-DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
+POSTGRES_PRISMA_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
+POSTGRES_URL_NON_POOLING="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
 ```
 
 - `user` is the database user.
@@ -36,8 +37,14 @@ Run the command below to install project dependencies:
 npm install
 ```
 
-Run the NodeJS application using the following command:
+Next, run the command below to seed the database:
 
 ```
-node index.js
+npm run prisma:initiate
+```
+
+Finally, run the Next.js application using the following command:
+
+```
+npm run dev
 ```
