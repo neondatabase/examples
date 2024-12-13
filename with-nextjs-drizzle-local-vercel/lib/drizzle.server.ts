@@ -1,18 +1,19 @@
-import postgres from 'postgres'
-import { neonConfig } from '@neondatabase/serverless'
-import { drizzle as drizzle_neon, NeonDatabase } from 'drizzle-orm/neon-serverless'
-import { drizzle as drizzle_local, PostgresJsDatabase } from 'drizzle-orm/postgres-js'
+import { neonConfig, Pool } from '@neondatabase/serverless'
+import { drizzle } from 'drizzle-orm/neon-serverless'
+import { WebSocket } from 'ws'
 
-let db: PostgresJsDatabase | NeonDatabase
+const connectionString = process.env.VERCEL_ENV ? process.env.POSTGRES_URL : process.env.LOCAL_POSTGRES_URL
 
 if (process.env.VERCEL_ENV) {
-  if (!process.env.POSTGRES_URL) throw new Error('Connection string to Neon Postgres not found.')
+  neonConfig.webSocketConstructor = WebSocket
   neonConfig.poolQueryViaFetch = true
-  db = drizzle_neon(process.env.POSTGRES_URL)
 } else {
-  if (!process.env.LOCAL_POSTGRES_URL) throw new Error('Connection string to local Postgres not found.')
-  const client = postgres(process.env.LOCAL_POSTGRES_URL)
-  db = drizzle_local({ client })
+  neonConfig.wsProxy = (host) => `${host}:5433/v1`
+  neonConfig.useSecureWebSocket = false
+  neonConfig.pipelineTLS = false
+  neonConfig.pipelineConnect = false
 }
 
-export default db
+const pool = new Pool({ connectionString })
+
+export default drizzle(pool)
