@@ -2,7 +2,7 @@ import { neonConfig, Pool } from '@neondatabase/serverless'
 import { drizzle } from 'drizzle-orm/neon-serverless'
 import { WebSocket } from 'ws'
 
-const connectionString = process.env.VERCEL_ENV ? process.env.POSTGRES_URL : process.env.LOCAL_POSTGRES_URL
+const connectionString = process.env.VERCEL_ENV === 'production' ? process.env.POSTGRES_URL : process.env.LOCAL_POSTGRES_URL
 
 if (process.env.VERCEL_ENV) {
   neonConfig.webSocketConstructor = WebSocket
