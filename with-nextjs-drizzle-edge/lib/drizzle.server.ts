@@ -5,6 +5,6 @@ import { WebSocket } from 'ws'
 neonConfig.webSocketConstructor = WebSocket
 neonConfig.poolQueryViaFetch = true
 
-const pool = new Pool({ connectionString: process.env.POSTGRES_URL, max: 0 })
+const pool = new Pool({ connectionString: process.env.POSTGRES_URL })
 
 export default drizzle(pool)
