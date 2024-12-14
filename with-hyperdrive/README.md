@@ -33,11 +33,10 @@ npx wrangler hyperdrive create <NAME_OF_HYPERDRIVE_CONFIG> --connection-string="
 This command outputs a binding to be used in the `wrangler.toml` file:
 
 ```toml
-name = "hyperdrive-example"
+#:schema node_modules/wrangler/config-schema.json
 main = "src/index.ts"
-compatibility_date = "2024-08-21"
+compatibility_date = "2024-12-05"
 compatibility_flags = ["nodejs_compat"]
-
 # Pasted from the output of `wrangler hyperdrive create <NAME_OF_HYPERDRIVE_CONFIG> --connection-string=[...]` above.
 [[hyperdrive]]
 binding = "HYPERDRIVE"
