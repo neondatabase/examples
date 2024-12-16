@@ -8,7 +8,7 @@ if (process.env.VERCEL_ENV === 'production') {
   neonConfig.webSocketConstructor = WebSocket
   neonConfig.poolQueryViaFetch = true
 } else {
-  neonConfig.wsProxy = (host) => `${host}:5433/v1`
+  neonConfig.wsProxy = (host) => `${host}:4444/v1`
   neonConfig.useSecureWebSocket = false
   neonConfig.pipelineTLS = false
   neonConfig.pipelineConnect = false
