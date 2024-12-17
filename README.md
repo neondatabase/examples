@@ -20,5 +20,5 @@ Please see our [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 # Authors
 
-- Raouf Chebri ([@raoufdevrel](https://twitter.com/raoufdevrel))
+- Raouf Chebri ([@_raoufai](https://twitter.com/_raoufai))
 - Rishi Raj Jain ([@rishi_raj_jain_](https://twitter.com/rishi_raj_jain_))
