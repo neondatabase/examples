@@ -22,17 +22,24 @@ class _TodosPageState extends State<TodosPage> {
     getTodos();
   }
 
-  void showError(BuildContext context) {
+  void showError(BuildContext context, String error) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Some error occurred"),
+      SnackBar(
+        content: Text("Error-$error"),
         backgroundColor: Colors.red,
       ),
     );
   }
 
+  Future<void> createTables() async {
+    await widget.db.execute(
+        "CREATE TABLE IF NOT EXISTS todos (id SERIAL, text TEXT, done BOOLEAN DEFAULT false)");
+    return;
+  }
+
   void getTodos() async {
     try {
+      await createTables();
       final res = await widget.db.execute("select * from todos order by done");
 
       todos = res
@@ -43,6 +50,7 @@ class _TodosPageState extends State<TodosPage> {
     } on Exception catch (e) {
       isLoading = false;
       error = e.toString();
+      showError(context, error);
       setState(() {});
     }
   }
@@ -61,7 +69,7 @@ class _TodosPageState extends State<TodosPage> {
         getTodos();
       }
     } on Exception catch (e) {
-      showError(context);
+      showError(context, e.toString());
     }
   }
 
@@ -73,7 +81,7 @@ class _TodosPageState extends State<TodosPage> {
       );
       getTodos();
     } on Exception catch (e) {
-      showError(context);
+      showError(context, e.toString());
     }
   }
 
@@ -85,7 +93,7 @@ class _TodosPageState extends State<TodosPage> {
       );
       getTodos();
     } on Exception catch (e) {
-      showError(context);
+      showError(context, e.toString());
     }
   }
 
@@ -129,7 +137,7 @@ class _TodosPageState extends State<TodosPage> {
           return ListTile(
             title: Text(todos[i]["text"]),
             leading: Checkbox(
-              value: todos[i]["done"],
+              value: todos[i]["done"] ?? false,
               onChanged: (val) {
                 updateTodo(todos[i]['id'], val!);
               },

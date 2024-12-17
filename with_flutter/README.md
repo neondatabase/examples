@@ -36,7 +36,7 @@ Run the command below to install project dependencies:
 flutter pub get
 ```
 
-Run the Express application using the following command:
+Run the Flutter application using the following command:
 
 ```
 flutter run
