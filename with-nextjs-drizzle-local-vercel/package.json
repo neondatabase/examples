@@ -4,7 +4,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "fmt": "prettier --write '**/*' --ignore-unknown"
+    "fmt": "prettier --write '**/*' --ignore-unknown",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.4",
