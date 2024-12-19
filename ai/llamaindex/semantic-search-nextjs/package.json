@@ -19,7 +19,7 @@
     "clsx": "^2.1.1",
     "llamaindex": "^0.3.4",
     "lucide-react": "^0.394.0",
-    "next": "14.2.4",
+    "next": "14.2.15",
     "react": "^18",
     "react-dom": "^18",
     "react-markdown": "^9.0.1",
