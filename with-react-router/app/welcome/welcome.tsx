@@ -1,5 +1,4 @@
 export function Welcome({ databaseVersion }: { databaseVersion: string }) {
-  console.log("databaseVersion", databaseVersion)
   return (
     <main className="flex items-center justify-center pt-16 pb-4">
       <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
@@ -11,7 +10,9 @@ export function Welcome({ databaseVersion }: { databaseVersion: string }) {
               className="w-full"
             />
           </div>
-          <p className="text-white font-semibold text-sm">Database version: {databaseVersion}</p>
+          <p className="text-white font-semibold text-sm">
+            Database version: {databaseVersion}
+          </p>
         </header>
         <div className="max-w-[300px] w-full space-y-6 px-4">
           <nav className="rounded-3xl border p-4 border-gray-700">
