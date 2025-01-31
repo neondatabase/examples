@@ -19,7 +19,7 @@
     "@prisma/adapter-pg": "^5.18.0",
     "@prisma/client": "^5.18.0",
     "autoprefixer": "10.4.16",
-    "next": "13.5.4",
+    "next": "14.2.21",
     "postcss": "8.4.31",
     "prisma": "^5.18.0",
     "react": "18.2.0",
