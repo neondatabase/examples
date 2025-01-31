@@ -1,7 +1,6 @@
 {
-  "name": "with-react-router",
-  "private": true,
   "type": "module",
+  "name": "with-react-router",
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
