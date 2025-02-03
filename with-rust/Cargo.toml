@@ -5,6 +5,6 @@ edition = "2021"
 
 [dependencies]
 dotenv = "0.15.0"
-openssl = "0.10.66"
+openssl = "0.10.70"
 postgres = "0.19.8"
 postgres-openssl = "0.5.0"
