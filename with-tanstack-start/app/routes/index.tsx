@@ -39,13 +39,12 @@ function Home() {
             Database version: {state.databaseVersion}
           </p>
         </header>
-        <div className="max-w-[300px] w-full space-y-6 px-4">
-          <nav className="rounded-3xl border p-4 border-gray-700">
-            <ul className="flex flex-col gap-4">
+        <nav className="w-full text-center">
+            <ul className="flex flex-col gap-4 text-blue-500">
               {resources.map(({ href, text }) => (
                 <li key={href}>
                   <a
-                    className="p-4 leading-normal hover:underline text-blue-500"
+                    className="hover:underline"
                     href={href}
                     target="_blank"
                     rel="noreferrer"
@@ -56,7 +55,6 @@ function Home() {
               ))}
             </ul>
           </nav>
-        </div>
       </div>
     </main>
   );
