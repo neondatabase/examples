@@ -1,4 +1,29 @@
-export function Welcome({ databaseVersion }: { databaseVersion: string }) {
+import { createFileRoute } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/start";
+import { neon } from "@neondatabase/serverless";
+
+async function getDatabaseVersion() {
+  const sql = neon(`${process.env.DATABASE_URL}`);
+  const response = await sql`SELECT version()`;
+  const { version } = response[0];
+  return version;
+}
+
+const getCount = createServerFn({
+  method: "GET",
+}).handler(async () => {
+  const databaseVersion = await getDatabaseVersion();
+  return { databaseVersion };
+});
+
+export const Route = createFileRoute("/")({
+  component: Home,
+  loader: async () => await getCount(),
+});
+
+function Home() {
+  const state = Route.useLoaderData();
+
   return (
     <main className="flex items-center justify-center pt-16 pb-4">
       <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
@@ -11,7 +36,7 @@ export function Welcome({ databaseVersion }: { databaseVersion: string }) {
             />
           </div>
           <p className="text-white font-semibold text-sm">
-            Database version: {databaseVersion}
+            Database version: {state.databaseVersion}
           </p>
         </header>
         <div className="max-w-[300px] w-full space-y-6 px-4">
@@ -39,8 +64,8 @@ export function Welcome({ databaseVersion }: { databaseVersion: string }) {
 
 const resources = [
   {
-    href: "https://reactrouter.com/docs",
-    text: "React Router Docs",
+    href: "https://tanstack.com/start/latest",
+    text: "TanStack Start Docs",
   },
   {
     href: "https://neon.tech/docs/introduction",
