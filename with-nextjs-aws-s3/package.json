@@ -10,7 +10,7 @@
     "@aws-sdk/client-s3": "^3.588.0",
     "@aws-sdk/s3-request-presigner": "^3.588.0",
     "@neondatabase/serverless": "^0.9.3",
-    "next": "14.2.3",
+    "next": "14.2.21",
     "react": "^18",
     "react-dom": "^18"
   },
