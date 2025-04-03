@@ -1,0 +1,9 @@
+name = "tokio-postgres-on-workers-with-neon"
+main = "build/worker/shim.mjs"
+compatibility_date = "2024-05-01"
+
+[vars]
+POSGTRES_URL="..."
+
+[build]
+command = "cargo install -q worker-build && worker-build --release"
