@@ -41,5 +41,5 @@ npm install
 Run the NestJS application using the following command:
 
 ```
-npm run dev
+npm run start
 ```
