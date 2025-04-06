@@ -10,6 +10,7 @@
     "seed": "ts-node --transpile-only --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.0",
     "@prisma/client": "4.10.1",
     "next": "14.2.21",
     "react": "18.2.0",

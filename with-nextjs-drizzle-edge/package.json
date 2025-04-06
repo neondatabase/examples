@@ -7,7 +7,7 @@
     "fmt": "prettier --write '**/*' --ignore-unknown"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.9.4",
+    "@neondatabase/serverless": "^1.0.0",
     "autoprefixer": "10.4.16",
     "drizzle-orm": "0.38.1",
     "next": "14.2.21",

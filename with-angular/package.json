@@ -8,7 +8,6 @@
     "test": "ng test",
     "serve:ssr:with-angular": "node dist/with-angular/server/server.mjs"
   },
-  "private": true,
   "dependencies": {
     "@angular/animations": "^18.0.0",
     "@angular/common": "^18.0.0",
@@ -20,7 +19,7 @@
     "@angular/platform-server": "^18.0.0",
     "@angular/router": "^18.0.0",
     "@angular/ssr": "^18.0.4",
-    "@neondatabase/serverless": "^0.9.3",
+    "@neondatabase/serverless": "^1.0.0",
     "dotenv": "^16.4.5",
     "express": "^4.18.2",
     "rxjs": "~7.8.0",

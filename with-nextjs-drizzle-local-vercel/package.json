@@ -9,7 +9,7 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.9.4",
+    "@neondatabase/serverless": "^1.0.0",
     "autoprefixer": "10.4.16",
     "drizzle-orm": "0.38.1",
     "next": "^15.1.0",

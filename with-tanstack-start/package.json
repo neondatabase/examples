@@ -1,14 +1,14 @@
 {
-  "name": "with-tanstack-start",
   "type": "module",
   "sideEffects": false,
+  "name": "with-tanstack-start",
   "scripts": {
     "dev": "vinxi dev",
     "build": "vinxi build",
     "start": "vinxi start"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.4",
+    "@neondatabase/serverless": "^1.0.0",
     "@tanstack/react-router": "^1.99.7",
     "@tanstack/start": "^1.99.7",
     "react": "^19.0.0",

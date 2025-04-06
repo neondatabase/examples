@@ -1,8 +1,6 @@
 {
-    "name": "my-neon-page",
-    "private": true,
-    "version": "0.0.0",
     "type": "module",
+    "name": "deploy-with-cloudflare-pages",
     "scripts": {
         "dev": "vite",
         "build": "vite build",
@@ -10,7 +8,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@neondatabase/serverless": "^0.9.4",
+        "@neondatabase/serverless": "^1.0.0",
         "react": "^18.3.1",
         "react-dom": "^18.3.1"
     },

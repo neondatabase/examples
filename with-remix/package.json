@@ -1,7 +1,7 @@
 {
-  "name": "with-remix",
-  "sideEffects": false,
   "type": "module",
+  "sideEffects": false,
+  "name": "with-remix",
   "scripts": {
     "build": "remix vite:build",
     "dev": "remix vite:dev",
@@ -10,7 +10,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.9.3",
+    "@neondatabase/serverless": "^1.0.0",
     "@remix-run/node": "^2.9.2",
     "@remix-run/react": "^2.9.2",
     "@remix-run/serve": "^2.9.2",

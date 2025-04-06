@@ -1,13 +1,13 @@
 {
-  "name": "with-waku",
   "type": "module",
+  "name": "with-waku",
   "scripts": {
     "dev": "waku dev",
     "build": "waku build",
     "start": "waku start"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.9.3",
+    "@neondatabase/serverless": "^1.0.0",
     "react": "19.0.0-beta-e7d213dfb0-20240507",
     "react-dom": "19.0.0-beta-e7d213dfb0-20240507",
     "react-server-dom-webpack": "19.0.0-beta-e7d213dfb0-20240507",

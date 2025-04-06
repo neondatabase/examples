@@ -4,7 +4,7 @@
     "dev": "nodemon src/index.js"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.9.3",
+    "@neondatabase/serverless": "^1.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.17.2",
