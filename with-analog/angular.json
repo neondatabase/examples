@@ -44,9 +44,6 @@
               "buildTarget": "my-app:build:production"
             }
           }
-        },
-        "test": {
-          "builder": "@analogjs/platform:vitest"
         }
       }
     }

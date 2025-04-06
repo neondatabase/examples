@@ -8,12 +8,6 @@
       "request": "launch",
       "preLaunchTask": "npm: start",
       "url": "http://localhost:5173/"
-    },
-    {
-      "name": "ng test",
-      "type": "chrome",
-      "request": "launch",
-      "preLaunchTask": "npm: test"
     }
   ]
 }

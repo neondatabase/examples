@@ -5,7 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   standalone: true,
-  template: `{{ data().version }}`,
+  template: `{{ data()['version'] }}`,
 })
 export default class BlogComponent {
   data = toSignal(injectLoad<typeof load>(), { requireSync: true });
