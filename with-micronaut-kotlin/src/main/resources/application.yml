@@ -4,10 +4,10 @@ micronaut:
   
 datasources:
   default:
-    url: ${JDBC_DATABASE_URL:`postgresql://user:password@endpoint.neon.tech:5432/dbname?sslmode=require`}
+    url: ${JDBC_DATABASE_URL:"postgresql://user:password@endpoint.neon.tech:5432/dbname?sslmode=require"}
     driverClassName: org.postgresql.Driver
-    username: ${JDBC_DATABASE_USERNAME:`user`}
-    password: ${JDBC_DATABASE_PASSWORD:`password`}
+    username: ${JDBC_DATABASE_USERNAME:"user"}
+    password: ${JDBC_DATABASE_PASSWORD:"password"}
     dialect: POSTGRES
 
 flyway:
