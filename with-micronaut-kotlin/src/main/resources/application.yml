@@ -1,0 +1,16 @@
+micronaut:
+  application:
+    name: micronautKotlinNeon
+  
+datasources:
+  default:
+    url: ${JDBC_DATABASE_URL:"postgresql://user:password@endpoint.neon.tech:5432/dbname?sslmode=require"}
+    driverClassName: org.postgresql.Driver
+    username: ${JDBC_DATABASE_USERNAME:"user"}
+    password: ${JDBC_DATABASE_PASSWORD:"password"}
+    dialect: POSTGRES
+
+flyway:
+  datasources:
+    default:
+      enabled: true
