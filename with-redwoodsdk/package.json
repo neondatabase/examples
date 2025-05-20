@@ -1,0 +1,43 @@
+{
+  "name": "@redwoodjs/starter-minimal",
+  "version": "1.0.0",
+  "description": "A bare-bones RedwoodSDK starter",
+  "main": "index.js",
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "dev": "NODE_ENV=${NODE_ENV:-development} vite dev",
+    "dev:init": "rw-scripts dev-init",
+    "preview": "vite preview",
+    "worker:run": "rw-scripts worker-run",
+    "clean": "npm run clean:vite",
+    "clean:vite": "rm -rf ./node_modules/.vite",
+    "release": "rw-scripts ensure-deploy-env && npm run clean && npm run build && RWSDK_DEPLOY=1 wrangler deploy",
+    "generate": "rw-scripts ensure-env && wrangler types",
+    "check": "npm run generate && npm run types",
+    "types": "tsc"
+  },
+  "dependencies": {
+    "postgres": "^3.4.5",
+    "rwsdk": "0.0.81"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "typescript": "^5.8.3",
+    "vite": "^6.2.6",
+    "wrangler": "^4.14.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "workerd"
+    ]
+  }
+}
