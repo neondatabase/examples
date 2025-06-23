@@ -24,7 +24,7 @@ JDBC_DATABASE_PASSWORD=<password>
 
 ```bash
 # Using the Gradle wrapper
-./gradlew run
+./gradlew clean build bootRun
 ```
 
 The application will start on port 8080. You can test it with:
