@@ -49,8 +49,91 @@ Run the command below to install project dependencies:
 pip install -r requirements.txt
 ```
 
-Run the Python application using the following command:
+## Running the examples
 
+The project includes four Python scripts in the root directory that demonstrate how to perform basic asynchronous CRUD (Create, Read, Update, Delete) operations using `asyncpg`.
+
+### 1. Create a table and insert data
+
+The `create_table.py` script connects to your Neon database, drops the `books` table if it exists, creates a new `books` table, and populates it with four records.
+
+Run the script from your terminal:
+
+```bash
+python create_table.py
 ```
-python neon-connect.py
+
+You should see the following output, confirming that the connection was successful and the asynchronous operations were completed:
+
+```text
+Connection established
+Finished dropping table (if it existed).
+Finished creating table.
+Inserted a single book.
+Inserted 3 rows of data.
 ```
+
+### 2. Read data
+
+The `read_data.py` script fetches all records from the `books` table and prints them to the console.
+
+Run the script to verify the data was inserted correctly:
+
+```bash
+python read_data.py
+```
+
+Output:
+
+```text
+Connection established
+
+--- Book Library ---
+ID: 2, Title: The Hobbit, Author: J.R.R. Tolkien, Year: 1937, In Stock: True
+ID: 3, Title: 1984, Author: George Orwell, Year: 1949, In Stock: True
+ID: 1, Title: The Catcher in the Rye, Author: J.D. Salinger, Year: 1951, In Stock: True
+ID: 4, Title: Dune, Author: Frank Herbert, Year: 1965, In Stock: False
+--------------------
+```
+> `asyncpg` returns records that can be accessed like dictionaries (e.g., `row['title']`), which is how they are printed in the script.
+
+### 3. Update data
+
+The `update_data.py` script updates the `in_stock` status for the book titled 'Dune' from `False` to `True`.
+
+Run the script to perform the update:
+
+```bash
+python update_data.py
+```
+
+Output:
+```text
+Connection established
+Updated stock status for 'Dune'.
+```
+
+You can run `python read_data.py` again to see the change reflected in the data.
+
+### 4. Delete data
+
+The `delete_data.py` script deletes the book titled '1984' from the table.
+
+Run the script to perform the deletion:
+
+```bash
+python delete_data.py
+```
+
+Output:
+```text
+Connection established
+Deleted the book '1984' from the table.
+```
+
+Run `python read_data.py` one last time to verify that the record has been removed.
+
+## Further Reading
+
+*   [Neon Documentation](https://neon.com/docs/guides/python)
+*   [asyncpg Documentation](https://magicstack.github.io/asyncpg/current/)
