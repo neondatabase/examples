@@ -13,7 +13,7 @@ This example demonstrates how to connect to a Neon database from a Rust applicat
 Run the following command to clone the example repository:
 
 ```bash
-npx degit neondatabase/examples/with-rust-postgres ./neon-rust-postgres
+npx degit neondatabase/examples/with-rust-postgres neon-rust-postgres
 cd neon-rust-postgres
 ```
 
@@ -130,6 +130,6 @@ Run `cargo run --bin read_data` one last time to verify that the record has been
 
 ## Further Reading
 
--   [Neon Documentation: Connect with Rust](https://neon.tech/docs/guides/rust)
+-   [Neon Documentation: Connect with Rust](https://neon.com/docs/guides/rust)
 -   [`postgres` crate documentation](https://docs.rs/postgres/latest/postgres/)
 -   [The Rust Programming Language Book](https://doc.rust-lang.org/book/)
