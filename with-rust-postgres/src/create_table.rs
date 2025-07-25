@@ -5,6 +5,8 @@ use postgres_openssl::MakeTlsConnector;
 use std::env;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+
+    // Load environment variables from .env file
     dotenv()?;
     let conn_string = env::var("DATABASE_URL")?;
 
@@ -56,7 +58,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Commit the transaction
     transaction.commit()?;
-    println!("Inserted 3 rows of data in a single transaction.");
+    println!("Inserted 3 rows of data.");
 
     Ok(())
 }
