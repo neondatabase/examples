@@ -6,10 +6,15 @@
 
 # Getting started with Neon and Python using psycopg2
 
+This example demonstrates how to connect to a Neon database from a Python application using the synchronous [`psycopg2`](https://pypi.org/project/psycopg2/) library. The application is structured with multiple scripts to perform basic CRUD (Create, Read, Update, Delete) operations.
+
 ## Clone the repository
+
+Run the following command to clone the example repository:
 
 ```bash
 npx degit neondatabase/examples/with-python-psycopg2 ./with-python-psycopg2
+cd with-python-psycopg2
 ```
 
 Run the command below to copy the `.env.example` file:
@@ -20,10 +25,10 @@ cp .env.example .env
 
 ## Store your Neon credentials
 
-Store your Neon credentials in your `.env` file.
+Open the `.env` file you just created and add your Neon database connection string.
 
 ```
-DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 ```
 
 - `user` is the database user.
@@ -31,8 +36,9 @@ DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb
 - `endpoint_hostname` is the host with neon.tech as the [TLD](https://www.cloudflare.com/en-gb/learning/dns/top-level-domain/).
 - `dbname` is the name of the database. “neondb” is the default database created with each Neon project.
 - `?sslmode=require` an optional query parameter that enforces the [SSL](https://www.cloudflare.com/en-gb/learning/ssl/what-is-ssl/) mode while connecting to the Postgres instance for better security.
+- `&channel_binding=require` enforces channel binding for additional security.
 
-**Important**: To ensure the security of your data, never expose your Neon credentials to the browser.
+**Important**: To ensure the security of your data, never commit your `.env` file to version control or expose your Neon credentials in client-side code.
 
 Run one of the following commands to create a virtual environment:
 
