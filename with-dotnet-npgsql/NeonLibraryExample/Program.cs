@@ -1,141 +1,121 @@
-using System;
+﻿using Microsoft.Extensions.Configuration;
 using Npgsql;
-using Microsoft.Extensions.Configuration;
+using System.Text;
 
-class Program
+// --- 1. Read configuration and build connection string ---
+var config = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json")
+    .Build();
+
+var connectionString = config.GetConnectionString("DefaultConnection");
+
+// --- 2. Establish connection and perform CRUD operations ---
+await using var conn = new NpgsqlConnection(connectionString);
+try
 {
-    static void Main()
+    await conn.OpenAsync();
+    Console.WriteLine("Connection established");
+
+    // --- CREATE a table and INSERT data ---
+    await using (var cmd = new NpgsqlCommand())
     {
-        // Load configuration and build connection string
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json")
-            .Build();
+        cmd.Connection = conn;
 
-        string connString = configuration.GetConnectionString("DefaultConnection");
+        cmd.CommandText = "DROP TABLE IF EXISTS books;";
+        await cmd.ExecuteNonQueryAsync();
+        Console.WriteLine("Finished dropping table (if it existed).");
 
-        try
+        cmd.CommandText = @"
+            CREATE TABLE books (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                author VARCHAR(255),
+                publication_year INT,
+                in_stock BOOLEAN DEFAULT TRUE
+            );";
+        await cmd.ExecuteNonQueryAsync();
+        Console.WriteLine("Finished creating table.");
+
+        cmd.CommandText = "INSERT INTO books (title, author, publication_year, in_stock) VALUES (@t1, @a1, @y1, @s1);";
+        cmd.Parameters.AddWithValue("t1", "The Catcher in the Rye");
+        cmd.Parameters.AddWithValue("a1", "J.D. Salinger");
+        cmd.Parameters.AddWithValue("y1", 1951);
+        cmd.Parameters.AddWithValue("s1", true);
+        await cmd.ExecuteNonQueryAsync();
+        Console.WriteLine("Inserted a single book.");
+        cmd.Parameters.Clear();
+
+        var booksToInsert = new[] {
+            new { Title = "The Hobbit", Author = "J.R.R. Tolkien", Year = 1937, InStock = true },
+            new { Title = "1984", Author = "George Orwell", Year = 1949, InStock = true },
+            new { Title = "Dune", Author = "Frank Herbert", Year = 1965, InStock = false }
+        };
+
+        foreach (var book in booksToInsert)
         {
-            // Create table
-            using (var conn = new NpgsqlConnection(connString))
-            {
-                Console.Out.WriteLine("Opening connection");
-                conn.Open();
-                using (var command = new NpgsqlCommand(
-                    @"DROP TABLE IF EXISTS books;
-          CREATE TABLE books (
-              id SERIAL PRIMARY KEY,
-              title VARCHAR(100) NOT NULL,
-              author VARCHAR(100) NOT NULL,
-              year_published INTEGER
-          )", conn))
-                {
-                    command.ExecuteNonQuery();
-                    Console.Out.WriteLine("Finished creating table");
-                }
-            }
-
-            // Insert books
-            using (var conn = new NpgsqlConnection(connString))
-            {
-                Console.Out.WriteLine("Opening connection");
-                conn.Open();
-
-                using (var command = new NpgsqlCommand(
-                    @"INSERT INTO books (title, author, year_published)
-          VALUES (@t1, @a1, @y1), (@t2, @a2, @y2)", conn))
-                {
-                    command.Parameters.AddWithValue("t1", "The Great Gatsby");
-                    command.Parameters.AddWithValue("a1", "F. Scott Fitzgerald");
-                    command.Parameters.AddWithValue("y1", 1925);
-
-                    command.Parameters.AddWithValue("t2", "1984");
-                    command.Parameters.AddWithValue("a2", "George Orwell");
-                    command.Parameters.AddWithValue("y2", 1949);
-
-                    int nRows = command.ExecuteNonQuery();
-                    Console.Out.WriteLine($"Number of books added={nRows}");
-                }
-            }
-
-            // Read data
-            using (var conn = new NpgsqlConnection(connString))
-            {
-                Console.Out.WriteLine("Opening connection");
-                conn.Open();
-
-                using (var command = new NpgsqlCommand("SELECT * FROM books", conn))
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        Console.WriteLine(
-                            $"Reading from table=({reader.GetInt32(0)}, {reader.GetString(1)}, " +
-                            $"{reader.GetString(2)}, {reader.GetInt32(3)})");
-                    }
-                }
-            }
-
-            // Update data
-            using (var conn = new NpgsqlConnection(connString))
-            {
-                Console.Out.WriteLine("Opening connection");
-                conn.Open();
-
-                using (var command = new NpgsqlCommand(
-                    @"UPDATE books
-          SET year_published = @year
-          WHERE id = @id", conn))
-                {
-                    command.Parameters.AddWithValue("id", 1);
-                    command.Parameters.AddWithValue("year", 1926);
-
-                    int nRows = command.ExecuteNonQuery();
-                    Console.Out.WriteLine($"Number of books updated={nRows}");
-                }
-            }
-
-            // Delete data
-            using (var conn = new NpgsqlConnection(connString))
-            {
-                Console.Out.WriteLine("Opening connection");
-                conn.Open();
-
-                using (var command = new NpgsqlCommand(
-                    "DELETE FROM books WHERE id = @id", conn))
-                {
-                    command.Parameters.AddWithValue("id", 2);
-
-                    int nRows = command.ExecuteNonQuery();
-                    Console.Out.WriteLine($"Number of books deleted={nRows}");
-                }
-            }
-
-            // Read some books to verify the changes
-            using (var conn = new NpgsqlConnection(connString))
-            {
-                Console.Out.WriteLine("Opening connection");
-                conn.Open();
-
-                using (var command = new NpgsqlCommand("SELECT * FROM books", conn))
-                using (var reader = command.ExecuteReader())
-                {
-                    Console.WriteLine("\nFinal table contents:");
-                    while (reader.Read())
-                    {
-                        Console.WriteLine(
-                            $"Reading from table=({reader.GetInt32(0)}, {reader.GetString(1)}, " +
-                            $"{reader.GetString(2)}, {reader.GetInt32(3)})");
-                    }
-                }
-            }
+            cmd.CommandText = "INSERT INTO books (title, author, publication_year, in_stock) VALUES (@title, @author, @year, @in_stock);";
+            cmd.Parameters.AddWithValue("title", book.Title);
+            cmd.Parameters.AddWithValue("author", book.Author);
+            cmd.Parameters.AddWithValue("year", book.Year);
+            cmd.Parameters.AddWithValue("in_stock", book.InStock);
+            await cmd.ExecuteNonQueryAsync();
+            cmd.Parameters.Clear();
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"An error occurred: {ex.Message}");
-        }
-
-        Console.WriteLine("Press RETURN to exit");
-        Console.ReadLine();
+        Console.WriteLine("Inserted 3 rows of data.");
     }
+
+    // --- READ the initial data ---
+    await ReadDataAsync(conn, "Book Library");
+
+    // --- UPDATE data ---
+    await using (var cmd = new NpgsqlCommand("UPDATE books SET in_stock = @in_stock WHERE title = @title;", conn))
+    {
+        cmd.Parameters.AddWithValue("in_stock", true);
+        cmd.Parameters.AddWithValue("title", "Dune");
+        await cmd.ExecuteNonQueryAsync();
+        Console.WriteLine("Updated stock status for 'Dune'.");
+    }
+
+    // --- READ data after update ---
+    await ReadDataAsync(conn, "Book Library After Update");
+
+    // --- DELETE data ---
+    await using (var cmd = new NpgsqlCommand("DELETE FROM books WHERE title = @title;", conn))
+    {
+        cmd.Parameters.AddWithValue("title", "1984");
+        await cmd.ExecuteNonQueryAsync();
+        Console.WriteLine("Deleted the book '1984' from the table.");
+    }
+
+    // --- READ data after delete ---
+    await ReadDataAsync(conn, "Book Library After Delete");
+
+}
+catch (Exception e)
+{
+    Console.WriteLine("Connection failed.");
+    Console.WriteLine(e.Message);
+}
+
+// Helper function to read data and print it to the console
+async Task ReadDataAsync(NpgsqlConnection conn, string title)
+{
+    Console.WriteLine($"\n--- {title} ---");
+    await using var cmd = new NpgsqlCommand("SELECT * FROM books ORDER BY publication_year;", conn);
+    await using var reader = await cmd.ExecuteReaderAsync();
+
+    var books = new StringBuilder();
+    while (await reader.ReadAsync())
+    {
+        books.AppendLine(
+            $"ID: {reader.GetInt32(0)}, " +
+            $"Title: {reader.GetString(1)}, " +
+            $"Author: {reader.GetString(2)}, " +
+            $"Year: {reader.GetInt32(3)}, " +
+            $"In Stock: {reader.GetBoolean(4)}"
+        );
+    }
+    Console.WriteLine(books.ToString().TrimEnd());
+    Console.WriteLine("--------------------\n");
 }
