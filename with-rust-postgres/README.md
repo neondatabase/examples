@@ -13,7 +13,7 @@ This example demonstrates how to connect to a Neon database from a Rust applicat
 Run the following command to clone the example repository:
 
 ```bash
-npx degit neondatabase/examples/with-rust-postgres neon-rust-postgres
+npx degit neondatabase/examples/with-rust-postgres ./neon-rust-postgres
 cd neon-rust-postgres
 ```
 

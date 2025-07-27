@@ -13,7 +13,7 @@ This example demonstrates how to connect to a Neon database from a Java applicat
 Run the following command to clone the example repository:
 
 ```bash
-npx degit neondatabase/examples/with-java-jdbc with-java-jdbc
+npx degit neondatabase/examples/with-java-jdbc ./with-java-jdbc
 cd with-java-jdbc
 ```
 
