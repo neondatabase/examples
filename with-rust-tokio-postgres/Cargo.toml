@@ -1,0 +1,27 @@
+[package]
+name = "with-rust-tokio-postgres"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dotenvy = "0.15.7"
+openssl = "0.10.73"
+postgres-openssl = "0.5.1"
+tokio = { version = "1.46.1", features = ["full"] }
+tokio-postgres = "0.7.13"
+
+[[bin]]
+name = "create_table"
+path = "src/create_table.rs"
+
+[[bin]]
+name = "read_data"
+path = "src/read_data.rs"
+
+[[bin]]
+name = "update_data"
+path = "src/update_data.rs"
+
+[[bin]]
+name = "delete_data"
+path = "src/delete_data.rs"

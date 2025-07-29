@@ -10,6 +10,7 @@
 
 ```bash
 npx degit neondatabase/examples/with-python-asyncpg ./with-python-asyncpg
+cd with-python-asyncpg
 ```
 
 Run the command below to copy the `.env.example` file:

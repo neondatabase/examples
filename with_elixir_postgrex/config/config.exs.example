@@ -1,0 +1,8 @@
+import Config
+
+config :with_elixir_postgrex,
+  username: "[user]",
+  password: "[password]",
+  hostname: "[neon_hostname]",
+  database: "[dbname]",
+  ssl: [cacerts: :public_key.cacerts_get()]
