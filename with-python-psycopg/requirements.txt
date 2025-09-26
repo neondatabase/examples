@@ -1,0 +1,2 @@
+psycopg[binary]
+python-dotenv
