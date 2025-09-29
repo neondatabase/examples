@@ -27,15 +27,17 @@ cp .env.example .env
 
 Open the `.env` file you just created and add your Neon database connection string. The connection string for the PostgreSQL JDBC driver must start with `jdbc:postgresql://`.
 
+![Java connection string from Neon Console](./java_connection_details.png)
+
 ```
-DATABASE_URL="jdbc:postgresql://[user]:[password]@[neon_hostname]/[dbname]?sslmode=require&channelBinding=require"
+DATABASE_URL="jdbc:postgresql://[neon_hostname]/[dbname]?user=[user]&password=[password]&sslmode=require&channelBinding=require"
 ```
 
 - `user` is the database user.
 - `password` is the database user’s password.
-- `endpoint_hostname` is the host with neon.tech as the [TLD](https://www.cloudflare.com/en-gb/learning/dns/top-level-domain/).
+- `neon_hostname` is the host with neon.tech as the [TLD](https://www.cloudflare.com/en-gb/learning/dns/top-level-domain/).
 - `dbname` is the name of the database. “neondb” is the default database created with each Neon project.
-- `?sslmode=require` enforces the [SSL](https://www.cloudflare.com/en-gb/learning/ssl/what-is-ssl/) mode while connecting to the Postgres instance for better security.
+- `&sslmode=require` enforces the [SSL](https://www.cloudflare.com/en-gb/learning/ssl/what-is-ssl/) mode while connecting to the Postgres instance for better security.
 - `&channelBinding=require` enforces channel binding for additional security when using the PostgreSQL JDBC driver.
 
 **Important**: To ensure the security of your data, never commit your `.env` file to version control.
