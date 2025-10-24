@@ -1,5 +1,5 @@
 {
-  "name": "@redwoodjs/starter-minimal",
+  "name": "@redwoodjs/starter",
   "version": "1.0.0",
   "description": "A bare-bones RedwoodSDK starter",
   "main": "index.js",
@@ -10,7 +10,7 @@
   "private": true,
   "scripts": {
     "build": "vite build",
-    "dev": "NODE_ENV=${NODE_ENV:-development} vite dev",
+    "dev": "vite dev",
     "dev:init": "rw-scripts dev-init",
     "preview": "vite preview",
     "worker:run": "rw-scripts worker-run",
@@ -22,16 +22,21 @@
     "types": "tsc"
   },
   "dependencies": {
-    "postgres": "^3.4.5",
-    "rwsdk": "0.0.81"
+    "postgres": "^3.4.7",
+    "react": "19.3.0-canary-4fdf7cf2-20251003",
+    "react-dom": "19.3.0-canary-4fdf7cf2-20251003",
+    "react-server-dom-webpack": "19.3.0-canary-4fdf7cf2-20251003",
+    "rwsdk": "1.0.0-beta.15"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
-    "typescript": "^5.8.3",
-    "vite": "^6.2.6",
-    "wrangler": "^4.14.1"
+    "@cloudflare/vite-plugin": "1.13.10",
+    "@cloudflare/workers-types": "4.20251004.0",
+    "@types/node": "~24.5.2",
+    "@types/react": "19.1.2",
+    "@types/react-dom": "19.1.2",
+    "typescript": "5.8.3",
+    "vite": "7.1.9",
+    "wrangler": "4.42.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
