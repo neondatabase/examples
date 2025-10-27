@@ -11,19 +11,13 @@ class BookController(private val bookRepository: BookRepository) {
 
     @Get
     @ExecuteOn(TaskExecutors.IO)
-    fun getAll(): List<Book> {
-        return bookRepository.findAll().toList()
-    }
+    fun getAll(): List<Book> = bookRepository.findAll().toList()
 
     @Get("/{id}")
     @ExecuteOn(TaskExecutors.IO)
-    fun getById(id: Long): Book? {
-        return bookRepository.findById(id).orElse(null)
-    }
+    fun getById(id: Long): Book? = bookRepository.findById(id).orElse(null)
 
     @Post
     @ExecuteOn(TaskExecutors.IO)
-    fun save(@Body book: Book): Book {
-        return bookRepository.save(book)
-    }
+    fun save(@Body book: Book): Book = bookRepository.save(book)
 }
