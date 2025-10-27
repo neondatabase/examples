@@ -1,33 +1,15 @@
-# Gradle
-.gradle/
+Thumbs.db
+.DS_Store
+.gradle
 build/
-
-# IntelliJ IDEA
-.idea/
-*.iml
-*.iws
-*.ipr
+target/
 out/
-
-# VS Code
-.vscode/
-
-# Environment variables
-.env
-
-# Logs
-*.log
-
-# Compiled class files
-*.class
-
-# Package files
-*.jar
-*.war
-*.ear
-*.zip
-*.tar.gz
-*.rar
-
-# Micronaut
 .micronaut/
+.idea
+*.iml
+*.ipr
+*.iws
+.project
+.settings
+.classpath
+.factorypath

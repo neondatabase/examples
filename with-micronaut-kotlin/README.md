@@ -4,26 +4,30 @@ This example demonstrates how to connect a Micronaut Kotlin application to a Neo
 
 ## Prerequisites
 
-- [JDK 11+](https://www.oracle.com/java/technologies/javase-downloads.html)
+- [JDK 21](https://www.oracle.com/java/technologies/javase-downloads.html)
 - [Gradle](https://gradle.org/install/) (or use the included Gradle wrapper)
-- [Neon account](https://neon.tech)
+- [Neon account](https://neon.com)
 
 ## Setup
 
 1. Create a Neon project from the [Neon Console](https://console.neon.tech)
 2. Get your connection string from the Neon Console
-3. Create a `.env` file in the project root with your Neon credentials:
+3. Update the datasource configuration in `src/main/resources/application.yml` with your Neon database credentials:
 
-```
-JDBC_DATABASE_URL=jdbc:postgresql://<user>:<password>@<endpoint_hostname>.neon.tech:<port>/<dbname>?sslmode=require
-JDBC_DATABASE_USERNAME=<user>
-JDBC_DATABASE_PASSWORD=<password>
+```yaml
+datasources:
+  default:
+    url: "jdbc:postgresql://endpoint.neon.tech/dbname?sslmode=require&channelBinding=require" # replace with your Neon endpoint and database name
+    username: "<your-db-username>" # Replace with your Neon database username
+    password: "<your-db-password>" # Replace with your Neon database password
+    driver-class-name: org.postgresql.Driver
+    db-type: postgres
+    dialect: POSTGRES
 ```
 
-## Running the application
+## Run the application
 
 ```bash
-# Using the Gradle wrapper
 ./gradlew run
 ```
 
@@ -37,7 +41,7 @@ curl http://localhost:8080/books
 curl http://localhost:8080/books/1
 
 # Create a new book
-curl -X POST -H "Content-Type: application/json" -d '{"title":"The Great Gatsby","author":"F. Scott Fitzgerald"}' http://localhost:8080/books
+curl -X POST http://localhost:8080/books -H "Content-Type: application/json" -d '{"title":"The Great Gatsby","author":"F. Scott Fitzgerald"}'
 ```
 
 ## Project Structure
@@ -51,4 +55,9 @@ curl -X POST -H "Content-Type: application/json" -d '{"title":"The Great Gatsby"
 ## Learn More
 
 - [Neon Documentation](https://neon.tech/docs)
-- [Micronaut Documentation](https://micronaut.io/documentation/)
+- [Micronaut Documentation](https://docs.micronaut.io/)
+- [Micronaut API Reference](https://docs.micronaut.io/4.10.7/api/)
+- [Micronaut Schema Migration with Flyway](https://guides.micronaut.io/latest/micronaut-flyway-maven-java.html)
+- [Micronaut Data JDBC documentation](https://micronaut-projects.github.io/micronaut-data/latest/guide/index.html#jdbc)
+- [Micronaut Hikari JDBC Connection Pool documentation](https://micronaut-projects.github.io/micronaut-sql/latest/guide/index.html#jdbc)
+- [Flyway](https://www.red-gate.com/products/flyway/community/)
