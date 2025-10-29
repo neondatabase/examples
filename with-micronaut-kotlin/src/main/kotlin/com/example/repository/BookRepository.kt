@@ -6,6 +6,4 @@ import io.micronaut.data.model.query.builder.sql.Dialect
 import io.micronaut.data.repository.CrudRepository
 
 @JdbcRepository(dialect = Dialect.POSTGRES)
-interface BookRepository : CrudRepository<Book, Long> {
-    fun findByTitleContains(title: String): List<Book>
-}
+interface BookRepository : CrudRepository<Book, Long>
