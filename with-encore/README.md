@@ -22,31 +22,7 @@ npx degit neondatabase/examples/with-encore ./with-encore
 cd with-encore
 ```
 
-## Store your Neon credentials
-
-Set your Neon database connection string as a secret using Encore's built-in secrets manager:
-
-```bash
-encore secret set --type local DatabaseURL
-```
-
-When prompted, paste your Neon connection string. You can find it in the **Connection Details** section of your Neon project dashboard.
-
-The connection string format:
-
-```
-postgresql://<user>:<password>@<endpoint_hostname>.neon.tech:<port>/<dbname>?sslmode=require
-```
-
-- `user` is the database user
-- `password` is the database user's password
-- `endpoint_hostname` is the host with neon.tech as the [TLD](https://www.cloudflare.com/en-gb/learning/dns/top-level-domain/)
-- `dbname` is the name of the database (default: "neondb")
-- `?sslmode=require` enforces SSL mode for secure connections
-
-**Important**: Never expose your Neon credentials to the browser or in your code.
-
-## Run the application
+## Run the application locally
 
 Start the Encore development server:
 
@@ -54,7 +30,9 @@ Start the Encore development server:
 encore run
 ```
 
-The app will be available at `http://localhost:4000` and the local development dashboard at `http://localhost:9400`.
+Encore automatically provisions a **local PostgreSQL database** for development. The app will be available at `http://localhost:4000` and the local development dashboard at `http://localhost:9400`.
+
+> **Note:** Local development uses Encore's built-in Postgres database, not Neon. To use Neon, deploy your app to Encore Cloud and configure Neon as your database provider. See the "Using Neon in Production" section below.
 
 ## Test the API
 
@@ -76,9 +54,29 @@ curl http://localhost:4000/messages
 
 - `hello/` - The service directory
   - `encore.service.ts` - Service definition
-  - `db.ts` - Database configuration with Neon connection
+  - `db.ts` - Database configuration
   - `hello.ts` - API endpoints
   - `migrations/` - Database migrations
+
+## Using Neon in production
+
+To use Neon for your production database:
+
+1. **Create a Neon account** at [console.neon.tech](https://console.neon.tech)
+2. **Deploy to Encore Cloud:**
+   ```bash
+   git add -A
+   git commit -m "Initial commit"
+   git push encore
+   ```
+3. **Configure Neon in Encore Cloud:**
+   - Get your Neon API key from the [Neon Console](https://console.neon.tech/app/settings/api-keys)
+   - Add it in the [Encore Dashboard](https://app.encore.cloud) under **Settings → Integrations → Neon**
+   - Create a production environment and select Neon as the database provider
+
+Encore will automatically create a Neon database in your account, run migrations, and configure all connections. Preview environments will get their own Neon database branches automatically.
+
+For detailed instructions, see the [Neon + Encore Integration Guide](https://neon.tech/docs/guides/encore).
 
 ## Learn more
 
