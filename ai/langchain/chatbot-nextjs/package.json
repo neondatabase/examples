@@ -22,7 +22,7 @@
     "clsx": "^2.1.1",
     "langchain": "^0.2.3",
     "lucide-react": "^0.394.0",
-    "next": "14.2.26",
+    "next": "14.2.35",
     "react": "^18",
     "react-dom": "^18",
     "react-markdown": "^9.0.1",
