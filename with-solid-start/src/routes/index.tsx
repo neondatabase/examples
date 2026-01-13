@@ -1,7 +1,7 @@
 import { neon } from "@neondatabase/serverless";
-import { createAsync, cache } from "@solidjs/router";
+import { createAsync, query } from "@solidjs/router";
 
-const getVersion = cache(async () => {
+const getVersion = query(async () => {
   "use server";
   const sql = neon(`${process.env.DATABASE_URL}`);
   const response = await sql`SELECT version()`;
@@ -10,7 +10,7 @@ const getVersion = cache(async () => {
 }, "version");
 
 export const route = {
-  load: () => getVersion(),
+  preload: () => getVersion(),
 };
 
 export default function Page() {

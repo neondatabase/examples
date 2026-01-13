@@ -23,7 +23,7 @@ cp .env.example .env
 Store your Neon credentials in your `.env` file.
 
 ```
-DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 ```
 
 - `user` is the database user.
@@ -31,6 +31,7 @@ DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb
 - `endpoint_hostname` is the host with neon.tech as the [TLD](https://www.cloudflare.com/en-gb/learning/dns/top-level-domain/).
 - `dbname` is the name of the database. “neondb” is the default database created with each Neon project.
 - `?sslmode=require` an optional query parameter that enforces the [SSL](https://www.cloudflare.com/en-gb/learning/ssl/what-is-ssl/) mode while connecting to the Postgres instance for better security.
+- `&channel_binding=require` an optional query parameter that enforces channel binding for enhanced security.
 
 **Important**: To ensure the security of your data, never expose your Neon credentials to the browser.
 
