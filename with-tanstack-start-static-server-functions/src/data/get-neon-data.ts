@@ -37,7 +37,7 @@ export const getPostgresJsData = createServerFn({ method: "GET" })
   });
 
 // node-postgres
-import { Pool } from "node_modules/@types/pg";
+import { Pool } from "pg";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,

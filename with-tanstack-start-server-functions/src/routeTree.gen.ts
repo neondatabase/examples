@@ -8,102 +8,102 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root.tsx";
-import { Route as ServerlessDriverRouteImport } from "./routes/serverless-driver.tsx";
-import { Route as PostgresJsRouteImport } from "./routes/postgres-js.tsx";
-import { Route as NodePostgresRouteImport } from "./routes/node-postgres.tsx";
-import { Route as IndexRouteImport } from "./routes/index";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as ServerlessDriverRouteImport } from './routes/serverless-driver'
+import { Route as PostgresJsRouteImport } from './routes/postgres-js'
+import { Route as NodePostgresRouteImport } from './routes/node-postgres'
+import { Route as IndexRouteImport } from './routes/index'
 
 const ServerlessDriverRoute = ServerlessDriverRouteImport.update({
-  id: "/serverless-driver",
-  path: "/serverless-driver",
+  id: '/serverless-driver',
+  path: '/serverless-driver',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const PostgresJsRoute = PostgresJsRouteImport.update({
-  id: "/postgres-js",
-  path: "/postgres-js",
+  id: '/postgres-js',
+  path: '/postgres-js',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const NodePostgresRoute = NodePostgresRouteImport.update({
-  id: "/node-postgres",
-  path: "/node-postgres",
+  id: '/node-postgres',
+  path: '/node-postgres',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/node-postgres": typeof NodePostgresRoute;
-  "/postgres-js": typeof PostgresJsRoute;
-  "/serverless-driver": typeof ServerlessDriverRoute;
+  '/': typeof IndexRoute
+  '/node-postgres': typeof NodePostgresRoute
+  '/postgres-js': typeof PostgresJsRoute
+  '/serverless-driver': typeof ServerlessDriverRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/node-postgres": typeof NodePostgresRoute;
-  "/postgres-js": typeof PostgresJsRoute;
-  "/serverless-driver": typeof ServerlessDriverRoute;
+  '/': typeof IndexRoute
+  '/node-postgres': typeof NodePostgresRoute
+  '/postgres-js': typeof PostgresJsRoute
+  '/serverless-driver': typeof ServerlessDriverRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/node-postgres": typeof NodePostgresRoute;
-  "/postgres-js": typeof PostgresJsRoute;
-  "/serverless-driver": typeof ServerlessDriverRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/node-postgres': typeof NodePostgresRoute
+  '/postgres-js': typeof PostgresJsRoute
+  '/serverless-driver': typeof ServerlessDriverRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/node-postgres" | "/postgres-js" | "/serverless-driver";
-  fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/node-postgres" | "/postgres-js" | "/serverless-driver";
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/node-postgres' | '/postgres-js' | '/serverless-driver'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/node-postgres' | '/postgres-js' | '/serverless-driver'
   id:
-    | "__root__"
-    | "/"
-    | "/node-postgres"
-    | "/postgres-js"
-    | "/serverless-driver";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/node-postgres'
+    | '/postgres-js'
+    | '/serverless-driver'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  NodePostgresRoute: typeof NodePostgresRoute;
-  PostgresJsRoute: typeof PostgresJsRoute;
-  ServerlessDriverRoute: typeof ServerlessDriverRoute;
+  IndexRoute: typeof IndexRoute
+  NodePostgresRoute: typeof NodePostgresRoute
+  PostgresJsRoute: typeof PostgresJsRoute
+  ServerlessDriverRoute: typeof ServerlessDriverRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/serverless-driver": {
-      id: "/serverless-driver";
-      path: "/serverless-driver";
-      fullPath: "/serverless-driver";
-      preLoaderRoute: typeof ServerlessDriverRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/postgres-js": {
-      id: "/postgres-js";
-      path: "/postgres-js";
-      fullPath: "/postgres-js";
-      preLoaderRoute: typeof PostgresJsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/node-postgres": {
-      id: "/node-postgres";
-      path: "/node-postgres";
-      fullPath: "/node-postgres";
-      preLoaderRoute: typeof NodePostgresRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+    '/serverless-driver': {
+      id: '/serverless-driver'
+      path: '/serverless-driver'
+      fullPath: '/serverless-driver'
+      preLoaderRoute: typeof ServerlessDriverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/postgres-js': {
+      id: '/postgres-js'
+      path: '/postgres-js'
+      fullPath: '/postgres-js'
+      preLoaderRoute: typeof PostgresJsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/node-postgres': {
+      id: '/node-postgres'
+      path: '/node-postgres'
+      fullPath: '/node-postgres'
+      preLoaderRoute: typeof NodePostgresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -112,16 +112,16 @@ const rootRouteChildren: RootRouteChildren = {
   NodePostgresRoute: NodePostgresRoute,
   PostgresJsRoute: PostgresJsRoute,
   ServerlessDriverRoute: ServerlessDriverRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx";
-import type { createStart } from "@tanstack/react-start";
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }
