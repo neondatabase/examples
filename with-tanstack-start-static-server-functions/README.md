@@ -9,7 +9,7 @@
 ## Clone the repository
 
 ```bash
-npx degit neondatabase/examples/with-tanstack-start ./with-tanstack-start
+npx degit neondatabase/examples/with-tanstack-start-static-server-functions ./with-tanstack-start-static-server-functions
 ```
 
 ## Create a .env file
