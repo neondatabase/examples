@@ -9,7 +9,7 @@ export default function Home() {
       </h1>
       <Table />
       <p className="font-light text-gray-600 w-full max-w-lg text-center mt-6">
-        <Link href="https://neon.tech" className="font-medium underline underline-offset-4 hover:text-black transition-colors">
+        <Link href="https://neon.com" className="font-medium underline underline-offset-4 hover:text-black transition-colors">
           Neon
         </Link>{' '}
         demo with{' '}
