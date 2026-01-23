@@ -38,7 +38,7 @@ export default function Page() {
         <div className="border-b p-2">
           <Button variant="outline" size="icon" aria-label="Home">
              {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="Logo" loading="lazy" className="size-5 fill-foreground" src="https://neon.tech/favicon/favicon.png" />
+            <img alt="Neon Logo" loading="lazy" className="size-5 fill-foreground" src="/neon-logo.svg" />
           </Button>
         </div>
         <nav className="grid gap-1 p-2">

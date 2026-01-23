@@ -7,7 +7,7 @@ A starter application for an AI-powered RAG chatbot with Next.js, Neon Postgres 
 - It allows users to input new information, embeds the input using the OpenAI text embedding API and stores it in the Neon database along with the original text. 
 - Users can then query the system through a chat interface. The app takes the user's input, embeds it, and retrieves relevant information from the Neon database using similarity search. It then uses the OpenAI chat API to generate a contextually appropriate response based on the retrieved data and chat history.
 
-[![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/llamaindex/rag-nextjs&env=POSTGRES_URL,OPENAI_API_KEY)
+[![](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/ai/llamaindex/rag-nextjs&env=DATABASE_URL,OPENAI_API_KEY)
 
 ## Prerequisites
 
@@ -47,10 +47,10 @@ npm run dev
 
 ## Learn more
 
-- [Neon AI documentation](https://neon.tech/docs/ai/ai-intro)
+- [Neon AI documentation](https://neon.com/docs/ai/ai-intro)
 - [pgvector documentation](https://github.com/pgvector/pgvector)
 - [OpenAI documentation](https://platform.openai.com/docs/introduction)
-- [Llama Index documentation](https://llama.meta.com/docs/get-started/)
+- [LlamaIndex documentation](https://ts.llamaindex.ai/)
 - [Next.js documentation](https://nextjs.org/docs)
 
 ## Authors
