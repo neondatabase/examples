@@ -2,25 +2,29 @@ export const dynamic = 'force-dynamic'
 
 export const fetchCache = 'force-no-store'
 
-import { embedding } from 'litellm'
 import { neon } from '@neondatabase/serverless'
+import OpenAI from 'openai'
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+})
 
 export async function POST(request: Request) {
   const { message: input } = await request.json()
   if (!input) return new Response(null, { status: 400 })
-  const queryFunction = neon(`${process.env.POSTGRES_URL}`)
-  await queryFunction(`CREATE EXTENSION IF NOT EXISTS vector;`)
-  await queryFunction(`
+  const sql = neon(process.env.DATABASE_URL!)
+  await sql`CREATE EXTENSION IF NOT EXISTS vector;`
+  await sql`
   create table if not exists documents (
     id bigint primary key generated always as identity,
     content text,
     fts tsvector generated always as (to_tsvector('english', content)) stored,
     embedding vector(512)
-  );`)
-  await queryFunction(`create index on documents using gin(fts);`)
-  await queryFunction(`create index on documents using hnsw (embedding vector_ip_ops);`)
+  );`
+  await sql`create index if not exists documents_fts_idx on documents using gin(fts);`
+  await sql`create index if not exists documents_embedding_idx on documents using hnsw (embedding vector_ip_ops);`
   // ref: https://supabase.com/docs/guides/ai/hybrid-search#hybrid-search-in-postgres
-  await queryFunction(`create or replace function hybrid_search(
+  await sql`create or replace function hybrid_search(
   query_text text,
   query_embedding vector(512),
   match_count int,
@@ -67,14 +71,14 @@ order by
   desc
 limit
   least(match_count, 30)
-$$;`)
-  const embeddingData = await embedding({
+$$;`
+  const embeddingData = await openai.embeddings.create({
     model: 'text-embedding-3-small',
     input,
   })
   const embeddingVector = embeddingData.data[0].embedding.slice(0, 512)
-  await queryFunction(`insert into documents (content, embedding) values (
-  '${input}',
-  '[${embeddingVector}]'::vector(512));`)
+  await sql`insert into documents (content, embedding) values (
+  ${input},
+  ${JSON.stringify(embeddingVector)}::vector(512));`
   return new Response()
 }
