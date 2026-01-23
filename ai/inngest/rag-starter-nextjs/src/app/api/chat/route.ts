@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
     // Generate embedding for the message
     const response = await openai.embeddings.create({
-      model: "text-embedding-ada-002",
+      model: "text-embedding-3-small",
       input: message,
     });
     const embedding = response.data[0].embedding;
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
     // Generate chat response
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
