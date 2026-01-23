@@ -17,7 +17,13 @@ const computingToasts: any[] = []
 export default function Page() {
   const { toast } = useToast()
   const [message, setMessage] = useState('')
-  const { messages, handleSubmit, input, handleInputChange } = useChat()
+  const [input, setInput] = useState('')
+  const { messages, handleSubmit, handleInputChange, setInput: setAIInput } = useChat()
+  
+  useEffect(() => {
+    setAIInput(input)
+  }, [input, setAIInput])
+  
   useEffect(() => {
     if (messages[messages.length - 1]?.role === 'user') {
       computingToasts.push(
@@ -38,7 +44,7 @@ export default function Page() {
         <div className="border-b p-2">
           <Button variant="outline" size="icon" aria-label="Home">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="Logo" loading="lazy" className="size-5 fill-foreground" src="https://neon.tech/favicon/favicon.png" />
+            <img alt="Logo" loading="lazy" className="size-5 fill-foreground" src="/neon-logo.svg" />
           </Button>
         </div>
         <nav className="grid gap-1 p-2">
@@ -135,7 +141,10 @@ export default function Page() {
                 id="message"
                 name="prompt"
                 value={input}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  setInput(e.target.value)
+                  handleInputChange(e)
+                }}
                 placeholder="Type your message here..."
                 className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0"
               />
