@@ -17,7 +17,7 @@ export const processDocument = inngest.createFunction(
     // Generate embedding using OpenAI
     const embedding = await step.run("Generate embedding", async () => {
       const response = await openai.embeddings.create({
-        model: "text-embedding-ada-002",
+        model: "text-embedding-3-small",
         input: `${title}\n\n${content}`,
       });
       return response.data[0].embedding;

@@ -51,7 +51,7 @@ Build a Retrieval-Augmented Generation (RAG) system using Next.js, OpenAI, Neon'
 
 ## Learn more
 
-- [Neon AI documentation](https://neon.tech/docs/ai/ai-intro)
+- [Neon AI documentation](https://neon.com/docs/ai/ai-intro)
 - [pgvector documentation](https://github.com/pgvector/pgvector)
 - [OpenAI documentation](https://platform.openai.com/docs/introduction)
 - [Inngest documentation](https://inngest.com/docs)
