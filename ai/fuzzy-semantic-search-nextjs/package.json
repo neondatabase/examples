@@ -1,0 +1,51 @@
+{
+  "name": "fuzzy-semantic-search-nextjs",
+  "scripts": {
+    "help": "echo 'Run: npm run setup, then npm run dev. See README.md for details.'",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "setup": "tsx scripts/setup.ts",
+    "setup:full": "npm run setup && npm run embed",
+    "embed": "tsx scripts/embed.ts",
+    "embed:help": "npm run embed -- --help",
+    "embed:reset": "tsx scripts/reset.ts",
+    "embed:minimal": "npm run embed -- --minimal",
+    "embed:basic": "npm run embed -- --basic",
+    "embed:rich": "npm run embed -- --rich",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.0.0",
+    "@neondatabase/serverless": "^1.0.0",
+    "@radix-ui/react-accordion": "^1.2.12",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-slot": "^1.0.2",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "dotenv": "^17.2.3",
+    "lucide-react": "^0.511.0",
+    "next": "^15.2.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^3.7.0",
+    "tailwind-merge": "^2.3.0",
+    "tailwindcss-animate": "^1.0.7",
+    "use-debounce": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9",
+    "eslint-config-next": "15.2.5",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5",
+    "vitest": "^2.1.0"
+  }
+}
