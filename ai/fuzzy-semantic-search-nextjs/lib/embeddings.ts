@@ -1,19 +1,28 @@
-import { pipeline, type FeatureExtractionPipeline } from '@huggingface/transformers'
+import { pipeline, env } from '@huggingface/transformers'
+
+// Use /tmp for cache on serverless platforms (Vercel, etc.)
+env.cacheDir = '/tmp/.cache'
+
+// Pipeline type - using a minimal interface for what we need
+type EmbeddingPipeline = (
+  text: string,
+  options: { pooling: string; normalize: boolean }
+) => Promise<{ data: Float32Array }>
 
 // Cache the pipeline to avoid reloading the model on every request
-let extractor: FeatureExtractionPipeline | null = null
+let extractor: EmbeddingPipeline | null = null
 
 /**
  * Get or create the embedding pipeline.
  * Uses Xenova/gte-small (384 dimensions, MTEB score 61.4)
  */
-export async function getEmbeddingPipeline(): Promise<FeatureExtractionPipeline> {
+export async function getEmbeddingPipeline(): Promise<EmbeddingPipeline> {
   if (!extractor) {
     console.log('Loading embedding model (Xenova/gte-small)...')
-    extractor = await pipeline('feature-extraction', 'Xenova/gte-small', {
+    extractor = (await pipeline('feature-extraction', 'Xenova/gte-small', {
       // Use quantized model for faster inference
       dtype: 'q8',
-    })
+    })) as unknown as EmbeddingPipeline
     console.log('Embedding model loaded.')
   }
   return extractor

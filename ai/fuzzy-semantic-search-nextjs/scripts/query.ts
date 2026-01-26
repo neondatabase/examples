@@ -29,7 +29,8 @@ async function main() {
   
   console.log(`⏱️  Time: ${elapsed.toFixed(2)}ms\n`)
   console.log('📊 Result:')
-  console.table(result.rows || result)
+  // sql.query returns { rows, ... } but types say Record<string, any>[]
+  console.table((result as unknown as { rows?: unknown[] }).rows || result)
 }
 
 main().catch(err => {

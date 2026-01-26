@@ -13,8 +13,8 @@ export function getDb() {
   if (!connectionString) {
     throw new Error('DATABASE_URL or DATABASE_URL_POOLER environment variable is not set')
   }
-  // Enable connection caching to reuse TCP connections across requests
-  return neon(connectionString, { fetchConnectionCache: true })
+  // Connection caching is enabled by default in @neondatabase/serverless
+  return neon(connectionString)
 }
 
 export function isUsingPooler(): boolean {

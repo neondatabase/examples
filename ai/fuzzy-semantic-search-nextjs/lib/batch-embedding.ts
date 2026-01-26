@@ -4,7 +4,7 @@
  */
 
 import type { NeonQueryFunction } from '@neondatabase/serverless'
-import { buildEmbeddingText, type EmbeddingStrategy, STRATEGY_DESCRIPTIONS } from './embedding-strategies'
+import { buildEmbeddingText, type EmbeddingStrategy, type ShowData, STRATEGY_DESCRIPTIONS } from './embedding-strategies'
 
 export interface BatchEmbeddingOptions {
   strategy: EmbeddingStrategy
@@ -92,7 +92,7 @@ export async function runBatchEmbedding(
     const batch = shows.slice(i, i + batchSize)
 
     for (const show of batch) {
-      const text = buildEmbeddingText(show, strategy)
+      const text = buildEmbeddingText(show as ShowData, strategy)
       const output = await extractor(text, { pooling: 'mean', normalize: true })
       const embedding = Array.from(output.data as Float32Array)
       const embeddingStr = `[${embedding.join(',')}]`
