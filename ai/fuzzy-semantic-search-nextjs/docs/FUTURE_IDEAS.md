@@ -51,3 +51,46 @@ npm run init
 - Heuristics for field detection: `*_id` → ID, `title`/`name` → title, etc.
 
 **Alternative:** Full SQL parsing to auto-generate config, but this is more complex (many SQL dialects, edge cases).
+
+---
+
+## 3. Hybrid Search Enhancements
+
+**Status:** Idea (not planned)
+
+Inspired by [Hybrid Search With PostgreSQL and Pgvector](https://jkatz05.com/post/postgres/hybrid-search-postgres-pgvector/).
+
+### 3a. Add tsearch2 Full-Text Search
+
+Add PostgreSQL full-text search as a third method alongside pg_trgm and pgvector.
+
+**What it provides:**
+- Word stemming: "comedies" matches "comedy", "traveling" matches "travel"
+- Stop word removal: ignores "the", "a", "is"
+- Word proximity ranking with `ts_rank_cd()`
+
+**Trade-off:** pg_trgm already handles typos (e.g., "strngr thngs"), which tsearch2 cannot. Adds UI complexity with limited demo impact.
+
+### 3b. Increase RRF Candidate Pool
+
+Fetch a larger candidate pool before RRF (e.g., 2–4x the final limit) to increase overlap.
+
+**Trade-off:** Slightly higher query/transfer cost; RRF computation remains negligible (~0.1ms in JS).
+
+### 3c. SQL-Based RRF
+
+Move RRF computation from JavaScript into a single SQL query (UNION ALL + aggregation):
+
+```sql
+SELECT id, sum(1.0 / (rank + 60)) AS rrf_score
+FROM (
+    (SELECT id, rank() OVER (...) FROM ... ORDER BY fuzzy LIMIT 40)
+    UNION ALL
+    (SELECT id, rank() OVER (...) FROM ... ORDER BY semantic LIMIT 40)
+) searches
+GROUP BY id
+ORDER BY rrf_score DESC
+LIMIT 10;
+```
+
+**Trade-off:** Loses per-method timing in the UI; JS computation is negligible so perf gain is minimal.
