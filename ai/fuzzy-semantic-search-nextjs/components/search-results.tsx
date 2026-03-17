@@ -35,7 +35,7 @@ function ResultColumn({
   title: string
   results: SearchResult[]
   timeMs: number
-  variant: 'fuzzy' | 'semantic'
+  variant: 'fulltext' | 'fuzzy' | 'semantic'
   error?: string
   isRecommended?: boolean
   normalizedQuery?: string
@@ -128,32 +128,27 @@ function ResultColumn({
 }
 
 function HybridColumn({ results, embeddingsAvailable }: { results: HybridResult[]; embeddingsAvailable?: boolean }) {
-  const bothCount = results.filter(r => r.sources.length === 2).length
-  const fuzzyOnlyResults = embeddingsAvailable === false && results.length > 0
+  const multiSourceCount = results.filter(r => r.sources.length >= 2).length
+  const activeSources = embeddingsAvailable === false ? 2 : 3
   
   return (
     <div className="flex-1 min-w-0 outline outline-2 outline-primary/20 rounded-lg p-3">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Badge className="text-xs bg-gradient-to-r from-[#5280FF] to-[#37C38F] text-white border-0">
+          <Badge className="text-xs bg-gradient-to-r from-[#F59E0B] via-[#5280FF] to-[#37C38F] text-white border-0">
             <Blend className="h-3 w-3 mr-1" />
             Hybrid (RRF)
           </Badge>
-          {embeddingsAvailable !== false && (
+          {activeSources >= 2 && (
             <Badge variant="default" className="text-xs gap-1">
               <Star className="h-3 w-3" />
               Best
             </Badge>
           )}
         </div>
-        {bothCount > 0 && (
+        {multiSourceCount > 0 && (
           <span className="text-xs text-muted-foreground">
-            {bothCount} in both
-          </span>
-        )}
-        {fuzzyOnlyResults && (
-          <span className="text-xs text-muted-foreground">
-            fuzzy only
+            {multiSourceCount} in 2+
           </span>
         )}
       </div>
@@ -181,8 +176,8 @@ function HybridColumn({ results, embeddingsAvailable }: { results: HybridResult[
 
 function LoadingSkeleton() {
   return (
-    <div className="grid grid-cols-3 gap-6">
-      {[0, 1, 2].map((col) => (
+    <div className="grid grid-cols-4 gap-4">
+      {[0, 1, 2, 3].map((col) => (
         <div key={col} className="space-y-3">
           <div className="flex items-center gap-2 mb-3">
             <div className="skeleton h-5 w-24 rounded-full" />
@@ -220,6 +215,7 @@ export function SearchResults({ data, isLoading, originalQuery }: SearchResultsP
     }
   }, [data])
 
+  const fulltextDbAvg = stats?.stats.find(s => s.queryType === 'fulltext')?.avgTimeMs
   const fuzzyDbAvg = stats?.stats.find(s => s.queryType === 'fuzzy')?.avgTimeMs
   const semanticDbAvg = stats?.stats.find(s => s.queryType === 'semantic')?.avgTimeMs
 
@@ -240,7 +236,7 @@ export function SearchResults({ data, isLoading, originalQuery }: SearchResultsP
     return null
   }
 
-  const hasResults = data.fuzzy.results.length > 0 || data.semantic.results.length > 0
+  const hasResults = data.fulltext.results.length > 0 || data.fuzzy.results.length > 0 || data.semantic.results.length > 0
   const hasEmbeddingIssue = data.semantic.error || data.semantic.embeddingsAvailable === false
 
   // Show UI if we have results OR there's something to explain (error/no embeddings)
@@ -258,7 +254,15 @@ export function SearchResults({ data, isLoading, originalQuery }: SearchResultsP
         />
       )}
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-4 gap-4">
+        <ResultColumn
+          title="Full-text (tsvector)"
+          results={data.fulltext.results}
+          timeMs={data.fulltext.timeMs}
+          variant="fulltext"
+          isRecommended={data.recommended === 'fulltext'}
+          dbAvgMs={fulltextDbAvg}
+        />
         <ResultColumn
           title="Fuzzy (pg_trgm)"
           results={data.fuzzy.results}

@@ -2,6 +2,7 @@
 
 ## Overview
 A Next.js 15 demo app comparing PostgreSQL search methods:
+- **Full-text search** using `tsvector` (built-in word matching with stemming)
 - **Fuzzy search** using `pg_trgm` (trigram matching)
 - **Semantic search** using `pgvector` (embedding similarity)
 - **Hybrid search** using Reciprocal Rank Fusion (RRF)
@@ -35,7 +36,7 @@ Movie/TV-focused noise patterns (removed leading articles, years, quality marker
 - Semantic scores tend to cluster in 70-80% range (binary-ish behavior) - this is normal for embeddings
 
 ## Implemented Features
-- Side-by-side comparison (Fuzzy | Semantic | Hybrid RRF)
+- Side-by-side comparison (Full-text | Fuzzy | Semantic | Hybrid RRF)
 - Query timing display
 - Dark mode toggle
 - Adjustable threshold sliders (debounced)
@@ -47,8 +48,11 @@ Movie/TV-focused noise patterns (removed leading articles, years, quality marker
 
 ## Useful Test Queries
 
+**Full-text shines:**
+- `"international dramas"`, `"comedies"` (stemming), `"children -animation"` (exclusion)
+
 **Fuzzy shines:**
-- `"stranger things"`, `"strngr thngs"` (typos), `"breaking bad"`
+- `"stranger things"`, `"strangr thngs"` (typos), `"breaking bad"`
 
 **Semantic shines (with rich embeddings):**
 - `"Korean thriller"` (country + genre)
@@ -74,7 +78,7 @@ npm run dev             # Start dev server
 npm run test            # Run vitest tests
 ```
 
-**Note:** Fuzzy search works immediately after `setup`. Semantic search requires `embed`.
+**Note:** Full-text and fuzzy search work immediately after `setup`. Semantic search requires `embed`.
 
 ## Known Quirks
 1. Semantic scores cluster in 70-80% range regardless of query - threshold slider has limited effect

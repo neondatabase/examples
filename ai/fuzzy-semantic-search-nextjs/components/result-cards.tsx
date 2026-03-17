@@ -88,10 +88,16 @@ export function ResultCard({ result }: { result: SearchResult }) {
   )
 }
 
+function sourceLabel(source: 'fulltext' | 'fuzzy' | 'semantic', result: HybridResult): string {
+  if (source === 'fulltext') return `FT#${result.fulltextRank}`
+  if (source === 'fuzzy') return `F#${result.fuzzyRank}`
+  return `S#${result.semanticRank}`
+}
+
 export function HybridResultCard({ result }: { result: HybridResult }) {
-  const inBoth = result.sources.length === 2
+  const inMultiple = result.sources.length >= 2
   return (
-    <Card className={`h-full ${inBoth ? 'ring-1 ring-primary/30' : ''}`}>
+    <Card className={`h-full ${inMultiple ? 'ring-1 ring-primary/30' : ''}`}>
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-base leading-tight">{result.title}</CardTitle>
@@ -111,13 +117,13 @@ export function HybridResultCard({ result }: { result: HybridResult }) {
               variant={source} 
               className="text-[10px] px-1.5 py-0"
             >
-              {source === 'fuzzy' ? `F#${result.fuzzyRank}` : `S#${result.semanticRank}`}
+              {sourceLabel(source, result)}
             </Badge>
           ))}
-          {inBoth && (
+          {inMultiple && (
             <Badge variant="default" className="text-[10px] px-1.5 py-0 gap-0.5">
               <Blend className="h-2.5 w-2.5" />
-              both
+              {result.sources.length === 3 ? 'all 3' : '2 of 3'}
             </Badge>
           )}
         </CardDescription>

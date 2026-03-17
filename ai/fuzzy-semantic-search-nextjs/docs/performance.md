@@ -58,9 +58,20 @@ Network latency to Neon (typically 100-200ms depending on region) affects both e
 
 ## Query Optimizations
 
-### Fuzzy: Index-Aware Operators
+### Full-text: GIN index on tsvector
 
-The `%` and `<%` operators enable GIN index usage. Direct comparisons like `similarity(a, b) > 0.3` cannot use indexes.
+The `@@` operator matches a `tsquery` against a `tsvector` column, using the GIN index for fast lookups. Ranking uses `ts_rank_cd()` (cover density, rewards term proximity).
+
+```sql
+SELECT ..., ts_rank_cd(search_vector, tsq) AS raw_score
+FROM netflix_shows, websearch_to_tsquery('english', $query) tsq
+WHERE search_vector @@ tsq
+ORDER BY raw_score DESC
+```
+
+### Fuzzy: Index-aware operators with SET LOCAL
+
+The `%` and `<%` operators enable GIN index usage. Direct comparisons like `word_similarity(a, b) > 0.3` cannot use indexes.
 
 ```sql
 -- Uses GIN index via operators
@@ -71,6 +82,18 @@ WHERE $query <% search_text    -- word_similarity operator
 ```
 
 **Key insight:** Use operators (`%`, `<%`) for filtering, functions (`word_similarity()`) for scoring.
+
+**Threshold caveat:** The `<%` operator uses PostgreSQL's `pg_trgm.word_similarity_threshold` GUC (default 0.6), which is too high for typo-heavy queries. Over stateless HTTP connections (Neon serverless driver), you cannot set GUC values per-request. The solution is to wrap the query in a transaction with `SET LOCAL`:
+
+```sql
+BEGIN;
+SET LOCAL pg_trgm.word_similarity_threshold = 0.2;
+SET LOCAL pg_trgm.similarity_threshold = 0.2;
+SELECT ... WHERE $query <% search_text ...;
+COMMIT;
+```
+
+In code, this uses `sql.transaction()` with `set_config(..., true)` for the same effect.
 
 ### Semantic: Index-First Subquery
 
@@ -91,11 +114,20 @@ LIMIT 10
 SELECT ... WHERE 1 - (embedding <=> $vector) > 0.4  -- Can't use index
 ```
 
-### Index Summary
+### Generated columns
+
+`search_text` and `search_vector` are `GENERATED ALWAYS AS ... STORED` columns. PostgreSQL automatically computes their values from source columns on INSERT/UPDATE, so no manual population step is needed and they stay in sync with the underlying data.
+
+### Table statistics (ANALYZE)
+
+Both `npm run setup` and `npm run embed` run `ANALYZE netflix_shows` after bulk operations. This updates the statistics the query planner uses to choose execution strategies (e.g., index scan vs. sequential scan). Without fresh statistics after a large data load, the planner may make suboptimal choices.
+
+### Index summary
 
 | Search | Index Type | Column |
 |--------|------------|--------|
-| Fuzzy | GIN with `gin_trgm_ops` | `search_text` (title + director + cast) |
+| Full-text | GIN | `search_vector` (generated tsvector of title + description + genres) |
+| Fuzzy | GIN with `gin_trgm_ops` | `search_text` (generated: LOWER of title + director + cast) |
 | Semantic | IVFFlat with `vector_cosine_ops` | `embedding` (384 dimensions) |
 
 ---
@@ -184,7 +216,7 @@ WHERE tablename = 'netflix_shows';
 ### Debug Script
 
 ```bash
-npx tsx scripts/query.ts "EXPLAIN ANALYZE SELECT ..."
+npx tsx scripts/query.ts "EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) SELECT ..."
 ```
 
 ---
@@ -193,6 +225,7 @@ npx tsx scripts/query.ts "EXPLAIN ANALYZE SELECT ..."
 
 | Search | DB Time | Main Bottleneck |
 |--------|---------|-----------------|
+| Full-text | Fast (GIN index lookup) | Network latency |
 | Fuzzy | Moderate (tens of ms) | Network latency |
 | Semantic | Very fast (<1ms with index) | Embedding generation |
 
