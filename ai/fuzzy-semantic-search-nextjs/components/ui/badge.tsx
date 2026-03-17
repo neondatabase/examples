@@ -10,6 +10,7 @@ const badgeVariants = cva(
         default: 'border-transparent bg-primary text-primary-foreground hover:bg-primary/80',
         secondary: 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
         outline: 'text-foreground',
+        fulltext: 'border-transparent bg-[#F59E0B]/15 text-[#F59E0B] dark:bg-[#F59E0B]/20 dark:text-[#F59E0B]',
         fuzzy: 'border-transparent bg-[#5280FF]/15 text-[#5280FF] dark:bg-[#5280FF]/20 dark:text-[#5280FF]',
         semantic: 'border-transparent bg-[#37C38F]/15 text-[#37C38F] dark:bg-[#37C38F]/20 dark:text-[#37C38F]',
       },

@@ -60,16 +60,11 @@ npm run init
 
 Inspired by [Hybrid Search With PostgreSQL and Pgvector](https://jkatz05.com/post/postgres/hybrid-search-postgres-pgvector/).
 
-### 3a. Add tsearch2 Full-Text Search
+### 3a. Add tsvector full-text search
 
-Add PostgreSQL full-text search as a third method alongside pg_trgm and pgvector.
+**Status:** Done
 
-**What it provides:**
-- Word stemming: "comedies" matches "comedy", "traveling" matches "travel"
-- Stop word removal: ignores "the", "a", "is"
-- Word proximity ranking with `ts_rank_cd()`
-
-**Trade-off:** pg_trgm already handles typos (e.g., "strngr thngs"), which tsearch2 cannot. Adds UI complexity with limited demo impact.
+Added as a fourth column (Full-text | Fuzzy | Semantic | Hybrid). Uses `websearch_to_tsquery` with `ts_rank_cd()` ranking. Scores are normalized per-query (top result = 100%). Included in RRF hybrid fusion alongside fuzzy and semantic.
 
 ### 3b. Increase RRF Candidate Pool
 

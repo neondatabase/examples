@@ -13,12 +13,19 @@ import type { SearchResponse } from '@/app/api/search/route'
 
 const QUICK_EXAMPLES = [
   { query: 'stranger things', hint: 'title' },
-  { query: 'strngr thngs', hint: 'typos' },
+  { query: 'strangr thngs', hint: 'typos' },
+  { query: 'comedy -horror', hint: 'keywords' },
   { query: 'shows about time travel', hint: 'concept' },
 ]
 
 
 const MORE_EXAMPLES = {
+  'Full-text shines': [
+    { query: 'international dramas' },
+    { query: 'comedies' },
+    { query: 'children -animation' },
+    { query: 'documentary nature' },
+  ],
   'Fuzzy shines': [
     { query: 'breaking bad' },
     { query: 'breking bad' },
@@ -31,7 +38,7 @@ const MORE_EXAMPLES = {
     { query: 'dystopian future technology' },
     { query: 'heartwarming family stories' },
   ],
-  'Try both': [
+  'Try all': [
     { query: 'funny office workplace' },
     { query: 'dark crime mystery' },
     { query: 'true crime documentary' },
@@ -189,7 +196,8 @@ export default function Home() {
               <h1 className="text-4xl font-bold tracking-tight mb-2">Netflix Search</h1>
               <p className="text-muted-foreground">
                 Compare{' '}
-                <code className="text-sm bg-muted px-1 py-0.5 rounded">pg_trgm</code> fuzzy matching vs{' '}
+                <code className="text-sm bg-muted px-1 py-0.5 rounded">tsvector</code> full-text,{' '}
+                <code className="text-sm bg-muted px-1 py-0.5 rounded">pg_trgm</code> fuzzy, and{' '}
                 <code className="text-sm bg-muted px-1 py-0.5 rounded">pgvector</code> semantic search
               </p>
             </div>
@@ -285,6 +293,11 @@ export default function Home() {
                 </div>
               </div>
 
+              <p className="text-xs text-muted-foreground/70">
+                Full-text search has no threshold — results either match the query or they don't.
+                Scores are relative within the result set.
+              </p>
+
               {/* Distribution toggle and charts */}
               <div className="pt-2 border-t">
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
@@ -365,11 +378,11 @@ export default function Home() {
                 {/* Expanded examples */}
                 {showMoreExamples && (
                   <div className="mt-4 p-4 bg-muted/30 rounded-lg">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-left">
                       {Object.entries(MORE_EXAMPLES).map(([category, examples]) => (
                         <div key={category}>
                           <Badge 
-                            variant={category.includes('Fuzzy') ? 'fuzzy' : category.includes('Semantic') ? 'semantic' : 'outline'}
+                            variant={category.includes('Full-text') ? 'fulltext' : category.includes('Fuzzy') ? 'fuzzy' : category.includes('Semantic') ? 'semantic' : 'outline'}
                             className="mb-2 text-xs"
                           >
                             {category}

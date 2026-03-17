@@ -129,6 +129,10 @@ export async function runBatchEmbedding(
       []
     )
     console.log(`   ✓ Created IVFFlat index (lists=${lists})`)
+
+    console.log('\n📊 Updating table statistics...')
+    await sql`ANALYZE netflix_shows`
+    console.log('   ✓ ANALYZE complete')
   }
 
   return { embedded: embeddedCount, skipped: alreadyDone, total }

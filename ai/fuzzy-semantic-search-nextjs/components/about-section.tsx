@@ -37,10 +37,16 @@ export function AboutSection() {
             </AccordionTrigger>
             <AccordionContent className="text-muted-foreground">
               <p className="mb-3">
-                Shows how PostgreSQL can power search that handles both typos and natural language—no 
-                external search engine needed. Uses a Netflix dataset (~8,800 shows) to demonstrate three approaches:
+                Shows how PostgreSQL can power search that handles keywords, typos, and natural language—no 
+                external search engine needed. Uses a Netflix dataset (~8,800 shows) to compare four approaches:
               </p>
               <ul className="space-y-2 ml-4">
+                <li>
+                  <strong className="text-foreground">Full-text</strong> (<code className="text-xs bg-muted px-1 py-0.5 rounded">tsvector</code>) — 
+                  Built-in PostgreSQL word matching with stemming. "comedies" matches "comedy",
+                  supports <code className="text-xs bg-muted px-1 py-0.5 rounded">-exclusion</code> and{' '}
+                  <code className="text-xs bg-muted px-1 py-0.5 rounded">"phrases"</code>. No extensions needed.
+                </li>
                 <li>
                   <strong className="text-foreground">Fuzzy</strong> (<code className="text-xs bg-muted px-1 py-0.5 rounded">pg_trgm</code>) — 
                   Compares character sequences (trigrams) to find similar text. Handles typos 
@@ -53,8 +59,8 @@ export function AboutSection() {
                 </li>
                 <li>
                   <strong className="text-foreground">Hybrid</strong> — 
-                  Combines both using Reciprocal Rank Fusion: if a result ranks highly in either method, 
-                  it rises in the combined list. Gets the best of both worlds.
+                  Combines all three using Reciprocal Rank Fusion: if a result ranks highly in any method, 
+                  it rises in the combined list.
                 </li>
               </ul>
             </AccordionContent>
@@ -70,7 +76,18 @@ export function AboutSection() {
                 for each method to highlight their strengths. In production, you might configure them 
                 differently based on your needs.
               </p>
-              <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="grid grid-cols-3 gap-4 text-xs">
+                <div>
+                  <p className="font-medium text-foreground mb-1">Full-text (tsvector)</p>
+                  <ul className="list-disc list-inside space-y-0.5 ml-1">
+                    <li>Title</li>
+                    <li>Description</li>
+                    <li>Genres</li>
+                  </ul>
+                  <p className="mt-2 text-muted-foreground/80 italic">
+                    Best for: keyword search with stemming
+                  </p>
+                </div>
                 <div>
                   <p className="font-medium text-foreground mb-1">Fuzzy (pg_trgm)</p>
                   <ul className="list-disc list-inside space-y-0.5 ml-1">
@@ -79,7 +96,7 @@ export function AboutSection() {
                     <li>Cast</li>
                   </ul>
                   <p className="mt-2 text-muted-foreground/80 italic">
-                    Best for: "I know the name of something"
+                    Best for: "I know the name"
                   </p>
                 </div>
                 <div>
@@ -93,7 +110,7 @@ export function AboutSection() {
                     <li>Country</li>
                   </ul>
                   <p className="mt-2 text-muted-foreground/80 italic">
-                    Best for: "I'm looking for something like..."
+                    Best for: "something like..."
                   </p>
                 </div>
               </div>
@@ -106,6 +123,19 @@ export function AboutSection() {
             </AccordionTrigger>
             <AccordionContent className="text-muted-foreground">
               <ul className="space-y-3">
+                <li>
+                  <strong className="text-foreground">Full-text scores are relative</strong> — 
+                  Unlike fuzzy (0-100% similarity) and semantic (0-100% cosine similarity), full-text{' '}
+                  <code className="text-xs bg-muted px-1 py-0.5 rounded">ts_rank</code> returns arbitrary
+                  floats. Scores are normalized per-query so the top result = 100% and others are relative.
+                  This means scores aren't comparable across methods.
+                </li>
+                <li>
+                  <strong className="text-foreground">Full-text is binary match</strong> — 
+                  A document either matches the query or it doesn't — there's no threshold to tune.
+                  The ranking only orders matched documents. Fuzzy and semantic, by contrast, produce a
+                  continuous similarity score for every document.
+                </li>
                 <li>
                   <strong className="text-foreground">Small dataset effects</strong> — 
                   With only 8.8K records, fuzzy search scans quickly even without perfect index usage. 
@@ -133,24 +163,24 @@ export function AboutSection() {
             </AccordionTrigger>
             <AccordionContent className="text-muted-foreground">
               <div className="mb-4 p-3 bg-muted/50 rounded font-mono text-xs overflow-x-auto">
-                <pre className="whitespace-pre">{`User Query: "time travel shows"
-           ↓
-    Normalize text
-  (lowercase, strip noise)
-           ↓
-┌──────────────────────────────────────────┐
-│          Run searches in parallel        │
-├────────────────────┬─────────────────────┤
-│  Fuzzy (pg_trgm)   │  Semantic (pgvector)│
-│                    │                     │
-│  Compare trigrams  │  1. Generate embed  │
-│  against title,    │  2. Find nearest    │
-│  director, cast    │     vectors (IVF)   │
-└────────────────────┴─────────────────────┘
-           ↓
-   Merge via RRF (Reciprocal Rank Fusion)
-           ↓
-      Display results`}</pre>
+                <pre className="whitespace-pre">{`User Query: "comedy -horror"
+              ↓
+       Normalize text
+     (lowercase, strip noise)
+              ↓
+┌─────────────────────────────────────────────────────────────┐
+│              Run searches in parallel                       │
+├──────────────────┬──────────────────┬───────────────────────┤
+│ Full-text (tsv)  │ Fuzzy (pg_trgm)  │ Semantic (pgvector)   │
+│                  │                  │                       │
+│ Parse tsquery,   │ Compare trigrams │ 1. Generate embedding │
+│ match stems      │ against title,   │ 2. Find nearest       │
+│ via GIN index    │ director, cast   │    vectors (IVF)      │
+└──────────────────┴──────────────────┴───────────────────────┘
+              ↓
+      Merge via RRF (Reciprocal Rank Fusion)
+              ↓
+         Display results`}</pre>
               </div>
               <div className="space-y-2 text-xs">
                 <p>
@@ -180,10 +210,19 @@ export function AboutSection() {
                   No external API keys needed. Tradeoff: ~200ms per query vs. ~50ms with hosted APIs.
                 </li>
                 <li>
-                  <strong className="text-foreground">Indexes:</strong> Fuzzy uses a GIN index 
-                  with <code className="bg-muted px-1 py-0.5 rounded">gin_trgm_ops</code> for 
-                  trigram lookups. Semantic uses IVFFlat 
+                  <strong className="text-foreground">Indexes:</strong> Full-text uses a GIN index
+                  on the <code className="bg-muted px-1 py-0.5 rounded">tsvector</code> column (built-in,
+                  no extension). Fuzzy uses a GIN index
+                  with <code className="bg-muted px-1 py-0.5 rounded">gin_trgm_ops</code> for
+                  trigram lookups. Semantic uses IVFFlat
                   with <code className="bg-muted px-1 py-0.5 rounded">vector_cosine_ops</code> (93 lists, ~√n).
+                </li>
+                <li>
+                  <strong className="text-foreground">Full-text query syntax:</strong> Uses{' '}
+                  <code className="bg-muted px-1 py-0.5 rounded">websearch_to_tsquery</code> which
+                  supports Google-like syntax: quoted phrases for exact match, <code className="bg-muted px-1 py-0.5 rounded">-word</code> for
+                  exclusion, and implicit AND between terms. Stemming is automatic via
+                  the English dictionary ("comedies" → "comedi").
                 </li>
                 <li>
                   <strong className="text-foreground">Why fuzzy DB time {">"} semantic:</strong> Fuzzy 

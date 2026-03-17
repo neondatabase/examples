@@ -1,12 +1,13 @@
-# Fuzzy + Semantic Search with Neon
+# Full-text + Fuzzy + Semantic Search with Neon
 
-Search that actually works. Handles typos, synonyms, and natural language queries using PostgreSQL extensions.
+Search that actually works. Handles keywords, typos, and natural language queries using built-in PostgreSQL features and extensions.
 
-## What It Does
+## What it does
 
-- **Fuzzy matching** (`pg_trgm`) — "strngr thngs" finds "Stranger Things"
+- **Full-text search** (`tsvector`) — "comedies" matches "comedy" via stemming, supports `-exclusion` and `"phrases"`
+- **Fuzzy matching** (`pg_trgm`) — "strangr thngs" finds "Stranger Things"
 - **Semantic search** (`pgvector`) — "shows about time travel" finds relevant results
-- **Hybrid approach** — tries fuzzy first, falls back to semantic when needed
+- **Hybrid** — combines all three using Reciprocal Rank Fusion (RRF)
 
 Demo searches a Netflix dataset (~8,800 shows). No external AI APIs required — embeddings generated locally with [Transformers.js](https://huggingface.co/docs/transformers.js).
 
@@ -31,7 +32,7 @@ Demo searches a Netflix dataset (~8,800 shows). No external AI APIs required —
 
 4. Open the URL shown in terminal and search!
 
-> **Note:** Fuzzy search works immediately after `npm run setup`. Semantic search requires embeddings — skip `npm run embed` to try fuzzy search first, then add embeddings later.
+> **Note:** Full-text and fuzzy search work immediately after `npm run setup`. Semantic search requires embeddings — skip `npm run embed` to try the other methods first, then add embeddings later.
 
 ## Why Neon?
 
@@ -40,6 +41,8 @@ Demo searches a Netflix dataset (~8,800 shows). No external AI APIs required —
 - [pg_trgm docs](https://neon.com/docs/extensions/pg_trgm) — fuzzy text matching
 - [pgvector docs](https://neon.com/docs/extensions/pgvector) — vector similarity search
 - [pg_stat_statements docs](https://neon.com/docs/extensions/pg_stat_statements) — query performance stats
+
+Full-text search (`tsvector`) is built into PostgreSQL and requires no extensions.
 
 ## Embedding Strategies
 

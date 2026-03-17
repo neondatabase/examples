@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 import { getDb, isUsingPooler } from '@/lib/db'
 
 export interface QueryTypeStats {
-  queryType: 'fuzzy' | 'semantic'
+  queryType: 'fulltext' | 'fuzzy' | 'semantic'
   avgTimeMs: number
   calls: number
 }
@@ -43,6 +43,7 @@ export async function GET() {
     const results = await sql`
       SELECT 
         CASE 
+          WHEN query LIKE '%ts_rank_cd(%' AND query LIKE '%websearch_to_tsquery(%' THEN 'fulltext'
           WHEN query LIKE '%similarity(%' THEN 'fuzzy'
           WHEN query LIKE '%<=>%' AND query LIKE '%embedding%' THEN 'semantic'
         END as query_type,
@@ -50,18 +51,26 @@ export async function GET() {
         COALESCE(SUM(calls), 0)::int as calls
       FROM pg_stat_statements
       WHERE 
-        (query LIKE '%similarity(%' OR (query LIKE '%<=>%' AND query LIKE '%embedding%'))
-        AND query NOT LIKE '%pg_stat_statements%'
+        (query LIKE '%ts_rank_cd(%' AND query LIKE '%websearch_to_tsquery(%')
+        OR query LIKE '%similarity(%'
+        OR (query LIKE '%<=>%' AND query LIKE '%embedding%')
       GROUP BY 
         CASE 
+          WHEN query LIKE '%ts_rank_cd(%' AND query LIKE '%websearch_to_tsquery(%' THEN 'fulltext'
           WHEN query LIKE '%similarity(%' THEN 'fuzzy'
           WHEN query LIKE '%<=>%' AND query LIKE '%embedding%' THEN 'semantic'
         END
+      HAVING
+        CASE 
+          WHEN query LIKE '%ts_rank_cd(%' AND query LIKE '%websearch_to_tsquery(%' THEN 'fulltext'
+          WHEN query LIKE '%similarity(%' THEN 'fuzzy'
+          WHEN query LIKE '%<=>%' AND query LIKE '%embedding%' THEN 'semantic'
+        END IS NOT NULL
       ORDER BY query_type
     `
 
     const stats: QueryTypeStats[] = results.map((row) => ({
-      queryType: row.query_type as 'fuzzy' | 'semantic',
+      queryType: row.query_type as 'fulltext' | 'fuzzy' | 'semantic',
       avgTimeMs: Number(row.avg_time_ms),
       calls: Number(row.calls),
     }))

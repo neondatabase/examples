@@ -3,7 +3,7 @@
 ```
 ├── app/
 │   ├── api/
-│   │   ├── search/route.ts    # Hybrid search API (fuzzy + semantic)
+│   │   ├── search/route.ts    # Hybrid search API (full-text + fuzzy + semantic)
 │   │   └── stats/route.ts     # Query statistics from pg_stat_statements
 │   ├── page.tsx               # Search UI
 │   ├── layout.tsx             # Root layout with theme provider
@@ -35,7 +35,7 @@
 ## Key Files
 
 ### `app/api/search/route.ts`
-Runs fuzzy (pg_trgm) and semantic (pgvector) searches in parallel, combines results using Reciprocal Rank Fusion (RRF).
+Runs full-text (tsvector), fuzzy (pg_trgm), and semantic (pgvector) searches in parallel, combines results using Reciprocal Rank Fusion (RRF).
 
 ### `lib/embeddings.ts`
 Wraps Transformers.js with the `Xenova/gte-small` model (384 dimensions). Caches the pipeline to avoid reloading.
@@ -44,7 +44,7 @@ Wraps Transformers.js with the `Xenova/gte-small` model (384 dimensions). Caches
 Text normalization for fuzzy matching. Removes noise patterns, strips articles, handles punctuation.
 
 ### `scripts/setup.ts`
-Database setup: creates table, imports Netflix data, builds indexes. Fuzzy search works immediately after setup.
+Database setup: creates table, imports Netflix data, builds indexes. Full-text and fuzzy search work immediately after setup.
 
 ### `scripts/embed.ts`
 Generates embeddings for semantic search. Supports strategies (minimal/basic/rich) and is resumable if interrupted.

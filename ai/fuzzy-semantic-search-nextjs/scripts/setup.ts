@@ -2,12 +2,13 @@
  * Setup script for the fuzzy-semantic-search example.
  * 
  * This script sets up the database infrastructure:
- * 1. Enables pg_trgm and pgvector extensions
- * 2. Creates the netflix_shows table
- * 3. Imports data from the Netflix dataset
- * 4. Creates search_text column for fuzzy matching
- * 5. Normalizes titles
- * 6. Creates GIN index for fuzzy search
+ * 1. Enables pg_trgm, pgvector, and pg_stat_statements extensions
+ * 2. Creates the netflix_shows table (with generated columns for search_text/search_vector)
+ * 3. Migrates existing databases from regular to generated columns if needed
+ * 4. Imports data from the Netflix dataset
+ * 5. Normalizes titles for fuzzy display
+ * 6. Creates GIN indexes for fuzzy and full-text search
+ * 7. Runs ANALYZE to update table statistics for the query planner
  * 
  * Run with: npm run setup
  * 
@@ -56,6 +57,8 @@ async function main() {
   }
 
   // Step 3: Create table if not exists
+  // search_text and search_vector are generated columns -- they auto-populate
+  // from source columns, eliminating manual UPDATE steps and staying in sync.
   console.log('3️⃣  Creating table structure...')
   await sql`
     CREATE TABLE IF NOT EXISTS netflix_shows (
@@ -72,10 +75,42 @@ async function main() {
       listed_in text,
       description text,
       title_normalized text,
-      search_text text,
+      search_text text GENERATED ALWAYS AS (
+        LOWER(COALESCE(title, '') || ' ' || COALESCE(director, '') || ' ' || COALESCE(cast_members, ''))
+      ) STORED,
+      search_vector tsvector GENERATED ALWAYS AS (
+        to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(description, '') || ' ' || COALESCE(listed_in, ''))
+      ) STORED,
       embedding vector(384)
     )
   `
+
+  // Migrate existing databases: convert regular columns to generated columns.
+  // Checks pg_attribute.attgenerated to see if search_text is already generated.
+  const migrationCheck = await sql`
+    SELECT attgenerated = '' as needs_migration
+    FROM pg_attribute
+    WHERE attrelid = 'netflix_shows'::regclass
+    AND attname = 'search_text'
+  `
+  if (migrationCheck.length > 0 && migrationCheck[0].needs_migration) {
+    console.log('   ⬆️  Migrating search columns to generated columns...')
+    await sql`DROP INDEX IF EXISTS idx_netflix_search_text_trgm`
+    await sql`DROP INDEX IF EXISTS idx_netflix_search_vector`
+    await sql`ALTER TABLE netflix_shows DROP COLUMN search_text`
+    await sql`ALTER TABLE netflix_shows DROP COLUMN IF EXISTS search_vector`
+    await sql`
+      ALTER TABLE netflix_shows ADD COLUMN search_text text GENERATED ALWAYS AS (
+        LOWER(COALESCE(title, '') || ' ' || COALESCE(director, '') || ' ' || COALESCE(cast_members, ''))
+      ) STORED
+    `
+    await sql`
+      ALTER TABLE netflix_shows ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+        to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(description, '') || ' ' || COALESCE(listed_in, ''))
+      ) STORED
+    `
+    console.log('   ✓ Migrated to generated columns')
+  }
   console.log('   ✓ Table structure ready\n')
 
   // Step 4: Import data if table is empty
@@ -170,25 +205,8 @@ async function main() {
     console.log('4️⃣  Skipping import (data already exists)\n')
   }
 
-  // Step 5: Populate search_text column for fuzzy search
-  console.log('5️⃣  Populating search_text column...')
-  const searchTextCount = await sql`SELECT COUNT(*) as count FROM netflix_shows WHERE search_text IS NULL`
-  if (Number(searchTextCount[0].count) > 0) {
-    await sql`
-      UPDATE netflix_shows SET search_text = LOWER(
-        COALESCE(title, '') || ' ' || 
-        COALESCE(director, '') || ' ' || 
-        COALESCE(cast_members, '')
-      )
-      WHERE search_text IS NULL
-    `
-    console.log('   ✓ Populated search_text for all shows\n')
-  } else {
-    console.log('   ℹ️  search_text already populated\n')
-  }
-
-  // Step 6: Normalize titles
-  console.log('6️⃣  Normalizing titles for fuzzy matching...')
+  // Step 5: Normalize titles (requires JS-side normalize() -- can't be a generated column)
+  console.log('5️⃣  Normalizing titles for fuzzy matching...')
   const showsToNormalize = await sql`
     SELECT show_id, title FROM netflix_shows WHERE title_normalized IS NULL
   `
@@ -225,13 +243,23 @@ async function main() {
     console.log('   ℹ️  All titles already normalized\n')
   }
 
-  // Step 7: Create GIN index for fuzzy search
-  console.log('7️⃣  Creating GIN index for fuzzy search...')
+  // Step 6: Create GIN indexes
+  console.log('6️⃣  Creating GIN indexes...')
   await sql`
     CREATE INDEX IF NOT EXISTS idx_netflix_search_text_trgm 
     ON netflix_shows USING gin (search_text gin_trgm_ops)
   `
-  console.log('   ✓ Created GIN index (search_text)\n')
+  console.log('   ✓ Created GIN index (search_text, pg_trgm)')
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_netflix_search_vector
+    ON netflix_shows USING gin (search_vector)
+  `
+  console.log('   ✓ Created GIN index (search_vector, tsvector)\n')
+
+  // Step 7: Update table statistics for the query planner
+  console.log('7️⃣  Updating table statistics...')
+  await sql`ANALYZE netflix_shows`
+  console.log('   ✓ ANALYZE complete\n')
 
   console.log('✅ Setup complete!\n')
   console.log('📝 Next steps:')
@@ -239,7 +267,7 @@ async function main() {
   console.log('   2. Run `npm run dev` to start the development server')
   console.log('   3. Open the URL shown in terminal')
   console.log('')
-  console.log('💡 Fuzzy search works immediately. Semantic search requires embeddings.')
+  console.log('💡 Fuzzy and full-text search work immediately. Semantic search requires embeddings.')
 }
 
 main().catch((error) => {
