@@ -1,60 +1,34 @@
-# Neon getting started (Next.js + Drizzle)
+# Neon Getting Started
 
-A small todo app that uses [Neon](https://neon.com) (Postgres), [Drizzle ORM](https://orm.drizzle.team), and [Next.js](https://nextjs.org) App Router with Server Actions.
+A video tutorial series that builds a small todo app with [Neon](https://neon.com), [Drizzle ORM](https://orm.drizzle.team), and [Next.js](https://nextjs.org) App Router.
 
-## Prerequisites
+Each phase of the series lives in its own self-contained subdirectory so you can `cd` into the one that matches the video you are watching and run it independently.
 
-- [Node.js](https://nodejs.org) 20+
-- A [Neon](https://console.neon.tech) project and database connection string
+## Phases
 
-## Setup
+| Video | Folder | What it covers |
+| --- | --- | --- |
+| [Getting Started with Neon](https://www.youtube.com/watch?v=XtMiMnX0hDg) | [`01-getting-started/`](./01-getting-started) | Initial Next.js todo app with Neon, Drizzle, and migrations |
+| Getting Started with Database Branching | [`02-neon-branches/`](./02-neon-branches) | Working with Neon branches while adding todo due dates |
 
-1. **Install dependencies**
+## Run a phase
 
-   ```bash
-   npm install
-   ```
+Each folder is a complete Next.js project. From the repo root:
 
-2. **Configure the database URL**
+```bash
+cd 01-getting-started      # or 02-neon-branches
+npm install
+cp .env.example .env       # then set DATABASE_URL to your Neon connection string
+npx drizzle-kit migrate
+npm run dev
+```
 
-   Copy the example env file and add your Neon connection string:
+Open <http://localhost:3000>.
 
-   ```bash
-   cp .env.example .env
-   ```
+## Compare phases
 
-   Edit `.env` and set `DATABASE_URL` to the Postgres URL from the Neon dashboard (**Connect** → copy URI). Keep this file private; it is listed in `.gitignore`.
+To see exactly what changes between two videos, diff the folders:
 
-3. **Apply the schema**
-
-   This repo includes SQL migrations under `drizzle/`. Apply them to your Neon database:
-
-   ```bash
-   npx drizzle-kit migrate
-   ```
-
-   For a quick local experiment you can instead push the schema directly (no migration files): `npx drizzle-kit push`. For anything you might ship, prefer migrations.
-
-4. **Run the app**
-
-   ```bash
-   npm run dev
-   ```
-
-   Open [http://localhost:3000](http://localhost:3000).
-
-## Project layout
-
-| Path | Purpose |
-| --- | --- |
-| `db/schema.ts` | Drizzle table definitions |
-| `db/index.ts` | Neon serverless client + Drizzle instance |
-| `drizzle/` | Generated migrations and Drizzle metadata |
-| `drizzle.config.ts` | Drizzle Kit config |
-| `app/actions.ts` | Server Actions for todos |
-
-## Learn more
-
-- [Neon docs](https://neon.com/docs)
-- [Drizzle ORM — Neon](https://orm.drizzle.team/docs/get-started-postgresql#neon)
-- [Next.js documentation](https://nextjs.org/docs)
+```bash
+diff -ru 01-getting-started 02-neon-branches
+```
