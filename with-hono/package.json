@@ -1,14 +1,20 @@
 {
   "name": "with-hono",
   "scripts": {
-    "start": "vercel dev",
-    "deploy": "vercel"
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.0",
-    "hono": "^4.4.2"
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.4.2",
+    "pg": "^8.21.0"
   },
   "devDependencies": {
-    "vercel": "^32.4.1"
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.31.10",
+    "typescript": "^5.6.3"
   }
 }
