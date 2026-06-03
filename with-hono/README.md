@@ -6,42 +6,51 @@
 
 # Getting started with Neon and Hono
 
+A minimal [Hono](https://hono.dev) API backed by [Neon](https://neon.com) Postgres and [Drizzle ORM](https://orm.drizzle.team).
+
+## Project structure
+
+```
+with-hono/
+├── drizzle.config.ts
+├── src/
+│   ├── index.ts        # Hono app + routes + db client
+│   └── db/
+│       └── schema.ts   # Drizzle schema
+└── package.json
+```
+
 ## Clone the repository
 
 ```bash
 npx degit neondatabase/examples/with-hono ./with-hono
+cd with-hono
 ```
 
-Run the command below to copy the `.env.example` file:
+## Configure your environment
 
-```
+Copy the example env file and fill in your Neon connection string:
+
+```bash
 cp .env.example .env
 ```
-
-## Store your Neon credentials
-
-Store your Neon credentials in your `.env` file.
 
 ```
 DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
 ```
 
-- `user` is the database user.
-- `password` is the database user’s password.
-- `endpoint_hostname` is the host with neon.tech as the [TLD](https://www.cloudflare.com/en-gb/learning/dns/top-level-domain/).
-- `dbname` is the name of the database. “neondb” is the default database created with each Neon project.
-- `?sslmode=require` an optional query parameter that enforces the [SSL](https://www.cloudflare.com/en-gb/learning/ssl/what-is-ssl/) mode while connecting to the Postgres instance for better security.
+You can find your connection string in the [Neon Console](https://console.neon.tech).
 
-**Important**: To ensure the security of your data, never expose your Neon credentials to the browser.
+## Install dependencies
 
-Run the command below to install project dependencies:
-
-```
+```bash
 npm install
 ```
 
-Run the Hono application using the following command:
+## Apply the schema
 
-```
-npm run start
+Push the Drizzle schema to your Neon database:
+
+```bash
+npm run db:push
 ```
