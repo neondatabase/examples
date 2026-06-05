@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 dotenvy = "0.15.7"
-openssl = "0.10.73"
+openssl = "0.10.78"
 postgres-openssl = "0.5.1"
 tokio = { version = "1.46.1", features = ["full"] }
 tokio-postgres = "0.7.13"
