@@ -79,6 +79,18 @@ npm run db:push
 neonctl dev
 ```
 
+Then in another shell (use the port `neon dev` printed):
+
+```bash
+# Create a todo
+curl -X POST http://localhost:8787/todos \
+  -H 'content-type: application/json' \
+  -d '{"text":"ship it"}'
+
+# List todos
+curl http://localhost:8787/todos
+```
+
 ## Deploy to Neon Functions
 
 Deploy hono app as a Neon Function to your branch
