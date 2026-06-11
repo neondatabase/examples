@@ -1,6 +1,5 @@
 import { openai } from '@ai-sdk/openai';
-import { streamText, tool, generateText, stepCountIs, type ModelMessage } from 'ai';
-import { z } from 'zod';
+import { streamText, type ModelMessage } from 'ai';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { drizzle } from 'drizzle-orm/node-postgres';
@@ -28,15 +27,15 @@ const s3 = new S3Client({
 // Bucket name, as declared in neon.ts (`preview.buckets`).
 const BUCKET = 'images';
 
-// A text/chat model served by the Neon AI Gateway (OpenAI Responses dialect).
-// OPENAI_API_KEY / OPENAI_BASE_URL are injected by `neon dev`, so `openai()` targets
-// the branch gateway with no extra wiring.
+// An OpenAI/GPT-5 model served by the Neon AI Gateway (OpenAI Responses dialect). The
+// built-in `image_generation` tool requires a GPT-5 model. OPENAI_API_KEY / OPENAI_BASE_URL
+// are injected by `neon dev`, so `openai()` targets the branch gateway with no extra wiring.
 const MODEL = 'databricks-gpt-5-mini';
 
-async function persistImage(prompt: string, svg: string) {
-  const body = Buffer.from(svg, 'utf8');
-  const key = `generated/${randomUUID()}.svg`;
-  const contentType = 'image/svg+xml';
+async function persistImage(prompt: string, jpegBase64: string) {
+  const body = Buffer.from(jpegBase64, 'base64');
+  const key = `generated/${randomUUID()}.jpg`;
+  const contentType = 'image/jpeg';
 
   await s3.send(
     new PutObjectCommand({
@@ -71,48 +70,35 @@ export default {
     }
 
     const { messages } = (await request.json()) as { messages: ModelMessage[] };
+    const prompt = lastUserText(messages);
 
     const result = streamText({
       model: openai(MODEL),
-      // Stop after the tool runs. The Neon AI Gateway's upstream currently 502s on the
-      // multi-step "send the tool result back to the model" round-trip, so we keep this a
-      // single step: the model calls generateImage, the tool generates + stores the SVG,
-      // and the tool result (with the view URL) is what streams back to the client.
-      stopWhen: stepCountIs(1),
       system:
-        'You are an illustration agent. When the user asks for a picture, call the ' +
-        'generateImage tool with a vivid one-sentence description of what to draw.',
+        'You are an illustration agent. When the user asks for a picture, use the ' +
+        'image_generation tool to create it, then briefly tell the user what you drew.',
       messages,
       tools: {
-        generateImage: tool({
-          description:
-            'Generate an SVG illustration from a description, store it in Neon object ' +
-            'storage, and index it in Postgres. Returns the stored key and a view URL.',
-          inputSchema: z.object({
-            description: z.string().describe('What to draw'),
-          }),
-          execute: async ({ description }) => {
-            console.log(`[generateImage] ${description}`);
-            const { text } = await generateText({
-              model: openai(MODEL),
-              prompt:
-                'Return ONLY a single self-contained SVG document (it must start with ' +
-                '"<svg" and end with "</svg>") that illustrates the following, using a ' +
-                `512x512 viewBox and a few flat colored shapes: ${description}. ` +
-                'No markdown, no code fences, no commentary.',
-            });
-            const svg = extractSvg(text);
-            if (!svg) throw new Error('The model did not return an SVG document.');
-            const saved = await persistImage(description, svg);
-            return { description, ...saved };
-          },
+        // The Neon AI Gateway exposes OpenAI image generation as the Responses API's
+        // built-in `image_generation` tool (there is no separate images endpoint). It runs
+        // server-side in a single call and returns the image inline as base64. We ask for a
+        // compressed JPEG to stay under the gateway's per-response size cap.
+        image_generation: openai.tools.imageGeneration({
+          outputFormat: 'jpeg',
+          quality: 'low',
+          outputCompression: 30,
+          size: '1024x1024',
         }),
       },
       onStepFinish({ toolResults }) {
         for (const tr of toolResults) {
-          if (tr.toolName === 'generateImage') {
-            const out = tr.output as { url?: string };
-            console.log(`[step] stored image -> ${out.url}`);
+          if (tr.toolName !== 'image_generation') continue;
+          const base64 = imageResultBase64(tr.output);
+          if (base64) {
+            // Fire-and-forget so a storage/DB hiccup never tears down the response stream.
+            persistImage(prompt, base64).catch((err) =>
+              console.error('[persist] failed:', err),
+            );
           }
         }
       },
@@ -127,8 +113,29 @@ export default {
   },
 };
 
-/** Pull the first `<svg>…</svg>` block out of a model response (drops any stray prose). */
-function extractSvg(text: string): string | null {
-  const match = text.match(/<svg[\s\S]*<\/svg>/i);
-  return match ? match[0] : null;
+/** The base64 image out of an `image_generation` tool result (`{ result: string }`). */
+function imageResultBase64(output: unknown): string | null {
+  if (typeof output === 'object' && output !== null && 'result' in output) {
+    const { result } = output;
+    if (typeof result === 'string') return result;
+  }
+  return null;
+}
+
+/** The latest user message rendered to text, used as the prompt stored alongside the image. */
+function lastUserText(messages: ModelMessage[]): string {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    if (message.role !== 'user') continue;
+    if (typeof message.content === 'string') return message.content;
+    if (Array.isArray(message.content)) {
+      const text = message.content
+        .filter((part) => part.type === 'text')
+        .map((part) => ('text' in part ? part.text : ''))
+        .join(' ')
+        .trim();
+      if (text) return text;
+    }
+  }
+  return 'generated image';
 }
