@@ -7,3 +7,11 @@ templates:
       repo: examples
       ref: main
       subdir: with-hono
+  - id: ai-sdk
+    title: "AI SDK agent (AI Gateway, object storage, Drizzle) on Neon Functions"
+    description: "A Vercel AI SDK agent on Neon Functions: streams chat through the Neon AI Gateway, generates an SVG illustration with a tool, stores it in Neon object storage, and indexes it in Neon Postgres via Drizzle."
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: with-ai-sdk
