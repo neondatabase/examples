@@ -1,6 +1,6 @@
 node_modules
 .env
 .env.local
+.neon
 drizzle/
 generated/
-bun.lockb

@@ -5,8 +5,6 @@ export const images = pgTable('images', {
   prompt: text('prompt').notNull(),
   bucketKey: text('bucket_key').notNull(),
   contentType: text('content_type').notNull(),
-  width: integer('width'),
-  height: integer('height'),
-  bytes: integer('bytes'),
+  bytes: integer('bytes').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
