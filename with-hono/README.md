@@ -6,15 +6,18 @@
 
 # Getting started with Neon and Hono
 
-A minimal [Hono](https://hono.dev) API backed by [Neon](https://neon.com) Postgres and [Drizzle ORM](https://orm.drizzle.team).
+A minimal [Hono](https://hono.dev) API backed running [Neon](https://neon.com) Postgres and [Drizzle ORM](https://orm.drizzle.team) on Neon Functions.
 
 ## Project structure
 
 ```
 with-hono/
-├── drizzle.config.ts
+├── neon.ts             # Neon Functions policy (defineConfig) — what gets deployed
+├── drizzle.config.ts   # Drizzle Kit config (schema location + DB credentials)
+├── tsconfig.json
+├── .env.example        # Required environment variables
 ├── src/
-│   ├── index.ts        # Hono app + routes + db client
+│   ├── index.ts        # Hono app + routes + db client (the function entry)
 │   └── db/
 │       └── schema.ts   # Drizzle schema
 └── package.json
@@ -27,19 +30,34 @@ npx degit neondatabase/examples/with-hono ./with-hono
 cd with-hono
 ```
 
-## Configure your environment
-
-Copy the example env file and fill in your Neon connection string:
+## Install and authenticate the Neon CLI
 
 ```bash
-cp .env.example .env
+npm i -g neonctl
+neon login
 ```
+
+## Link your Neon project
+
+Link (or create) a Neon project by running the `link` command from the workspace root:
+
+```bash
+neon link
+```
+
+If you let your agent drive this, add `--agent` to skip interactive mode.
+
+## Configure your environment
+
+`neon link` automatically pulls your branch-scoped environment variables into the `.env.local` file.
+
+Inspect your `.env.local` file and ensure the `DATABASE_URL` has been set:
 
 ```
 DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
 ```
 
-You can find your connection string in the [Neon Console](https://console.neon.tech).
+You can also find your connection string in the [Neon Console](https://console.neon.tech).
 
 ## Install dependencies
 
@@ -53,4 +71,38 @@ Push the Drizzle schema to your Neon database:
 
 ```bash
 npm run db:push
+```
+
+## Run locally
+
+```bash
+neonctl dev
+```
+
+## Deploy to Neon Functions
+
+Deploy hono app as a Neon Function to your branch
+
+```bash
+neonctl deploy
+```
+
+## Test your deployed function
+
+Grab the function's invocation URL and call it:
+
+```bash
+# List the function to find its invocation URL
+neonctl functions get todos
+
+# Then call it (replace with your URL)
+curl https://<your-branch>-todos.compute.<region>.aws.neon.tech/todos
+```
+
+`GET /todos` returns the rows as JSON; create one with:
+
+```bash
+curl -X POST https://<your-branch>-todos.compute.<region>.aws.neon.tech/todos \
+  -H 'content-type: application/json' \
+  -d '{"text":"ship it"}'
 ```
