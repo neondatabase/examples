@@ -4,25 +4,29 @@
     <source media="(prefers-color-scheme: light)" srcset="https://neon.com/brand/neon-logo-light-color.svg">
     <img width="250px" alt="Neon Logo fallback" src="https://neon.com/brand/neon-logo-dark-color.svg">
   </picture>
-<p align="center">
+</p>
 
-# Documentation
+# Neon examples
 
-Visit https://neon.tech/docs/introduction to view the full documentation.
+Example applications and starter projects for [Neon](https://neon.com). Each subdirectory is a self-contained example you can clone, configure with a `DATABASE_URL`, and run.
 
-# What is Neon
+A good place to start:
 
-Neon is a fully managed serverless PostgreSQL with a generous free tier. Neon separates storage and compute and offers modern developer features such as serverless, branching, bottomless storage, and more. Neon is open source and written in Rust.
+- [`neon-getting-started/`](./neon-getting-started) - a Next.js + Drizzle + Neon scaffold built for use with coding agents.
+- [`ai/`](./ai) - RAG, semantic search, hybrid search, and chatbot starters using pgvector on Neon.
 
-# Community
+## What is Neon?
 
-The Neon community can be found on https://neon.tech/discord, where you can ask questions, voice ideas and share your projects.
+Neon is serverless Postgres. It separates storage from compute, scales to zero when idle, autoscales under load, and supports instant database branching for development, preview environments, and CI. The [Neon serverless driver](https://github.com/neondatabase/serverless) lets you query Postgres from edge runtimes over HTTP and WebSockets.
 
-# Contributing
+## Documentation
 
-Please see our [CONTRIBUTING.md](./CONTRIBUTING.md).
+See the [Neon documentation](https://neon.com/docs) for additional examples.
 
-# Authors
+## Community
 
-- Raouf Chebri ([@_raoufai](https://twitter.com/_raoufai))
-- Rishi Raj Jain ([@rishi_raj_jain_](https://twitter.com/rishi_raj_jain_))
+Join us on [Discord](https://neon.com/discord) to ask questions, share projects, and follow updates.
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md).

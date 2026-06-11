@@ -6,7 +6,8 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.0.0",
+    "@neondatabase/config": "^0.4.2",
+    "@neondatabase/env": "^0.3.2",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.4.2",
