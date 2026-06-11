@@ -1,0 +1,9 @@
+templates:
+  - id: hono
+    title: "Hono API (Drizzle, Neon Postgres) on Neon Functions"
+    description: "A Hono API using Drizzle ORM and Neon Postgres, ready to deploy as a Neon Function."
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: with-hono
