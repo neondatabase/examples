@@ -53,9 +53,25 @@ neon link
 
 If you let your agent drive this, add `--agent` to skip interactive mode.
 
+> On a brand-new project, `neon link` runs an implicit `env pull` that will warn it can't find the function declared in `neon.ts`. That's expected — provision it in the next step, then the variables can be pulled.
+
+## Provision the declared services
+
+`neon.ts` declares the `todos` function, but `neon link` does **not** provision the services it declares — `env pull` fails fast until they exist on the branch. Apply the policy first:
+
+```bash
+neonctl config apply
+```
+
+This registers the declared function on your branch so the environment pull can resolve everything in `neon.ts`.
+
 ## Configure your environment
 
-`neon link` automatically pulls your branch-scoped environment variables into the `.env.local` file.
+With the policy applied, pull your branch-scoped environment variables into `.env.local`:
+
+```bash
+neonctl env pull
+```
 
 Inspect your `.env.local` file and ensure the `DATABASE_URL` has been set:
 

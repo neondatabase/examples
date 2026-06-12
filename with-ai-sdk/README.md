@@ -69,9 +69,27 @@ neon link
 
 If you let your agent drive this, add `--agent` to skip interactive mode.
 
+> On a brand-new project, `neon link` runs an implicit `env pull` that will warn it can't find the services declared in `neon.ts` (e.g. `bucket:images` and the AI Gateway). That's expected — provision them in the next step, then the variables can be pulled.
+
+## Provision the declared services
+
+`neon.ts` declares an object-storage bucket and the AI Gateway, but `neon link` does **not** create them — so the credentials and endpoints don't exist yet for `env pull` to read. Apply the policy first to provision them on your branch:
+
+```bash
+neon config apply
+```
+
+This creates the bucket and enables the AI Gateway (and registers the function), so their credentials are ready to pull.
+
 ## Configure your environment
 
-`neon link` (and `neon env pull`) write your branch-scoped variables into `.env.local`. Because `neon.ts` enables the AI Gateway and a bucket, the pull also mints a branch credential and writes `OPENAI_API_KEY` / `OPENAI_BASE_URL` and the `AWS_*` storage variables. See `.env.example` for the full set.
+Now that the services exist, pull your branch-scoped variables into `.env.local`:
+
+```bash
+neon env pull
+```
+
+Because `neon.ts` enables the AI Gateway and a bucket, the pull mints a branch credential and writes `OPENAI_API_KEY` / `OPENAI_BASE_URL` and the `AWS_*` storage variables alongside `DATABASE_URL`. See `.env.example` for the full set.
 
 ## Apply the schema
 

@@ -55,9 +55,27 @@ If you let your agent drive this, add `--agent` to skip interactive mode.
 
 > The Neon AI Gateway is a Preview feature. Link to a project/region where AI Gateway early access is enabled, otherwise `neon dev` / `neon env pull` can't mint the gateway credentials.
 
+> On a brand-new project, `neon link` runs an implicit `env pull` that will warn it can't find the AI Gateway declared in `neon.ts`. That's expected — provision it in the next step, then the variables can be pulled.
+
+## Provision the declared services
+
+`neon.ts` enables the AI Gateway, but `neon link` does **not** provision it — so the gateway credentials don't exist yet for `env pull` to read. Apply the policy first to enable it on your branch:
+
+```bash
+neon config apply
+```
+
+This enables the AI Gateway (and registers the function), so its credentials are ready to pull.
+
 ## Configure your environment
 
-`neon link` automatically pulls your branch-scoped environment variables into the `.env.local` file. Because `neon.ts` enables the AI Gateway, the pull also mints a branch credential and writes the gateway variables (`OPENAI_API_KEY`, `OPENAI_BASE_URL`) alongside `DATABASE_URL` — see `.env.example` for the full set.
+Now that the AI Gateway exists, pull your branch-scoped variables into `.env.local`:
+
+```bash
+neon env pull
+```
+
+Because `neon.ts` enables the AI Gateway, the pull mints a branch credential and writes the gateway variables (`OPENAI_API_KEY`, `OPENAI_BASE_URL`) alongside `DATABASE_URL` — see `.env.example` for the full set.
 
 ## Run locally
 
