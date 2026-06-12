@@ -5,9 +5,6 @@ import { parseEnv } from '@neondatabase/env/v1';
 import config from '../neon';
 import { todos } from './db/schema';
 
-// Typesafe, validated env — `env.postgres.databaseUrl` instead of a stringly-typed
-// `process.env.DATABASE_URL`. Reads the env Neon injects into the function (and that
-// `neonctl dev` injects locally); throws a clear error if it's missing.
 const env = parseEnv(config);
 
 const pool = new Pool({ connectionString: env.postgres.databaseUrl, max: 5 });

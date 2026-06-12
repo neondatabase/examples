@@ -95,6 +95,18 @@ curl -N -X POST http://localhost:8787 \
 
 You'll see the streaming response, and once the tool runs, a new row in the `images` table plus a `.jpg` object in your bucket (the logs print a presigned view URL).
 
+To continue the conversation, send the running transcript back (this agent is stateless — the client owns the history):
+
+```bash
+curl -N -X POST http://localhost:8787 \
+  -H 'content-type: application/json' \
+  -d '{"messages":[
+    {"role":"user","content":"Please draw a robot reading a book."},
+    {"role":"assistant","content":"Here is a friendly robot reading under a warm lamp."},
+    {"role":"user","content":"Now draw the same robot, but make it red."}
+  ]}'
+```
+
 ## Deploy to Neon Functions
 
 ```bash
