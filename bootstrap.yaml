@@ -2,6 +2,9 @@ templates:
   - id: hono
     title: "Hono API (Drizzle, Neon Postgres) on Neon Functions"
     description: "A Hono API using Drizzle ORM and Neon Postgres, ready to deploy as a Neon Function."
+    services:
+      - Postgres
+      - Functions
     source:
       owner: neondatabase
       repo: examples
@@ -10,6 +13,11 @@ templates:
   - id: ai-sdk
     title: "AI SDK agent (AI Gateway, object storage, Drizzle) on Neon Functions"
     description: "A Vercel AI SDK agent on Neon Functions: streams chat through the Neon AI Gateway, generates an image with OpenAI image generation, and stores it in Neon object storage indexed in Postgres via Drizzle."
+    services:
+      - Postgres
+      - Functions
+      - Object Storage
+      - AI Gateway
     source:
       owner: neondatabase
       repo: examples
@@ -18,6 +26,10 @@ templates:
   - id: mastra
     title: "Mastra personal agent (AI Gateway, Mastra Memory) on Neon Functions"
     description: "A Mastra personal-assistant agent on Neon Functions: streams chat through the Neon AI Gateway and uses Mastra Memory — backed by Neon Postgres — to remember the user across conversation threads via resource-scoped working memory."
+    services:
+      - Postgres
+      - Functions
+      - AI Gateway
     source:
       owner: neondatabase
       repo: examples
