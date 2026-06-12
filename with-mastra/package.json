@@ -1,0 +1,15 @@
+{
+  "name": "with-mastra",
+  "type": "module",
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.0",
+    "@mastra/core": "^1.41.0",
+    "@mastra/memory": "^1.20.0",
+    "@mastra/pg": "^1.12.0",
+    "@neondatabase/config": "^0.5.0",
+    "@neondatabase/env": "^0.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
