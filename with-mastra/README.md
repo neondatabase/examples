@@ -37,6 +37,12 @@ npm i -g neonctl
 neon login
 ```
 
+## Install dependencies
+
+```bash
+npm install
+```
+
 ## Link your Neon project
 
 Link (or create) a Neon project by running the `link` command from the workspace root:
@@ -52,12 +58,6 @@ If you let your agent drive this, add `--agent` to skip interactive mode.
 ## Configure your environment
 
 `neon link` automatically pulls your branch-scoped environment variables into the `.env.local` file. Because `neon.ts` enables the AI Gateway, the pull also mints a branch credential and writes the gateway variables (`OPENAI_API_KEY`, `OPENAI_BASE_URL`) alongside `DATABASE_URL` — see `.env.example` for the full set.
-
-## Install dependencies
-
-```bash
-npm install
-```
 
 ## Run locally
 

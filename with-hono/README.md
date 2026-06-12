@@ -37,6 +37,12 @@ npm i -g neonctl
 neon login
 ```
 
+## Install dependencies
+
+```bash
+npm install
+```
+
 ## Link your Neon project
 
 Link (or create) a Neon project by running the `link` command from the workspace root:
@@ -58,12 +64,6 @@ DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb
 ```
 
 You can also find your connection string in the [Neon Console](https://console.neon.tech).
-
-## Install dependencies
-
-```bash
-npm install
-```
 
 ## Apply the schema
 

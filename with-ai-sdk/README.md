@@ -55,6 +55,12 @@ npm i -g neonctl
 neon login
 ```
 
+## Install dependencies
+
+```bash
+npm install
+```
+
 ## Link your Neon project
 
 ```bash
@@ -66,12 +72,6 @@ If you let your agent drive this, add `--agent` to skip interactive mode.
 ## Configure your environment
 
 `neon link` (and `neon env pull`) write your branch-scoped variables into `.env.local`. Because `neon.ts` enables the AI Gateway and a bucket, the pull also mints a branch credential and writes `OPENAI_API_KEY` / `OPENAI_BASE_URL` and the `AWS_*` storage variables. See `.env.example` for the full set.
-
-## Install dependencies
-
-```bash
-npm install
-```
 
 ## Apply the schema
 
