@@ -19,7 +19,9 @@ with-mastra/
 ├── .env.example        # Environment variables injected by neon link / neon dev
 ├── src/
 │   ├── index.ts        # Neon Function entry: POST chat → streamed reply
-│   └── agent.ts        # Mastra agent + Memory (PostgresStore on Neon) + gateway model
+│   ├── agent.ts        # Mastra agent + Memory (PostgresStore on Neon) + gateway model
+│   └── mastra/
+│       └── index.ts    # Mastra instance (registers the agent for Mastra Studio)
 └── package.json
 ```
 
@@ -67,7 +69,9 @@ npm install
 neon dev
 ```
 
-Then in another shell (use the port `neon dev` printed), introduce yourself in one thread:
+### Have a conversation (same thread)
+
+In another shell (use the port `neon dev` printed), send the first turn. You only send the newest message — memory replays the history:
 
 ```bash
 curl -N -X POST http://localhost:8787 \
@@ -79,7 +83,21 @@ curl -N -X POST http://localhost:8787 \
   }'
 ```
 
-Then start a **new thread** for the **same `resourceId`** and watch it remember you:
+Send a follow-up on the **same `threadId`** — it remembers the conversation so far:
+
+```bash
+curl -N -X POST http://localhost:8787 \
+  -H 'content-type: application/json' \
+  -d '{
+    "resourceId": "user-123",
+    "threadId": "thread-a",
+    "messages": [{"role":"user","content":"Given where I live, suggest a weekend hike."}]
+  }'
+```
+
+### Memory across threads
+
+Start a **new thread** for the **same `resourceId`** and watch it still know you:
 
 ```bash
 curl -N -X POST http://localhost:8787 \
@@ -96,6 +114,16 @@ The assistant recalls your name, location, and interests in the new thread becau
 ```sql
 SELECT id, "workingMemory" FROM mastra_resources;
 ```
+
+## Chat in Mastra Studio
+
+Prefer a UI? [Mastra Studio](https://mastra.ai) gives you a local chat playground for the agent. With your env in place (the `.env.local` written by `neon link` / `neon env pull`), run:
+
+```bash
+npm run studio
+```
+
+Open the printed URL (e.g. `http://localhost:4112`), pick the **personal-assistant** agent, and chat. Studio reads the same `DATABASE_URL` and Neon AI Gateway credentials from `.env.local`; the agent is registered for Studio in `src/mastra/index.ts`.
 
 ## How memory works
 
@@ -132,4 +160,6 @@ curl -N -X POST https://<your-branch>-agent.compute.<region>.aws.neon.tech \
 
 ## Notes on the model
 
-The agent's model is the AI SDK's `openai()` provider pointed at the Neon AI Gateway. The injected `OPENAI_BASE_URL` is the gateway's OpenAI **Responses** dialect (`.../ai-gateway/openai/v1`); this example targets the gateway's unified, OpenAI-compatible **Chat Completions** endpoint (`.../ai-gateway/mlflow/v1`) instead, which serves every model in the catalog and works cleanly with the multi-step tool calls Mastra uses to update working memory. Swap `MODEL` in `src/agent.ts` for any model id from the Console's **AI Gateway** tab.
+Neon is a provider on [models.dev](https://models.dev/providers/neon), so the agent is wired through **Mastra's model router** with a `neon/<model>` id (`src/agent.ts`). The `neon` provider is OpenAI-compatible and targets the gateway's unified Chat Completions endpoint (`.../ai-gateway/mlflow/v1`), which serves every model in the catalog and works with the multi-step tool calls Mastra uses to update working memory.
+
+The example passes the gateway `url` and `apiKey` to the router explicitly (derived from the Neon-injected `OPENAI_*` env vars, which expose the OpenAI **Responses** dialect at `.../ai-gateway/openai/v1`). This keeps it working regardless of which models.dev snapshot the installed `@mastra/core` ships and avoids the `NEON_AI_GATEWAY_BASE_URL` host-vs-path convention. Swap `MODEL` in `src/agent.ts` for any model id listed on the [Neon provider page](https://models.dev/providers/neon) (e.g. `gpt-5-mini`, `gemini-2-5-flash`).
