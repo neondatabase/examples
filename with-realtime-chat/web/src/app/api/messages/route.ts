@@ -1,15 +1,14 @@
-import { neon } from "@neondatabase/serverless";
+import { asc } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { messages } from "@/db/schema";
 
-// Chat history is read from Postgres by the Next.js backend; live messages come
-// over the WebSocket to the Neon Function.
-const sql = neon(process.env.DATABASE_URL!);
-
+// Chat history is read from Postgres by the Next.js backend (same Drizzle +
+// node-postgres setup as the function); live messages come over the WebSocket.
 export async function GET() {
-  const rows = await sql`
-    SELECT id, user_id, user_name, body, created_at
-    FROM messages
-    ORDER BY created_at ASC
-    LIMIT 200
-  `;
+  const rows = await db
+    .select()
+    .from(messages)
+    .orderBy(asc(messages.createdAt))
+    .limit(200);
   return Response.json({ messages: rows });
 }
