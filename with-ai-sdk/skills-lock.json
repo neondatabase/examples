@@ -5,37 +5,37 @@
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon/SKILL.md",
-      "computedHash": "3773b1c8bdc2a8a19c52453a8589ba56650ced5264a1aefe55b23f39f14d6068"
+      "computedHash": "9548e17eaf8b2864f64f7542f0a91f7868227442e3aab8278304bdbb245bb7f3"
     },
     "neon-ai-gateway": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-ai-gateway/SKILL.md",
-      "computedHash": "633568f1dbca7b885fe4a1fffc4958b5024ce5a93816fc171d82a8a4016b4fef"
+      "computedHash": "00fc868f617b20e854331dbd126beb5ad217de3b2bad8200e2fe9cbbbed24b54"
     },
     "neon-functions": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-functions/SKILL.md",
-      "computedHash": "aeb40d78ddba2ced0184a63649cd312b4e9d8da1eb9ab13057a3e23c5298d7c1"
+      "computedHash": "6c7f8cee21fc603d9ac1abdf2d570da667103bcace0680ff28ed88b6e1f44a75"
     },
     "neon-object-storage": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-object-storage/SKILL.md",
-      "computedHash": "d088cfdcc4473e95c4ac34fd7f8e1568320503499e8d5fb9c0310c7d91998996"
+      "computedHash": "053dc4900a27d8fa8cd20ceac748106788e1fe48fed9549be9e63de429f74732"
     },
     "neon-postgres": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-postgres/SKILL.md",
-      "computedHash": "3c53df29c959dc0a7f724ff8620063b20fabd2b1fa702ec97e3f17e6a23d5a1c"
+      "computedHash": "9a2547ddc95f13313c0b738bd93183cf3154cdb9de7c6c73ecfd9b58bfbda6ef"
     },
     "neon-postgres-branches": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-postgres-branches/SKILL.md",
-      "computedHash": "01bc8db21eea9f9742e43b7716f5820e8753289a70297f8469600e2c65e56293"
+      "computedHash": "c0ff429a18e64daa491469ce09a1b8e4b9de445b458c2d726b1b11d611044b04"
     }
   }
 }

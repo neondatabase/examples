@@ -32,6 +32,19 @@ Object Storage, Compute Functions, and AI Gateway are preview (early access) fea
 
 Early access features are only available on net-new projects created in the `us-east-2` region; they cannot be enabled on existing projects for now. Before guiding a user through any of these services, confirm they are working with a new project in `us-east-2`. If not, they will need to create a new project in that region. Then confirm the user already has early access; otherwise, point them to the private beta sign-up: https://neon.com/blog/were-building-backends#access.
 
+## Architecture: how Neon fits
+
+Neon is **not** a place to host your full-stack app — it's backend primitives (Postgres, Auth, Object Storage, Functions, AI Gateway) that **compose with** the application platform you already use. Host the app on **Vercel** (or Netlify, or another frontend/app host); Neon is the backend it talks to.
+
+A typical setup:
+
+- **Full-stack app on Vercel** (or Netlify) — e.g. Next.js or TanStack Start. It owns your UI and auth (e.g. **Neon Auth**) and talks directly to your **Neon Postgres** database and **Neon Object Storage**.
+- **Reach for Neon Functions when you outgrow the host's limits** — a WebSocket or SSE server, or long-running agents that risk timing out on short, lambda-style serverless. Run that one piece on a Neon Function, next to your data.
+
+You can also move your **whole backend control plane** onto Neon Functions. This is especially useful when the frontend is **client-only** rather than full-stack — TanStack Router, React Router in client mode, and similar SPAs hosted on Vercel or Netlify. The client talks **directly to Neon Functions**, where you build REST APIs and request/response agents, host **MCP servers**, and run anything stateful or that should live close to Postgres and Object Storage. Secure these functions like any standalone REST API — verify a JWT or API key at the top of each handler (see the `neon-functions` skill).
+
+Because Functions are just your backend, they compose with a full-stack app too: if you already have a backend (Next.js route handlers, etc.), Neon Functions sit alongside it, and you can **move pieces between the two** — e.g. relocate a long-running agent or a stateful WebSocket server off your host onto a Function when it needs more runtime.
+
 ## Neon Documentation
 
 The Neon documentation is the source of truth for all Neon-related information. Always verify claims against the official docs before responding. Neon features and APIs evolve, so prefer fetching current docs over relying on training data.
@@ -256,3 +269,19 @@ export default defineConfig({
 ```
 
 The `branch` function receives the target branch (its `name`, whether it `exists` yet, whether it's the default, and more) and returns the tuning you want. Here new `dev-*` branches get a 7-day TTL so they clean themselves up, plus a cheap scale-to-zero compute profile, while existing branches and everything else fall through to the defaults. Because `neonctl checkout` applies this policy on create, a fresh `dev-*` branch comes up with these settings already in place.
+
+## Gotchas
+
+### Neon Auth: "invalid domain"
+
+Neon Auth only redirects back to domains on its trusted-domains list. Anytime the domain your app runs on changes — a new production custom domain, a new deploy/preview URL, moving from `localhost` to a hosted environment, and so on — you must register the new domain with Neon Auth. Otherwise sign-in and OAuth callbacks fail with an **`invalid domain`** error because the redirect target isn't trusted.
+
+The easiest way to fix this is the CLI. With the workspace linked to the project (see the branch-first flow above), add the new domain to the trusted list:
+
+```bash
+neonctl neon-auth domain add <domain>   # e.g. neonctl neon-auth domain add https://app.example.com
+neonctl neon-auth domain list           # verify what's currently trusted
+neonctl neon-auth domain delete <domain> # remove one you no longer use
+```
+
+If the workspace isn't linked, pass `--project-id <id>` (and `--branch <id|name>`) explicitly. For local development, `neonctl neon-auth domain allow-localhost` manages whether `localhost` is permitted. Register the domain before pointing users at the new URL, so they never hit the `invalid domain` error.

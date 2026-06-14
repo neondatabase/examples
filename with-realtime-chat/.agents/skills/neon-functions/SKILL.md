@@ -33,7 +33,7 @@ If the workload is a pure static site, a cron/background job that needs its own 
 
 ## What It Does
 
-- **Long-running & serverless** — Built for WebSocket servers, SSE endpoints, long agent HTTP streams, and APIs. Still scales to zero when idle.
+- **Long-running & serverless** — Built for WebSocket servers (see [WebSocket servers](#websocket-servers)), SSE endpoints, long agent HTTP streams, and APIs. Still scales to zero when idle.
 - **Web-standard handler** — A function is any default export with a `fetch(request)` method returning a `Response` (Workers/WinterTC-compatible). A Hono app exports exactly that shape, so `export default app` just works. Runs on Node.js 24, so all Node APIs are available.
 - **Close to your database** — Runs in the branch's region; `DATABASE_URL` injected automatically when the branch has Postgres.
 - **Branchable** — Each branch runs its own function version at its own URL against its own isolated state.
@@ -111,6 +111,31 @@ To deploy a single function without `neon.ts`: `neonctl functions deploy <slug> 
 
 When `neonctl checkout` _creates_ a new branch and a `neon.ts` is present, it applies the policy automatically — deploying the function to the fresh branch. Checking out an existing branch does not re-deploy; run `neonctl deploy` explicitly.
 
+## Neon Infrastructure as Code (`neon.ts`)
+
+The `preview.functions` block from [Setup](#setup) is part of `neon.ts`, Neon's infrastructure-as-code file — one TypeScript file declares every function (its `source`, display `name`, and `env`) alongside any other branch services, in version control (see the `neon` skill for the full reference). Treat it like Terraform for your branch:
+
+```bash
+neonctl config status   # print the branch's live config (deployed functions)
+neonctl config plan     # dry-run diff of what apply would change
+neonctl config apply    # bundle + deploy the declared functions  (neonctl deploy is an alias)
+```
+
+Functions are **branch-scoped**: each branch runs its own deployment at its own URL. When a `neon.ts` is present, `neonctl checkout` applies the policy as it _creates_ a branch, so a fresh preview/CI branch comes up with the function already deployed. Checking out an _existing_ branch doesn't redeploy — run `neonctl deploy` to apply changes.
+
+Per-branch deploy tuning (e.g. `runtime`) lives in the `branch` closure, keyed by slug, so it can vary by branch without changing which functions exist:
+
+```typescript
+export default defineConfig({
+  preview: {
+    functions: { todos: { name: "todo api", source: "src/index.ts" } },
+  },
+  branch: (branch) => ({
+    preview: { functions: { todos: { runtime: "nodejs24" } } },
+  }),
+});
+```
+
 ## Environment variables
 
 Neon injects branch-scoped connection strings and service URLs at runtime — you don't declare these or pass them at deploy time:
@@ -148,6 +173,8 @@ When the branch has Postgres, Neon **injects the connection strings at runtime**
 - `DATABASE_URL` — **pooled** connection string (routed through Neon's connection pooler). Use it for normal request/response query traffic. Kept un-prefixed because every Postgres ORM (Drizzle, Prisma, Knex, …) reads `DATABASE_URL` by default.
 - `DATABASE_URL_UNPOOLED` — **direct** connection string to the same database. Use it for migrations, `LISTEN`/`NOTIFY`, and long multi-statement transactions.
 
+**Use Drizzle (or another ORM) on top of node-postgres (`pg`)** for queries and schema management — not Neon's serverless driver. Functions are long-running and reuse an isolate across many requests, so a persistent `pg` pool is the right fit; the serverless driver's HTTP transport is meant for fully isolated, lambda-style runtimes.
+
 Create the connection pool **once at module scope** and reuse it across requests — don't open a connection per request:
 
 ```typescript
@@ -170,6 +197,137 @@ process.on("SIGINT", () => {
 ```
 
 > Reading `process.env.DATABASE_URL` directly works everywhere. The `with-hono` example in [Setup](#setup) instead uses `@neondatabase/env/v1`'s `parseEnv(config)` to read the same value in a typed, validated way — either is fine.
+
+## WebSocket servers
+
+A WebSocket server is the canonical Functions workload: a long-running handler holds connections open in-process, with no external state store needed to keep a stream coherent. Because a function is a real Node.js process (not a lambda), the WebSocket handshake works the way it does in any Node server — the [`ws`](https://github.com/websockets/ws) library upgrades the socket, and the connection stays alive as long as bytes flow (15-minute heartbeat, see [Timeouts](#timeouts-and-runtime-limits)).
+
+**The return signature is the whole trick.** A function's default export is normally `{ fetch }`. To also accept WebSockets, export an `upgrade` method alongside it — the runtime routes plain HTTP to `fetch` and the WebSocket handshake to `upgrade`:
+
+```typescript
+export default {
+  fetch(request: Request): Response | Promise<Response> { /* HTTP */ },
+  async upgrade(req: IncomingMessage, socket: Duplex, head: Buffer) { /* WS handshake */ },
+};
+```
+
+**Simple example** — raw `ws`, no framework, with auth. Browsers can't set headers on a WebSocket, so authenticate with a `?token=` query param (verify it the same way as the [agent backend](#functions-as-an-agent-backend-nextjs-and-similar-frameworks): `jwtVerify` against your JWKS) before accepting the connection:
+
+```typescript
+// src/index.ts
+import type { IncomingMessage } from "node:http";
+import type { Duplex } from "node:stream";
+import { WebSocketServer, type WebSocket } from "ws";
+
+const clients = new Set<WebSocket>();
+const wss = new WebSocketServer({ noServer: true });
+
+export default {
+  // Plain HTTP (health checks, REST) is handled by fetch.
+  fetch: () => new Response("WebSocket endpoint — connect with ?token=<jwt>"),
+
+  // The runtime hands the WebSocket handshake to upgrade().
+  async upgrade(req: IncomingMessage, socket: Duplex, head: Buffer) {
+    const url = new URL(req.url ?? "/", "http://localhost");
+    const identity = await verifyToken(url.searchParams.get("token")); // reject if invalid
+    if (!identity) {
+      socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+      socket.destroy();
+      return;
+    }
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      clients.add(ws);
+      ws.on("close", () => clients.delete(ws));
+      ws.on("message", (data) => broadcast(data.toString())); // see fan-out below
+    });
+  },
+};
+```
+
+**Hono variant.** If you only need Hono for the HTTP side and are happy driving `ws` yourself, just swap `fetch` in the simple example for `app.fetch` and keep the raw `upgrade` — Hono serves routing/middleware, `ws` serves the socket.
+
+To instead declare WebSocket routes _inside_ the Hono app — `app.get("/ws", upgradeWebSocket(...))` with the standard `onOpen`/`onMessage`/`onClose` lifecycle — you need an adapter that bridges Hono's `upgradeWebSocket()` helper to Neon's `upgrade(req, socket, head)`. Hono ships adapters for Cloudflare/Deno/Bun/Node, but **none for Neon**, and the Node one (`@hono/node-ws`) is deprecated and assumes it owns the HTTP server. [references/hono-websockets.md](references/hono-websockets.md) has a small self-contained `createNeonWebSocket(app)` adapter to copy in — it depends only on `hono` and `ws` (no deprecated package; adapted from `@hono/node-ws`, MIT) and returns a ready-to-export `{ fetch, upgrade }` handler. Usage is idiomatic Hono, and because the handshake routes through `app.request`, **auth is just normal route middleware**:
+
+```typescript
+// src/index.ts
+import { Hono } from "hono";
+import { createNeonWebSocket } from "./hono-ws";
+
+const app = new Hono();
+const { upgradeWebSocket, handler } = createNeonWebSocket(app);
+
+app.get(
+  "/ws",
+  async (c, next) => {
+    if (!(await verifyToken(c.req.query("token")))) return c.text("Unauthorized", 401);
+    await next();
+  },
+  upgradeWebSocket(() => ({
+    onOpen: (_evt, ws) => ws.send("welcome"),
+    onMessage: (evt, ws) => ws.send(`echo: ${evt.data}`),
+    onClose: () => console.log("disconnected"),
+  })),
+);
+
+export default handler; // Neon's { fetch, upgrade } contract
+```
+
+> Don't put header-modifying middleware (e.g. CORS) on an `upgradeWebSocket` route — the helper rewrites headers internally and will throw. The [fan-out](#fan-out-across-isolates-do-not-skip-this) and [reconnect](#client-must-reconnect) guidance below applies unchanged.
+
+### Fan-out across isolates (do not skip this)
+
+Under load the runtime runs **several isolates in parallel, each with its own copy of module state** — so each isolate has its own `clients` set. Broadcasting only to the local set means a client connected to isolate A never sees a message sent by a client on isolate B. The chat would silently fracture.
+
+Fan out across every isolate with **Postgres `LISTEN`/`NOTIFY`**: each isolate `LISTEN`s on a channel over a dedicated **unpooled** connection, and broadcasting means `NOTIFY` (so every isolate, including the sender's, re-broadcasts to its own sockets). This is also why message state must live in Postgres, not module memory — module state doesn't survive eviction.
+
+```typescript
+import { Pool, Client } from "pg";
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5 });
+const CHANNEL = "chat_events";
+
+// One dedicated DIRECT connection per isolate, just to receive events.
+// Use DATABASE_URL_UNPOOLED — LISTEN needs a real session, not a pooled one.
+const listener = new Client({ connectionString: process.env.DATABASE_URL_UNPOOLED });
+listener.connect().then(() => listener.query(`LISTEN ${CHANNEL}`));
+listener.on("notification", (msg) => {
+  if (!msg.payload) return;
+  for (const ws of clients) if (ws.readyState === ws.OPEN) ws.send(msg.payload);
+});
+
+// Broadcast by NOTIFYing through the pool — every isolate's listener fires.
+function broadcast(event: unknown) {
+  return pool.query("SELECT pg_notify($1, $2)", [CHANNEL, JSON.stringify(event)]);
+}
+
+// Drain both on eviction so connections close cleanly.
+process.on("SIGINT", () => {
+  Promise.allSettled([pool.end(), listener.end()]).then(() => process.exit(0));
+});
+```
+
+### Client must reconnect
+
+Idle functions are evicted (and isolates restart for operational reasons), so a client's socket **will** drop — treat reconnection as normal, not exceptional. Reconnect with exponential backoff, capped, and **re-mint a fresh token on every attempt** (tokens are short-lived, so a stale one fails the `upgrade` auth check):
+
+```typescript
+let closed = false, retry = 0, timer: ReturnType<typeof setTimeout>;
+
+async function connect() {
+  if (closed) return;
+  const token = await getToken(); // re-mint each attempt; short-lived
+  const ws = new WebSocket(`${WS_URL}?token=${encodeURIComponent(token)}`);
+  ws.onopen = () => { retry = 0; };          // reset backoff on success
+  ws.onmessage = (e) => { /* apply the event */ };
+  ws.onclose = () => {
+    if (!closed) timer = setTimeout(connect, Math.min(1000 * 2 ** retry++, 15000));
+  };
+  ws.onerror = () => ws.close();             // let onclose drive the retry
+}
+connect();
+```
+
+A full, verified build of this pattern — Hono `fetch` + `ws` `upgrade`, JWT auth over `?token=`, `LISTEN`/`NOTIFY` fan-out, client backoff, plus image uploads and an in-function moderation agent — is the `with-realtime-chat` example in [`neondatabase/examples`](https://github.com/neondatabase/examples/tree/main/with-realtime-chat).
 
 ## Integrations and observability
 

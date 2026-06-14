@@ -57,6 +57,20 @@ export default defineConfig({
 neonctl deploy   # provisions the gateway on the linked branch
 ```
 
+## Neon Infrastructure as Code (`neon.ts`)
+
+The `preview.aiGateway` toggle above is part of `neon.ts`, Neon's infrastructure-as-code file — one TypeScript file declares the gateway alongside every other branch service, in version control (see the `neon` skill for the full reference). Reconcile it against a branch the Terraform way:
+
+```bash
+neonctl config status   # print the branch's live config (is the gateway on?)
+neonctl config plan     # dry-run diff of what apply would change
+neonctl config apply    # enable the gateway on the branch  (neonctl deploy is an alias)
+```
+
+The gateway is **branch-scoped**: each branch gets its own gateway host. When a `neon.ts` is present, `neonctl checkout` applies the policy as it _creates_ a branch, so a fresh preview/CI branch comes up with the gateway already enabled. Checking out an _existing_ branch doesn't reconcile it — run `neonctl deploy` to apply changes.
+
+For typed, validated access to the injected credentials, pass the same config object to `parseEnv` from `@neondatabase/env` — it returns an `env.aiGateway` namespace (`apiKey`, `baseUrl`) derived from your `neon.ts`.
+
 ## Environment variables
 
 When `preview.aiGateway` is enabled, Neon injects the gateway credentials as **OpenAI-standard** env vars (so the OpenAI SDK and AI SDK work from the environment with no config), plus `NEON_`-branded aliases. Inside a deployed Neon Function these are injected automatically; locally, `neonctl env pull` writes them to `.env`/`.env.local` (or use `neon-env run -- <cmd>` to inject at runtime without a file):

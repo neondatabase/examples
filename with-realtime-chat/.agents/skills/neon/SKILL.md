@@ -269,3 +269,19 @@ export default defineConfig({
 ```
 
 The `branch` function receives the target branch (its `name`, whether it `exists` yet, whether it's the default, and more) and returns the tuning you want. Here new `dev-*` branches get a 7-day TTL so they clean themselves up, plus a cheap scale-to-zero compute profile, while existing branches and everything else fall through to the defaults. Because `neonctl checkout` applies this policy on create, a fresh `dev-*` branch comes up with these settings already in place.
+
+## Gotchas
+
+### Neon Auth: "invalid domain"
+
+Neon Auth only redirects back to domains on its trusted-domains list. Anytime the domain your app runs on changes — a new production custom domain, a new deploy/preview URL, moving from `localhost` to a hosted environment, and so on — you must register the new domain with Neon Auth. Otherwise sign-in and OAuth callbacks fail with an **`invalid domain`** error because the redirect target isn't trusted.
+
+The easiest way to fix this is the CLI. With the workspace linked to the project (see the branch-first flow above), add the new domain to the trusted list:
+
+```bash
+neonctl neon-auth domain add <domain>   # e.g. neonctl neon-auth domain add https://app.example.com
+neonctl neon-auth domain list           # verify what's currently trusted
+neonctl neon-auth domain delete <domain> # remove one you no longer use
+```
+
+If the workspace isn't linked, pass `--project-id <id>` (and `--branch <id|name>`) explicitly. For local development, `neonctl neon-auth domain allow-localhost` manages whether `localhost` is permitted. Register the domain before pointing users at the new URL, so they never hit the `invalid domain` error.

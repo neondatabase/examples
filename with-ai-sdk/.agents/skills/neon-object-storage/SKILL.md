@@ -61,6 +61,20 @@ Provision the declared buckets on the linked branch:
 neonctl deploy   # alias for `neonctl config apply`
 ```
 
+## Neon Infrastructure as Code (`neon.ts`)
+
+The `preview.buckets` block above is part of `neon.ts`, Neon's infrastructure-as-code file — one TypeScript file declares your buckets alongside every other service the branch should have (see the `neon` skill for the full reference). Reconcile the declaration against a branch the Terraform way:
+
+```bash
+neonctl config status   # print the branch's live config (which buckets exist)
+neonctl config plan     # dry-run diff of what apply would change
+neonctl config apply    # create the declared buckets  (neonctl deploy is an alias)
+```
+
+Buckets are **branch-scoped**: when a `neon.ts` is present, `neonctl checkout` applies the policy as it _creates_ a branch, so a fresh preview/CI branch comes up with its buckets already provisioned (and copy-on-write objects inherited from the parent). Checking out an _existing_ branch doesn't reconcile it — run `neonctl deploy` to apply changes.
+
+For typed, validated access to the injected S3 credentials, pass the same config object to `parseEnv` from `@neondatabase/env` — it returns an `env.storage` namespace (`accessKeyId`, `secretAccessKey`, `endpoint`, `region`, `forcePathStyle`) derived from your `neon.ts`.
+
 ## Environment variables
 
 When `preview.buckets` is declared, Neon injects **AWS-standard** S3 env vars so the AWS SDKs work from the environment with zero extra config. Inside a deployed Neon Function these are injected automatically; locally, pull them onto disk (or inject them at runtime) via the CLI:
