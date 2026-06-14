@@ -47,3 +47,14 @@ templates:
       repo: examples
       ref: main
       subdir: with-realtime-chat
+  - id: realtime-sse
+    title: "Realtime counter (TanStack Router, SSE) on Neon Functions"
+    description: "A realtime shared counter: a client-only TanStack Router SPA talking over server-sent events to a Hono server on Neon Functions. The count is stored in Neon Postgres via Drizzle and pushed to all clients across isolates with Postgres LISTEN/NOTIFY."
+    services:
+      - Postgres
+      - Functions
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: with-realtime-sse
