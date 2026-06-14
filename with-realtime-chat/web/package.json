@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@neondatabase/auth": "^0.4.2-beta",
+    "@neondatabase/auth-ui": "^0.2.1-beta",
     "@radix-ui/react-slot": "^1.1.1",
     "@vercel/functions": "^2.0.0",
     "class-variance-authority": "^0.7.1",

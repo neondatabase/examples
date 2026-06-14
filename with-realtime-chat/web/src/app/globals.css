@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@neondatabase/auth-ui/tailwind";
 
 @custom-variant dark (&:is(.dark *));
 
