@@ -30,4 +30,3 @@ lerna-debug.log*
 .DS_Store
 .vercel
 .neon
-.mastra-project.json
