@@ -238,7 +238,7 @@ import { defineConfig } from "@neondatabase/config/v1";
 
 export default defineConfig({
   auth: true, // Neon Auth (adds NEON_AUTH_* env vars)
-  dataApi: true, // Data API (adds NEON_DATA_API_URL)
+  dataApi: true, // Data API (adds NEON_DATA_API_URL); requires auth: true (or an external IdP)
   // Postgres exists on every branch; tune its compute per branch:
   branch: (branch) => {
     if (branch.exists) return {}; // leave existing branches untouched
@@ -267,6 +267,8 @@ neonctl deploy          # alias for `neonctl config apply`
 ```
 
 Because `neonctl checkout` applies the policy as it **creates** a branch, a fresh branch comes up with these compute settings (and Auth / Data API) already in place. Checking out an _existing_ branch never reconciles it — run `neonctl deploy` to apply changes.
+
+Since `neon.ts` is TypeScript, invalid combinations fail to compile with an actionable message: the Data API verifies requests with Neon Auth by default, so `dataApi: true` without `auth: true` is a type error (the fix — `auth: true`, or `authProvider: 'external'` with a `jwksUrl` — is in the message). See the `neon` skill's type-safe config note.
 
 Read the resulting env back, typed and validated against the policy, with `parseEnv` from `@neondatabase/env`:
 

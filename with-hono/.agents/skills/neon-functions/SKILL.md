@@ -33,7 +33,7 @@ If the workload is a pure static site, a cron/background job that needs its own 
 
 ## What It Does
 
-- **Long-running & serverless** — Built for WebSocket servers (see [WebSocket servers](#websocket-servers)), SSE endpoints, long agent HTTP streams, and APIs. Still scales to zero when idle.
+- **Long-running & serverless** — Built for WebSocket servers (see [WebSocket servers](#websocket-servers)), SSE endpoints (see [Server-sent events (SSE)](#server-sent-events-sse)), long agent HTTP streams, and APIs. Still scales to zero when idle.
 - **Web-standard handler** — A function is any default export with a `fetch(request)` method returning a `Response` (Workers/WinterTC-compatible). A Hono app exports exactly that shape, so `export default app` just works. Runs on Node.js 24, so all Node APIs are available.
 - **Close to your database** — Runs in the branch's region; `DATABASE_URL` injected automatically when the branch has Postgres.
 - **Branchable** — Each branch runs its own function version at its own URL against its own isolated state.
@@ -99,6 +99,13 @@ export default app;
 ```
 
 This is the `with-hono` example, verified end to end. Create the `pg` pool at module scope (reused across requests on the same isolate) and keep `max` small (e.g. 5), since each isolate keeps its own pool.
+
+`parseEnv(config)` requires _every_ variable the config implies. A function that only talks to Postgres over the pooled URL can scope it to just that key — `parseEnv` then validates and returns only what you asked for (the keys autocomplete from your `neon.ts`):
+
+```typescript
+const { postgres } = parseEnv(config, ["DATABASE_URL"]); // not the unpooled URL, auth, etc.
+const pool = new Pool({ connectionString: postgres.databaseUrl, max: 5 });
+```
 
 ## Develop locally and deploy
 
@@ -274,6 +281,23 @@ export default handler; // Neon's { fetch, upgrade } contract
 
 > Don't put header-modifying middleware (e.g. CORS) on an `upgradeWebSocket` route — the helper rewrites headers internally and will throw. The [fan-out](#fan-out-across-isolates-do-not-skip-this) and [reconnect](#client-must-reconnect) guidance below applies unchanged.
 
+### Heartbeat (keep the socket alive)
+
+A connection stays open **only while bytes flow**: Neon evicts a silent stream after 15 minutes ([Timeouts and runtime limits](#timeouts-and-runtime-limits)), and intermediary proxies / load balancers are usually far stricter (often tens of seconds). Don't rely on the app being chatty enough — send a periodic ping from the server so the socket never goes quiet. `ws.ping()` sends a WebSocket ping frame and the browser answers with a pong automatically, so there's no client code to write:
+
+```typescript
+const HEARTBEAT_MS = 25_000; // comfortably under proxy idle timeouts
+
+const beat = setInterval(() => {
+  for (const ws of clients) if (ws.readyState === ws.OPEN) ws.ping();
+}, HEARTBEAT_MS);
+beat.unref?.();
+
+process.on("SIGINT", () => clearInterval(beat));
+```
+
+(With the Hono `upgradeWebSocket` helper you don't hold the raw socket, so send an application-level keepalive instead — e.g. `ws.send("ping")` on the same interval, ignored by the client.)
+
 ### Fan-out across isolates (do not skip this)
 
 Under load the runtime runs **several isolates in parallel, each with its own copy of module state** — so each isolate has its own `clients` set. Broadcasting only to the local set means a client connected to isolate A never sees a message sent by a client on isolate B. The chat would silently fracture.
@@ -329,9 +353,33 @@ connect();
 
 A full, verified build of this pattern — Hono `fetch` + `ws` `upgrade`, JWT auth over `?token=`, `LISTEN`/`NOTIFY` fan-out, client backoff, plus image uploads and an in-function moderation agent — is the `with-realtime-chat` example in [`neondatabase/examples`](https://github.com/neondatabase/examples/tree/main/with-realtime-chat).
 
+## Server-sent events (SSE)
+
+When you only need **server → client** streaming (live counters, notifications, progress, token streams), SSE is simpler than a WebSocket and needs no `upgrade` method or extra library: a plain `fetch` handler returns a `Response` whose body is a `ReadableStream` with `Content-Type: text/event-stream`, and the runtime holds it open as long as bytes flow. The browser consumes it with `EventSource`, which **reconnects on its own** — so there's no client backoff to write.
+
+```typescript
+// src/index.ts — minimal SSE endpoint
+const encoder = new TextEncoder();
+export default {
+  fetch: () =>
+    new Response(
+      new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(encoder.encode("data: hello\n\n"));
+          const t = setInterval(() => controller.enqueue(encoder.encode(": ping\n\n")), 25_000);
+          return () => clearInterval(t); // fires when the client disconnects
+        },
+      }),
+      { headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache, no-transform" } },
+    ),
+};
+```
+
+The same rules as WebSockets apply. **Heartbeat:** a stream stays open only while bytes flow — Neon's window is 15 minutes ([Timeouts and runtime limits](#timeouts-and-runtime-limits)) but proxies are usually far stricter, so emit a `: ping\n\n` comment every ~25–30s (shown above) to keep idle streams from being dropped. Keep state in Postgres, and fan out across isolates with [`LISTEN`/`NOTIFY`](#fan-out-across-isolates-do-not-skip-this) (hold a `Set` of stream controllers and `enqueue` to each). `EventSource` is GET-only and can't set headers, so authenticate with a `?token=` query param or cookie, exactly like the WebSocket case. [references/sse.md](references/sse.md) has the full pattern — Hono variant, cross-isolate fan-out, wire format, client, and caveats — and a verified end-to-end build is the `with-realtime-sse` example in [`neondatabase/examples`](https://github.com/neondatabase/examples/tree/main/with-realtime-sse).
+
 ## Integrations and observability
 
-A function is a long-lived Node.js process running a web-standard request/response handler, so standard Node integration SDKs work unchanged — initialize them once at module load, gated on an env var so local dev and unconfigured branches stay a no-op, and pass secrets via `--env` or `neon.ts` `env`. For wiring up **Sentry** error monitoring across the HTTP framework, the function runtime, and an agent's own caught/fallback failures (the long-running case Functions target), see [references/integrations.md](references/integrations.md). For running a **Mastra** agent on a function and shipping its traces to a **Mastra Studio (Mastra Cloud)** project for observability, see [references/mastra-studio.md](references/mastra-studio.md).
+A function is a long-lived Node.js process running a web-standard request/response handler, so standard Node integration SDKs work unchanged — initialize them once at module load, gated on an env var so local dev and unconfigured branches stay a no-op, and pass secrets via `--env` or `neon.ts` `env`. For wiring up **Sentry** error monitoring across the HTTP framework, the function runtime, and an agent's own caught/fallback failures (the long-running case Functions target), see [references/sentry.md](references/sentry.md). For running a **Mastra** agent on a function and shipping its traces to a **Mastra Studio (Mastra Cloud)** project for observability, see [references/mastra-studio.md](references/mastra-studio.md).
 
 ## Timeouts and runtime limits
 

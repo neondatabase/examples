@@ -67,7 +67,7 @@ neonctl config plan     # dry-run diff of what apply would change
 neonctl config apply    # enable the gateway on the branch  (neonctl deploy is an alias)
 ```
 
-The gateway is **branch-scoped**: each branch gets its own gateway host. When a `neon.ts` is present, `neonctl checkout` applies the policy as it _creates_ a branch, so a fresh preview/CI branch comes up with the gateway already enabled. Checking out an _existing_ branch doesn't reconcile it — run `neonctl deploy` to apply changes.
+The gateway is **branch-scoped**: each branch gets its own gateway host. When a `neon.ts` is present, `neonctl checkout` applies the policy as it _creates_ a branch, so a fresh preview/CI branch comes up with the gateway already enabled. Checking out an _existing_ branch doesn't reconcile it — run `neonctl deploy` to apply changes. Provisioning (`config apply` / `deploy`), `link`, and `checkout` also pull the branch's gateway credentials into your local `.env.local`, so local runs hit the same branch gateway as the deployed function (no manual `env pull` needed).
 
 For typed, validated access to the injected credentials, pass the same config object to `parseEnv` from `@neondatabase/env` — it returns an `env.aiGateway` namespace (`apiKey`, `baseUrl`) derived from your `neon.ts`.
 

@@ -204,14 +204,31 @@ export default defineConfig({
 
 ### Provision services with neonctl config
 
-Every project ships with serverless Postgres; `neon.ts` lets you also declare Neon Auth and the Data API today (Functions, buckets, and the AI Gateway are landing under a `preview` block). Reconcile the declaration from the CLI — the Neon equivalent of `terraform status` / `plan` / `apply`:
+Every project ships with serverless Postgres; `neon.ts` lets you also declare Neon Auth and the Data API today, with Functions, buckets, and the AI Gateway under a `preview` block — every service for the branch composes in one file:
+
+```typescript
+// neon.ts
+export default defineConfig({
+  auth: true,
+  dataApi: true,
+  preview: {
+    functions: { /* ... */ }, // see the neon-functions skill
+    buckets: { /* ... */ },    // see the neon-object-storage skill
+    aiGateway: true,           // see the neon-ai-gateway skill
+  },
+});
+```
+
+Reconcile the declaration from the CLI — the Neon equivalent of `terraform status` / `plan` / `apply`:
 
 ```bash
-neonctl config status   # print the branch's live config
-neonctl config plan     # dry-run diff of what apply would change
+neonctl config status   # print the branch's live config (read-only)
+neonctl config plan     # dry-run diff of what apply would change (read-only)
 neonctl config apply    # provision the declared services
 neonctl deploy          # alias for `neonctl config apply`
 ```
+
+`config status` and `config plan` only read state. `apply` / `deploy` — like `link` and `checkout` — provision the declared services **and then pull the branch's env into your local `.env.local`** (e.g. `Pulled 5 Neon variables into .env.local: DATABASE_URL, …`), so your local env always matches what's deployed.
 
 ### Type-safe env vars with parseEnv
 
@@ -229,6 +246,21 @@ const env = parseEnv(config);
 
 console.log(env.postgres.databaseUrl);
 console.log(env.auth.baseUrl);
+```
+
+By default `parseEnv` requires _every_ variable your config implies. When a process only uses a subset — a common case in frameworks like Next.js, where you might read `DATABASE_URL` but never the unpooled URL — pass an array of env-var keys to require and return only those. The keys are typesafe: autocomplete only offers variables your config enables, and the returned shape is narrowed to exactly what you selected (so unselected variables are neither enforced nor present).
+
+```typescript
+import { parseEnv } from "@neondatabase/env/v1";
+import config from "./neon";
+
+// Only DATABASE_URL is required and returned; DATABASE_URL_UNPOOLED is not enforced.
+const { postgres } = parseEnv(config, ["DATABASE_URL"]);
+console.log(postgres.databaseUrl);
+
+// Selecting across services — only these keys are validated/returned.
+const env = parseEnv(config, ["DATABASE_URL", "NEON_AUTH_BASE_URL"]);
+console.log(env.postgres.databaseUrl, env.auth.baseUrl);
 ```
 
 ### How checkout composes with neon.ts
@@ -269,6 +301,30 @@ export default defineConfig({
 ```
 
 The `branch` function receives the target branch (its `name`, whether it `exists` yet, whether it's the default, and more) and returns the tuning you want. Here new `dev-*` branches get a 7-day TTL so they clean themselves up, plus a cheap scale-to-zero compute profile, while existing branches and everything else fall through to the defaults. Because `neonctl checkout` applies this policy on create, a fresh `dev-*` branch comes up with these settings already in place.
+
+### Type-safe config: invalid setups don't compile
+
+Because `neon.ts` is TypeScript, the compiler catches invalid infrastructure before you ever deploy — and Neon encodes the actual rules (and their fixes) into the types, so the error tells you what to do rather than failing with a useless `Type 'true' is not assignable to type 'never'`. The canonical case: the Data API verifies requests with Neon Auth by default, so enabling it on its own is a type error _on_ `dataApi`:
+
+```typescript
+export default defineConfig({
+  dataApi: true, // type error: `dataApi` (default authProvider 'neon') requires Neon Auth
+});
+```
+
+The message names both fixes, so pick one:
+
+```typescript
+// 1. Enable Neon Auth (the default Data API auth provider):
+export default defineConfig({ auth: true, dataApi: true });
+
+// 2. Or verify a third-party IdP instead of Neon Auth:
+export default defineConfig({
+  dataApi: { authProvider: "external", jwksUrl: "https://your-idp/.well-known/jwks.json" },
+});
+```
+
+Treat a `neon.ts` type error as the config telling you which services must go together — read the message, it spells out the valid combinations.
 
 ## Gotchas
 
