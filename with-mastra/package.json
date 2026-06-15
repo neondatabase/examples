@@ -8,8 +8,8 @@
     "@mastra/core": "^1.41.0",
     "@mastra/memory": "^1.20.0",
     "@mastra/pg": "^1.12.0",
-    "@neondatabase/config": "^0.7.1",
-    "@neondatabase/env": "^0.5.1",
+    "@neondatabase/config": "^0.8.0",
+    "@neondatabase/env": "^0.6.0",
     "@neondatabase/functions": "^0.1.2"
   },
   "devDependencies": {
