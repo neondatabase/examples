@@ -7,7 +7,6 @@ import config from '../neon';
 const env = parseEnv(config);
 
 const MODEL = 'claude-haiku-4-5';
-const gatewayUrl = env.aiGateway.baseUrl.replace('/openai/v1', '/mlflow/v1');
 
 const memory = new Memory({
   storage: new PostgresStore({ id: 'neon', connectionString: env.postgres.databaseUrl }),
@@ -43,7 +42,7 @@ about them, answer from your working memory. Don't ask for information you've al
 stored. Keep replies friendly and to the point.`,
   model: {
     id: `neon/${MODEL}`,
-    url: gatewayUrl,
+    url: env.aiGateway.baseUrl,
     apiKey: env.aiGateway.apiKey,
   },
   memory,
