@@ -15,7 +15,7 @@ import { parseEnv } from "@neondatabase/env/v1";
 import config from "../../../neon";
 
 const env = parseEnv(config);
-const gatewayUrl = env.aiGateway.baseUrl.replace("/openai/v1", "/mlflow/v1");
+const gatewayUrl = env.aiGateway.baseUrl;
 
 export const pricingAgent = new Agent({
   id: "pricing-analyst",
