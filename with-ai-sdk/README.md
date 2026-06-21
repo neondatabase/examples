@@ -69,27 +69,15 @@ neon link
 
 If you let your agent drive this, add `--agent` to skip interactive mode.
 
-> On a brand-new project, `neon link` runs an implicit `env pull` that will warn it can't find the services declared in `neon.ts` (e.g. `bucket:images` and the AI Gateway). That's expected — provision them in the next step, then the variables can be pulled.
+## Provision and deploy
 
-## Provision the declared services
-
-`neon.ts` declares an object-storage bucket and the AI Gateway, but `neon link` does **not** create them — so the credentials and endpoints don't exist yet for `env pull` to read. Apply the policy first to provision them on your branch:
+Provision the services declared in `neon.ts`:
 
 ```bash
-neon config apply
+neon deploy
 ```
 
-This creates the bucket and enables the AI Gateway (and registers the function), so their credentials are ready to pull.
-
-## Configure your environment
-
-Now that the services exist, pull your branch-scoped variables into `.env.local`:
-
-```bash
-neon env pull
-```
-
-Because `neon.ts` enables the AI Gateway and a bucket, the pull mints a branch credential and writes `OPENAI_API_KEY` / `OPENAI_BASE_URL` and the `AWS_*` storage variables alongside `DATABASE_URL`. See `.env.example` for the full set.
+> Note: `neon deploy` automatically runs an `env pull` that fetches the declared services' credentials and environment variables and writes them to a local `.env.local` file for development.
 
 ## Apply the schema
 
@@ -125,10 +113,18 @@ curl -N -X POST http://localhost:8787 \
   ]}'
 ```
 
-## Deploy to Neon Functions
+## Test your deployed function
+
+You already deployed the agent in the provisioning step. Grab its invocation URL and call it:
 
 ```bash
-neon deploy
+# List the function to find its invocation URL
+neon functions get imagegen
+
+# Then call it (replace with your URL)
+curl -N -X POST https://<your-branch>-imagegen.compute.<region>.aws.neon.tech \
+  -H 'content-type: application/json' \
+  -d '{"messages":[{"role":"user","content":"Please draw a robot reading a book."}]}'
 ```
 
-This applies the `neon.ts` policy (creating the bucket + enabling the AI Gateway on the branch if needed) and deploys the agent as a Neon Function.
+Redeploy after changing the function with `neon deploy`.

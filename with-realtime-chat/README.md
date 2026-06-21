@@ -70,25 +70,15 @@ neon link
 
 If you let your agent drive this, add `--agent` to skip interactive mode.
 
-> `neon link` runs an implicit `env pull` that warns it can't find the function declared in `neon.ts` yet. That's expected — provision it in the next step.
+## Provision and deploy
 
-## Provision the declared services
-
-`neon.ts` declares Neon Auth and the `chat` function. Apply the policy so they exist on your branch:
+Provision the services declared in `neon.ts`:
 
 ```bash
-neonctl config apply
+neonctl deploy
 ```
 
-## Configure your environment
-
-Pull your branch-scoped variables into `.env.local`:
-
-```bash
-neonctl env pull
-```
-
-You should see `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `NEON_AUTH_BASE_URL`, and `NEON_AUTH_JWKS_URL`.
+> Note: `neonctl deploy` automatically runs an `env pull` that fetches the declared services' credentials and environment variables and writes them to a local `.env.local` file for development.
 
 ## Apply the schema
 
@@ -127,13 +117,9 @@ npm run dev --prefix web
 
 Open `http://localhost:3000`, sign up, and open a second browser to watch messages arrive in realtime.
 
-## Deploy the function to Neon
+## Get the deployed function URL
 
-```bash
-neonctl deploy
-```
-
-Grab the function's invocation URL — this is your `wss://` endpoint:
+You already deployed the `chat` function in the provisioning step. Grab its invocation URL — this is your `wss://` endpoint (redeploy after changes with `neonctl deploy`):
 
 ```bash
 neonctl functions get chat

@@ -53,29 +53,17 @@ neon link
 
 If you let your agent drive this, add `--agent` to skip interactive mode.
 
-> The Neon AI Gateway is a Preview feature. Link to a project/region where AI Gateway early access is enabled, otherwise `neon dev` / `neon env pull` can't mint the gateway credentials.
+> The Neon AI Gateway is a Preview feature. Link to a project/region where AI Gateway early access is enabled, otherwise `neon dev` / `neon deploy` can't mint the gateway credentials.
 
-> On a brand-new project, `neon link` runs an implicit `env pull` that will warn it can't find the AI Gateway declared in `neon.ts`. That's expected — provision it in the next step, then the variables can be pulled.
+## Provision and deploy
 
-## Provision the declared services
-
-`neon.ts` enables the AI Gateway, but `neon link` does **not** provision it — so the gateway credentials don't exist yet for `env pull` to read. Apply the policy first to enable it on your branch:
+Provision the services declared in `neon.ts`:
 
 ```bash
-neon config apply
+neon deploy
 ```
 
-This enables the AI Gateway (and registers the function), so its credentials are ready to pull.
-
-## Configure your environment
-
-Now that the AI Gateway exists, pull your branch-scoped variables into `.env.local`:
-
-```bash
-neon env pull
-```
-
-Because `neon.ts` enables the AI Gateway, the pull mints a branch credential and writes the gateway variables (`OPENAI_API_KEY`, `OPENAI_BASE_URL`) alongside `DATABASE_URL` — see `.env.example` for the full set.
+> Note: `neon deploy` automatically runs an `env pull` that fetches the declared services' credentials and environment variables and writes them to a local `.env.local` file for development.
 
 ## Run locally
 
@@ -133,7 +121,7 @@ Mastra's `PostgresStore` creates its own tables (`mastra_threads`, `mastra_messa
 
 ## Chat in Mastra Studio
 
-Prefer a UI? [Mastra Studio](https://mastra.ai) gives you a local chat playground for the agent. With your env in place (the `.env.local` written by `neon link` / `neon env pull`), run:
+Prefer a UI? [Mastra Studio](https://mastra.ai) gives you a local chat playground for the agent. With your env in place (the `.env.local` written by `neon deploy`), run:
 
 ```bash
 npm run studio
@@ -149,17 +137,9 @@ Open the printed URL (e.g. `http://localhost:4112`), pick the **personal-assista
 
 Because memory supplies the conversation history, you only need to send the newest user message in each request — you don't have to resend the whole transcript.
 
-## Deploy to Neon Functions
-
-Deploy the agent as a Neon Function to your branch:
-
-```bash
-neon deploy
-```
-
 ## Test your deployed function
 
-Grab the function's invocation URL and call it:
+You already deployed the agent in the provisioning step. Grab its invocation URL and call it (redeploy after changes with `neon deploy`):
 
 ```bash
 # List the function to find its invocation URL
