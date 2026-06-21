@@ -70,15 +70,15 @@ neon link
 
 If you let your agent drive this, add `--agent` to skip interactive mode.
 
-## Provision and deploy the function
+## Provision and deploy
 
-`neon.ts` declares Neon Auth and the `chat` function, but `neon link` does **not** provision them — Neon Auth's credentials don't exist until the policy is applied. `neonctl deploy` applies the policy (enabling Neon Auth and deploying the `chat` function) and then pulls the resulting branch-scoped variables into `.env.local`:
+Provision the services declared in `neon.ts`:
 
 ```bash
 neonctl deploy
 ```
 
-> `neonctl deploy` automatically runs an env pull after applying the policy, writing the provisioned variables into `.env.local` (or `.env` if that's what the project uses). You should see `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `NEON_AUTH_BASE_URL`, and `NEON_AUTH_JWKS_URL`. No separate `env pull` step is needed.
+> Note: `neonctl deploy` automatically runs an `env pull` that fetches the declared services' credentials and environment variables and writes them to a local `.env.local` file for development.
 
 ## Apply the schema
 

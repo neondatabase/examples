@@ -71,13 +71,13 @@ If you let your agent drive this, add `--agent` to skip interactive mode.
 
 ## Provision and deploy
 
-`neon.ts` declares an object-storage bucket and the AI Gateway, but `neon link` does **not** create them — the credentials and endpoints don't exist until the policy is applied. `neon deploy` applies the policy (creating the bucket, enabling the AI Gateway, and deploying the agent as a Neon Function) and then pulls the resulting branch-scoped variables into `.env.local`:
+Provision the services declared in `neon.ts`:
 
 ```bash
 neon deploy
 ```
 
-> `neon deploy` automatically runs an env pull after applying the policy, writing the provisioned variables into `.env.local` (or `.env` if that's what the project uses). Because `neon.ts` enables the AI Gateway and a bucket, that includes a freshly minted `OPENAI_API_KEY` / `OPENAI_BASE_URL` and the `AWS_*` storage variables alongside `DATABASE_URL` — see `.env.example` for the full set. No separate `env pull` step is needed.
+> Note: `neon deploy` automatically runs an `env pull` that fetches the declared services' credentials and environment variables and writes them to a local `.env.local` file for development.
 
 ## Apply the schema
 
