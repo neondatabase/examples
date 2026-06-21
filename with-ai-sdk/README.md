@@ -69,25 +69,15 @@ neon link
 
 If you let your agent drive this, add `--agent` to skip interactive mode.
 
-## Provision the declared services
+## Provision and deploy
 
-`neon.ts` declares an object-storage bucket and the AI Gateway, but `neon link` does **not** create them — so the credentials and endpoints don't exist yet for `env pull` to read. Apply the policy first to provision them on your branch:
-
-```bash
-neon config apply
-```
-
-This creates the bucket and enables the AI Gateway (and registers the function), so their credentials are ready to pull.
-
-## Configure your environment
-
-Now that the services exist, pull your branch-scoped variables into `.env.local`:
+`neon.ts` declares an object-storage bucket and the AI Gateway, but `neon link` does **not** create them — the credentials and endpoints don't exist until the policy is applied. `neon deploy` applies the policy (creating the bucket, enabling the AI Gateway, and deploying the agent as a Neon Function) and then pulls the resulting branch-scoped variables into `.env.local`:
 
 ```bash
-neon env pull
+neon deploy
 ```
 
-Because `neon.ts` enables the AI Gateway and a bucket, the pull mints a branch credential and writes `OPENAI_API_KEY` / `OPENAI_BASE_URL` and the `AWS_*` storage variables alongside `DATABASE_URL`. See `.env.example` for the full set.
+> `neon deploy` automatically runs an env pull after applying the policy, writing the provisioned variables into `.env.local` (or `.env` if that's what the project uses). Because `neon.ts` enables the AI Gateway and a bucket, that includes a freshly minted `OPENAI_API_KEY` / `OPENAI_BASE_URL` and the `AWS_*` storage variables alongside `DATABASE_URL` — see `.env.example` for the full set. No separate `env pull` step is needed.
 
 ## Apply the schema
 
@@ -123,10 +113,18 @@ curl -N -X POST http://localhost:8787 \
   ]}'
 ```
 
-## Deploy to Neon Functions
+## Test your deployed function
+
+You already deployed the agent in the provisioning step. Grab its invocation URL and call it:
 
 ```bash
-neon deploy
+# List the function to find its invocation URL
+neon functions get imagegen
+
+# Then call it (replace with your URL)
+curl -N -X POST https://<your-branch>-imagegen.compute.<region>.aws.neon.tech \
+  -H 'content-type: application/json' \
+  -d '{"messages":[{"role":"user","content":"Please draw a robot reading a book."}]}'
 ```
 
-This applies the `neon.ts` policy (creating the bucket + enabling the AI Gateway on the branch if needed) and deploys the agent as a Neon Function.
+Redeploy after changing the function with `neon deploy`.

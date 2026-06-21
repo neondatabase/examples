@@ -67,23 +67,7 @@ neon link
 
 If you let your agent drive this, add `--agent` to skip interactive mode.
 
-## Provision the declared services
-
-`neon.ts` declares the `counter` function. Apply the policy so it exists on your branch:
-
-```bash
-neonctl config apply
-```
-
-## Configure your environment
-
-Pull your branch-scoped variables into `.env.local`:
-
-```bash
-neonctl env pull
-```
-
-You should see `DATABASE_URL` and `DATABASE_URL_UNPOOLED`.
+`neon link` pulls your branch-scoped variables — `DATABASE_URL` and `DATABASE_URL_UNPOOLED` — into `.env.local`.
 
 ## Apply the schema
 

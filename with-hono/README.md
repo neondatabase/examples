@@ -53,31 +53,7 @@ neon link
 
 If you let your agent drive this, add `--agent` to skip interactive mode.
 
-## Provision the declared services
-
-`neon.ts` declares the `todos` function, but `neon link` does **not** provision the services it declares — `env pull` fails fast until they exist on the branch. Apply the policy first:
-
-```bash
-neonctl config apply
-```
-
-This registers the declared function on your branch so the environment pull can resolve everything in `neon.ts`.
-
-## Configure your environment
-
-With the policy applied, pull your branch-scoped environment variables into `.env.local`:
-
-```bash
-neonctl env pull
-```
-
-Inspect your `.env.local` file and ensure the `DATABASE_URL` has been set:
-
-```
-DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
-```
-
-You can also find your connection string in the [Neon Console](https://console.neon.tech).
+`neon link` pulls your branch-scoped environment variables — including `DATABASE_URL` — into `.env.local`. You can also find your connection string in the [Neon Console](https://console.neon.tech).
 
 ## Apply the schema
 
