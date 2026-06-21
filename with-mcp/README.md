@@ -102,7 +102,13 @@ mcporter call "http://localhost:8787/mcp.update_contact" --allow-http id:1 phone
 mcporter call "http://localhost:8787/mcp.delete_contact" --allow-http id:1
 ```
 
-To add it to an MCP-aware client (Cursor, Claude Desktop, etc.), point the client at the `/mcp` URL as a streamable HTTP server.
+To add it to an MCP-aware client (Cursor, Claude Desktop, etc.), point the client at the `/mcp` URL as a streamable HTTP server. The quickest way is [`add-mcp`](https://www.npmjs.com/package/add-mcp), which writes the client config for you:
+
+```bash
+npx add-mcp http://localhost:8787/mcp -a cursor
+```
+
+Pass `-a <agent>` to target a specific client (e.g. `cursor`, `claude`); omit it to pick interactively. Swap in your deployed function URL once it's live.
 
 ## Deploy to Neon Functions
 
