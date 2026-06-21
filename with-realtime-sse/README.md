@@ -67,8 +67,6 @@ neon link
 
 If you let your agent drive this, add `--agent` to skip interactive mode.
 
-> `neon link` runs an implicit `env pull` that warns it can't find the function declared in `neon.ts` yet. That's expected — provision it in the next step.
-
 ## Provision the declared services
 
 `neon.ts` declares the `counter` function. Apply the policy so it exists on your branch:

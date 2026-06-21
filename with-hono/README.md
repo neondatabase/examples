@@ -53,8 +53,6 @@ neon link
 
 If you let your agent drive this, add `--agent` to skip interactive mode.
 
-> On a brand-new project, `neon link` runs an implicit `env pull` that will warn it can't find the function declared in `neon.ts`. That's expected — provision it in the next step, then the variables can be pulled.
-
 ## Provision the declared services
 
 `neon.ts` declares the `todos` function, but `neon link` does **not** provision the services it declares — `env pull` fails fast until they exist on the branch. Apply the policy first:

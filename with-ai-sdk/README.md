@@ -69,8 +69,6 @@ neon link
 
 If you let your agent drive this, add `--agent` to skip interactive mode.
 
-> On a brand-new project, `neon link` runs an implicit `env pull` that will warn it can't find the services declared in `neon.ts` (e.g. `bucket:images` and the AI Gateway). That's expected — provision them in the next step, then the variables can be pulled.
-
 ## Provision the declared services
 
 `neon.ts` declares an object-storage bucket and the AI Gateway, but `neon link` does **not** create them — so the credentials and endpoints don't exist yet for `env pull` to read. Apply the policy first to provision them on your branch:
