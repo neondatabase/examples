@@ -62,8 +62,6 @@ neon link
 
 If you let your agent drive this, add `--agent` to skip interactive mode.
 
-> Neon Functions is a preview feature available only on new projects in `us-east-2` — create your project in that region.
-
 ## Provision the declared services
 
 `neon.ts` declares the `contacts` function, but `neon link` does **not** provision the services it declares — `env pull` fails fast until they exist on the branch. Apply the policy first:
