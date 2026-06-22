@@ -1,7 +1,10 @@
 templates:
   - id: hono
-    title: "Hono API (Drizzle, Neon Postgres) on Neon Functions"
+    title: "REST API"
     description: "A Hono API using Drizzle ORM and Neon Postgres, ready to deploy as a Neon Function."
+    tools:
+      - Hono
+      - Drizzle
     services:
       - Postgres
       - Functions
@@ -11,8 +14,11 @@ templates:
       ref: main
       subdir: with-hono
   - id: ai-sdk
-    title: "AI SDK agent (AI Gateway, object storage, Drizzle) on Neon Functions"
+    title: "Image-generation agent"
     description: "A Vercel AI SDK agent on Neon Functions: streams chat through the Neon AI Gateway, generates an image with OpenAI image generation, and stores it in Neon object storage indexed in Postgres via Drizzle."
+    tools:
+      - AI SDK
+      - Drizzle
     services:
       - Postgres
       - Functions
@@ -24,8 +30,11 @@ templates:
       ref: main
       subdir: with-ai-sdk
   - id: mastra
-    title: "Mastra personal agent (AI Gateway, Mastra Memory) on Neon Functions"
+    title: "Personal-assistant agent"
     description: "A Mastra personal-assistant agent on Neon Functions: streams chat through the Neon AI Gateway and uses Mastra Memory — backed by Neon Postgres — to remember the user across conversation threads via resource-scoped working memory."
+    tools:
+      - Mastra
+      - Mastra Memory
     services:
       - Postgres
       - Functions
@@ -36,8 +45,11 @@ templates:
       ref: main
       subdir: with-mastra
   - id: mcp
-    title: "MCP server (Model Context Protocol SDK, Hono, Drizzle) on Neon Functions"
+    title: "MCP server"
     description: "An MCP server on Neon Functions exposing CRUD tools (create, update, delete, search) over a contact-management database. Built with the Anthropic MCP TypeScript SDK and Hono's streamable HTTP transport, backed by Neon Postgres via Drizzle."
+    tools:
+      - Hono
+      - Drizzle
     services:
       - Postgres
       - Functions
@@ -47,8 +59,12 @@ templates:
       ref: main
       subdir: with-mcp
   - id: realtime-chat
-    title: "Realtime chat (Next.js, Neon Auth, WebSockets) on Neon Functions"
+    title: "Realtime chat"
     description: "A full-stack realtime chat: a Next.js app with Neon Auth talking over WebSockets to a Hono server on Neon Functions. Messages are stored in Neon Postgres via Drizzle and fanned out to all clients across isolates with Postgres LISTEN/NOTIFY."
+    tools:
+      - Next.js
+      - Hono
+      - Drizzle
     services:
       - Postgres
       - Functions
@@ -59,8 +75,11 @@ templates:
       ref: main
       subdir: with-realtime-chat
   - id: realtime-sse
-    title: "Realtime counter (TanStack Router, SSE) on Neon Functions"
+    title: "Realtime counter"
     description: "A realtime shared counter: a client-only TanStack Router SPA talking over server-sent events to a Hono server on Neon Functions. The count is stored in Neon Postgres via Drizzle and pushed to all clients across isolates with Postgres LISTEN/NOTIFY."
+    tools:
+      - TanStack Router
+      - Hono
     services:
       - Postgres
       - Functions
