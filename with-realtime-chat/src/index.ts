@@ -5,7 +5,7 @@ import { WebSocketServer, type WebSocket } from 'ws';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool, Client } from 'pg';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
-import { parseEnv } from '@neondatabase/env/v1';
+import { parseEnv } from '@neondatabase/env';
 import config from '../neon';
 import { messages } from './db/schema';
 

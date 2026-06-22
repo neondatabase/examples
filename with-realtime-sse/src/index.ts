@@ -3,7 +3,7 @@ import { cors } from 'hono/cors';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { eq, sql } from 'drizzle-orm';
 import { Pool, Client } from 'pg';
-import { parseEnv } from '@neondatabase/env/v1';
+import { parseEnv } from '@neondatabase/env';
 import config from '../neon';
 import { counters } from './db/schema';
 

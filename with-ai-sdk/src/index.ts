@@ -1,11 +1,11 @@
-import { neon } from '@neondatabase/ai-sdk-provider/v1';
+import { neon } from '@neondatabase/ai-sdk-provider';
 import { streamText, type ModelMessage } from 'ai';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { randomUUID } from 'node:crypto';
-import { parseEnv } from '@neondatabase/env/v1';
+import { parseEnv } from '@neondatabase/env';
 import config from '../neon';
 import { images } from './db/schema';
 
