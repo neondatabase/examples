@@ -1,11 +1,11 @@
-import { openai } from '@ai-sdk/openai';
+import { neon } from '@neondatabase/ai-sdk-provider';
 import { streamText, type ModelMessage } from 'ai';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { randomUUID } from 'node:crypto';
-import { parseEnv } from '@neondatabase/env/v1';
+import { parseEnv } from '@neondatabase/env';
 import config from '../neon';
 import { images } from './db/schema';
 
@@ -20,7 +20,7 @@ const s3 = new S3Client({
 });
 
 const BUCKET = 'images';
-const MODEL = 'databricks-gpt-5-mini';
+const MODEL = 'gpt-5-mini';
 
 async function persistImage(prompt: string, jpegBase64: string) {
   const body = Buffer.from(jpegBase64, 'base64');
@@ -63,13 +63,13 @@ export default {
     const prompt = lastUserText(messages);
 
     const result = streamText({
-      model: openai(MODEL),
+      model: neon(MODEL),
       system:
         'You are an illustration agent. When the user asks for a picture, use the ' +
         'image_generation tool to create it, then briefly tell the user what you drew.',
       messages,
       tools: {
-        image_generation: openai.tools.imageGeneration({
+        image_generation: neon.tools.imageGeneration({
           outputFormat: 'jpeg',
           quality: 'low',
           outputCompression: 30,
