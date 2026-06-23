@@ -1,0 +1,13 @@
+# deps
+node_modules/
+
+# env
+.env*
+!.env.example
+
+# neon
+.neon
+
+# misc
+.DS_Store
+*.log
