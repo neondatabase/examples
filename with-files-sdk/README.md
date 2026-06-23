@@ -18,8 +18,8 @@ with-files-sdk/
 ├── tsconfig.json
 ├── .env.example        # S3 credentials injected by `neon deploy` / `neon env pull`
 ├── assets/             # The local files uploaded by the script
-│   ├── neon-logo.svg
-│   └── neon-logo.png
+│   ├── neon-logo.png
+│   └── neon-logomark.png
 ├── src/
 │   └── index.ts        # The script: upload each asset, print a presigned URL, list the bucket
 └── package.json
@@ -27,7 +27,7 @@ with-files-sdk/
 
 ## What it does
 
-`npm start` reads every file in `assets/`, uploads it to the `assets` bucket under a `logos/` prefix with the right content type, prints a presigned view URL for each, and then lists the objects in the bucket — all through the Files SDK's `neon` adapter:
+The script reads every PNG in `assets/`, uploads each to the `assets` bucket under a `logos/` prefix, prints a presigned view URL for each, and then lists the objects in the bucket — all through the Files SDK's `neon` adapter:
 
 ```ts
 import { Files } from 'files-sdk';
@@ -35,11 +35,9 @@ import { neon } from 'files-sdk/neon';
 
 const files = new Files({ adapter: neon({ bucket: 'assets' }) });
 
-await files.upload('logos/neon-logo.svg', body, { contentType: 'image/svg+xml' });
-const url = await files.url('logos/neon-logo.svg', { expiresIn: 3600 });
+await files.upload('logos/neon-logo.png', body, { contentType: 'image/png' });
+const url = await files.url('logos/neon-logo.png', { expiresIn: 3600 });
 ```
-
-Swap `neon(...)` for `s3(...)`, `r2(...)`, `gcs(...)`, … and the rest of the script is unchanged.
 
 ## Clone the repository
 
@@ -84,7 +82,7 @@ neon deploy
 ## Run the script
 
 ```bash
-npm start
+npx tsx src/index.ts
 ```
 
 You'll see each asset uploaded with a presigned view URL, followed by a listing of the objects now in your bucket. Open a presigned URL in the browser to confirm the upload.
