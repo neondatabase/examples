@@ -103,10 +103,6 @@ listener.on("notification", (msg) => {
 function publish(payload: unknown) {
   return pool.query("SELECT pg_notify($1, $2)", [CHANNEL, JSON.stringify(payload)]);
 }
-
-process.on("SIGINT", () => {
-  Promise.allSettled([pool.end(), listener.end()]).then(() => process.exit(0));
-});
 ```
 
 Register/unregister each connection in `clients` from the stream's `start`/`cancel`, and add a module-scope heartbeat (`setInterval`, every ~25–30s) that enqueues `: ping\n\n` to every controller so idle streams stay alive (see [Caveats](#caveats)).

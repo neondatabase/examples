@@ -133,8 +133,3 @@ app.get('/events', async (c) => {
 });
 
 export default app;
-
-process.on('SIGINT', () => {
-  clearInterval(heartbeat);
-  Promise.allSettled([pool.end(), listener.end()]).then(() => process.exit(0));
-});

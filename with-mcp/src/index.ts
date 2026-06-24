@@ -15,10 +15,6 @@ const { postgres } = parseEnv(config, ['DATABASE_URL']);
 const pool = new Pool({ connectionString: postgres.databaseUrl, max: 5 });
 const db = drizzle(pool);
 
-process.on('SIGINT', () => {
-  pool.end().then(() => process.exit(0));
-});
-
 // Optional free-text field — a fresh schema per field so each carries its own
 // description in the generated tool schema (a shared instance would collapse to a $ref).
 const optionalText = (description: string) =>

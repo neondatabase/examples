@@ -89,7 +89,3 @@ export default {
     });
   },
 };
-
-process.on('SIGINT', () => {
-  Promise.allSettled([pool.end(), listener.end()]).then(() => process.exit(0));
-});
