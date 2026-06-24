@@ -286,8 +286,6 @@ const beat = setInterval(() => {
   for (const ws of clients) if (ws.readyState === ws.OPEN) ws.ping();
 }, HEARTBEAT_MS);
 beat.unref?.();
-
-process.on("SIGINT", () => clearInterval(beat));
 ```
 
 (With the Hono `upgradeWebSocket` helper you don't hold the raw socket, so send an application-level keepalive instead — e.g. `ws.send("ping")` on the same interval, ignored by the client.)
