@@ -1,4 +1,4 @@
-import { defineConfig } from "@neondatabase/config/v1";
+import { defineConfig } from "@neon/config/v1";
 
 export default defineConfig({
   // Neon Auth issues the JWTs the chat function verifies, and the WebSocket

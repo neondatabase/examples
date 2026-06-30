@@ -1,4 +1,4 @@
-import { defineConfig } from "@neondatabase/config/v1";
+import { defineConfig } from "@neon/config/v1";
 
 export default defineConfig({
   // Postgres is enabled by default on the branch. The `counter` function hosts

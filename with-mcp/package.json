@@ -8,9 +8,9 @@
   "dependencies": {
     "@hono/mcp": "^0.3.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@neondatabase/config": "^0.8.0",
-    "@neondatabase/env": "^0.6.0",
-    "@neondatabase/functions": "^0.1.2",
+    "@neon/config": "^0.8.0",
+    "@neon/env": "^0.8.0",
+    "@neon/functions": "^0.5.0",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.11.4",

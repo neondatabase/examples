@@ -1,7 +1,7 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { PostgresStore } from '@mastra/pg';
-import { parseEnv } from '@neondatabase/env';
+import { parseEnv } from '@neon/env';
 import config from '../neon';
 
 const env = parseEnv(config);

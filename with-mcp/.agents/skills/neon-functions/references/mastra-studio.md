@@ -11,7 +11,7 @@ Use the gateway's **MLflow (chat-completions) dialect**, which serves every prov
 ```typescript
 // src/mastra/agents/pricing.ts
 import { Agent } from "@mastra/core/agent";
-import { parseEnv } from "@neondatabase/env/v1";
+import { parseEnv } from "@neon/env/v1";
 import config from "../../../neon";
 
 const env = parseEnv(config);

@@ -5,7 +5,7 @@ import { and, eq, ilike, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPTransport } from '@hono/mcp';
-import { parseEnv } from '@neondatabase/env';
+import { parseEnv } from '@neon/env';
 import config from '../neon';
 import { contacts } from './db/schema';
 

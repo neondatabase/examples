@@ -6,7 +6,7 @@
 
 # Getting started with Neon and the AI SDK
 
-An AI agent built with the [Vercel AI SDK](https://ai-sdk.dev) (v6), running on Neon Functions. It streams a chat completion through the [Neon AI Gateway](https://neon.com) using the [`@neondatabase/ai-sdk-provider`](https://www.npmjs.com/package/@neondatabase/ai-sdk-provider) and the gateway's built-in `image_generation` tool: when the model calls it, a JPEG is generated, uploaded to a Neon-managed S3-compatible bucket, and indexed in [Neon](https://neon.com) Postgres via [Drizzle ORM](https://orm.drizzle.team).
+An AI agent built with the [Vercel AI SDK](https://ai-sdk.dev) (v6), running on Neon Functions. It streams a chat completion through the [Neon AI Gateway](https://neon.com) using the [`@neon/ai-sdk-provider`](https://www.npmjs.com/package/@neon/ai-sdk-provider) and the gateway's built-in `image_generation` tool: when the model calls it, a JPEG is generated, uploaded to a Neon-managed S3-compatible bucket, and indexed in [Neon](https://neon.com) Postgres via [Drizzle ORM](https://orm.drizzle.team).
 
 Everything the app needs — the database URL, the AI Gateway endpoint, and the object-storage credential — is declared in `neon.ts` and injected by `neonctl dev`, so there are no secrets to copy around.
 
@@ -36,7 +36,7 @@ with-ai-sdk/
 The handler:
 
 1. Streams the assistant's response as a UI-message stream (consumable by the AI SDK React/Vue/Svelte hooks).
-2. Uses an OpenAI/GPT-5 model on the Neon AI Gateway (`gpt-5-mini`) via the `neon()` provider from `@neondatabase/ai-sdk-provider`, with the gateway's built-in `neon.tools.imageGeneration()` tool.
+2. Uses an OpenAI/GPT-5 model on the Neon AI Gateway (`gpt-5-mini`) via the `neon()` provider from `@neon/ai-sdk-provider`, with the gateway's built-in `neon.tools.imageGeneration()` tool.
 3. When the model generates an image, the handler uploads the returned JPEG to your bucket and records the prompt + key + size in Postgres, logging a presigned view URL.
 
 > Notes on the gateway's image generation: it's the OpenAI Responses **`image_generation`** built-in tool (GPT-5 models only — there is no separate images endpoint), and the image is returned **inline as base64**. The gateway caps a response at ~640 KB, so this example requests a compressed JPEG (`outputFormat: 'jpeg'`, `quality: 'low'`, `outputCompression`) to stay under it; high-quality/large images can exceed the cap or hit the ~60s gateway timeout.

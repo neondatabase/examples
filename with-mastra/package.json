@@ -5,15 +5,15 @@
     "studio": "mastra dev"
   },
   "dependencies": {
-    "@mastra/core": "^1.41.0",
-    "@mastra/memory": "^1.20.0",
-    "@mastra/pg": "^1.12.0",
-    "@neondatabase/config": "^0.8.0",
-    "@neondatabase/env": "^0.6.0",
-    "@neondatabase/functions": "^0.1.2"
+    "@mastra/core": "^1.42.0",
+    "@mastra/memory": "^1.20.3",
+    "@mastra/pg": "^1.13.0",
+    "@neon/config": "^0.8.0",
+    "@neon/env": "^0.8.0",
+    "@neon/functions": "^0.5.0"
   },
   "devDependencies": {
-    "mastra": "^1.12.0",
+    "mastra": "^1.13.0",
     "typescript": "^5.6.3"
   }
 }
