@@ -42,7 +42,7 @@ cd with-mcp
 ## Install and authenticate the Neon CLI
 
 ```bash
-npm i -g neonctl
+npm i -g neon
 neon login
 ```
 
@@ -75,7 +75,7 @@ npm run db:push
 ## Run locally
 
 ```bash
-neonctl dev
+neon dev
 ```
 
 This serves the function at `http://localhost:8787`, with the MCP endpoint at `http://localhost:8787/mcp`.
@@ -115,7 +115,7 @@ Pass `-a <agent>` to target a specific client (e.g. `cursor`, `claude`); omit it
 Deploy the MCP server as a Neon Function to your branch:
 
 ```bash
-neonctl deploy
+neon deploy
 ```
 
 ## Test your deployed function
@@ -124,7 +124,7 @@ Grab the function's invocation URL and connect your MCP client to its `/mcp` pat
 
 ```bash
 # List the function to find its invocation URL
-neonctl functions get contacts
+neon functions get contacts
 
 # Then point an MCP client at it (replace with your URL)
 mcporter list https://<your-branch>-contacts.compute.<region>.aws.neon.tech/mcp --schema

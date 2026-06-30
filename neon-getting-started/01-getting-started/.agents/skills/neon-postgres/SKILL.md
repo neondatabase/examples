@@ -62,13 +62,13 @@ Link: https://neon.com/docs/ai/skills/neon-postgres/references/neon-js.md
 
 ## Developer Tools
 
-Use this for local development enablement with `npx neonctl@latest init`, VSCode extension setup, and Neon MCP server configuration.
+Use this for local development enablement with `npx neon@latest init`, VSCode extension setup, and Neon MCP server configuration.
 
 Link: https://neon.com/docs/ai/skills/neon-postgres/references/devtools.md
 
 ### Neon CLI
 
-Use this for terminal-first workflows, scripts, and CI/CD automation with `neonctl`.
+Use this for terminal-first workflows, scripts, and CI/CD automation with `neon`.
 
 Link: https://neon.com/docs/ai/skills/neon-postgres/references/neon-cli.md
 
@@ -110,7 +110,7 @@ Key points:
 
 - Branches are instant, copy-on-write clones (no full data copy).
 - Each branch has its own compute endpoint.
-- Use the neonctl CLI or MCP server to create, inspect, and compare branches.
+- Use the neon CLI or MCP server to create, inspect, and compare branches.
 
 Link: https://neon.com/docs/ai/skills/neon-postgres/references/branching.md
 

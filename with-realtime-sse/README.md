@@ -48,7 +48,7 @@ cd with-realtime-sse
 ## Install and authenticate the Neon CLI
 
 ```bash
-npm i -g neonctl
+npm i -g neon
 neon login
 ```
 
@@ -80,7 +80,7 @@ npm run db:push
 Start the function (serves on `http://localhost:8787`):
 
 ```bash
-neonctl dev
+neon dev
 ```
 
 Configure the SPA — copy `web/.env.example` to `web/.env.local`:
@@ -100,13 +100,13 @@ Open `http://localhost:3000`, then open a second tab and click **Increment** —
 ## Deploy the function to Neon
 
 ```bash
-neonctl deploy
+neon deploy
 ```
 
 Grab the function's invocation URL — this is your SSE endpoint:
 
 ```bash
-neonctl functions get counter
+neon functions get counter
 # invocation_url: https://<branch>-counter.compute.<region>.aws.neon.tech
 ```
 
@@ -134,7 +134,7 @@ vercel deploy --prod
 Lock the function down to your deployed origin by setting `WEB_ORIGIN` on the function:
 
 ```bash
-neonctl deploy --env <(echo "WEB_ORIGIN=https://<your-app>.vercel.app")
+neon deploy --env <(echo "WEB_ORIGIN=https://<your-app>.vercel.app")
 ```
 
 ## How it works

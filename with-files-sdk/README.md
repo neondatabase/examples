@@ -49,7 +49,7 @@ cd with-files-sdk
 ## Install and authenticate the Neon CLI
 
 ```bash
-npm i -g neonctl
+npm i -g neon
 neon login
 ```
 

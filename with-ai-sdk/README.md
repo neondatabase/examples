@@ -8,7 +8,7 @@
 
 An AI agent built with the [Vercel AI SDK](https://ai-sdk.dev) (v6), running on Neon Functions. It streams a chat completion through the [Neon AI Gateway](https://neon.com) using the [`@neon/ai-sdk-provider`](https://www.npmjs.com/package/@neon/ai-sdk-provider) and the gateway's built-in `image_generation` tool: when the model calls it, a JPEG is generated, uploaded to a Neon-managed S3-compatible bucket, and indexed in [Neon](https://neon.com) Postgres via [Drizzle ORM](https://orm.drizzle.team).
 
-Everything the app needs — the database URL, the AI Gateway endpoint, and the object-storage credential — is declared in `neon.ts` and injected by `neonctl dev`, so there are no secrets to copy around.
+Everything the app needs — the database URL, the AI Gateway endpoint, and the object-storage credential — is declared in `neon.ts` and injected by `neon dev`, so there are no secrets to copy around.
 
 ## Project structure
 
@@ -51,7 +51,7 @@ cd with-ai-sdk
 ## Install and authenticate the Neon CLI
 
 ```bash
-npm i -g neonctl
+npm i -g neon
 neon login
 ```
 

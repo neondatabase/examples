@@ -33,7 +33,7 @@ cd with-mastra
 ## Install and authenticate the Neon CLI
 
 ```bash
-npm i -g neonctl
+npm i -g neon
 neon login
 ```
 

@@ -33,7 +33,7 @@ cd with-hono
 ## Install and authenticate the Neon CLI
 
 ```bash
-npm i -g neonctl
+npm i -g neon
 neon login
 ```
 
@@ -66,7 +66,7 @@ npm run db:push
 ## Run locally
 
 ```bash
-neonctl dev
+neon dev
 ```
 
 Then in another shell (use the port `neon dev` printed):
@@ -86,7 +86,7 @@ curl http://localhost:8787/todos
 Deploy hono app as a Neon Function to your branch
 
 ```bash
-neonctl deploy
+neon deploy
 ```
 
 ## Test your deployed function
@@ -95,7 +95,7 @@ Grab the function's invocation URL and call it:
 
 ```bash
 # List the function to find its invocation URL
-neonctl functions get todos
+neon functions get todos
 
 # Then call it (replace with your URL)
 curl https://<your-branch>-todos.compute.<region>.aws.neon.tech/todos
