@@ -1,9 +1,5 @@
-import {
-  DISCORD_EPHEMERAL_OPTION_NAME,
-  DISCORD_INTERACTIONS_PATH,
-  DISCORD_INTERACTION_TYPES,
-  DISCORD_RESPONSE_TYPES,
-} from "../src/constants/discord.js";
+import { InteractionResponseType, InteractionType } from "discord-api-types/v10";
+import { DISCORD_EPHEMERAL_OPTION_NAME, DISCORD_INTERACTIONS_PATH } from "../src/constants/discord.js";
 import { discordInteractionSchema } from "../src/schemas/discord.js";
 import { commandHandlers, trackApplicationCommandRun } from "../src/utils/discordCommands.js";
 import { getBooleanCommandOption } from "../src/utils/discordOptions.js";
@@ -59,41 +55,50 @@ export default async function handler(request: Request): Promise<Response> {
   const options = payload.data?.options ?? [];
   const ephemeral = getBooleanCommandOption(options, DISCORD_EPHEMERAL_OPTION_NAME);
 
-  if (payload.type === DISCORD_INTERACTION_TYPES.PING) {
-    return jsonResponse({ type: DISCORD_RESPONSE_TYPES.PONG });
-  }
+  switch (payload.type) {
+    case InteractionType.Ping:
+      return jsonResponse({ type: InteractionResponseType.Pong });
+    case InteractionType.ApplicationCommand: {
+      if (!payload.data?.name) {
+        break;
+      }
 
-  if (payload.type === DISCORD_INTERACTION_TYPES.APPLICATION_COMMAND && payload.data?.name) {
-    const commandHandler = commandHandlers[payload.data.name];
+      const commandHandler = commandHandlers[payload.data.name];
 
-    if (commandHandler) {
-      void trackApplicationCommandRun(payload);
+      if (commandHandler) {
+        void trackApplicationCommandRun(payload);
+
+        return jsonResponse({
+          type: InteractionResponseType.ChannelMessageWithSource,
+          data: await commandHandler({ payload, request, url, ephemeral, options }),
+        });
+      }
+
+      break;
+    }
+    case InteractionType.MessageComponent: {
+      if (!payload.data?.custom_id) {
+        break;
+      }
+
+      const buttonTestAction = parseButtonTestCustomId(payload.data.custom_id);
+
+      if (buttonTestAction) {
+        return jsonResponse({
+          type: InteractionResponseType.UpdateMessage,
+          data: createButtonTestClickResponseData(buttonTestAction),
+        });
+      }
 
       return jsonResponse({
-        type: DISCORD_RESPONSE_TYPES.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: await commandHandler({ payload, request, url, ephemeral, options }),
+        type: InteractionResponseType.ChannelMessageWithSource,
+        data: createErrorResponseData("That button is not handled by this bot."),
       });
     }
-  }
-
-  if (payload.type === DISCORD_INTERACTION_TYPES.MESSAGE_COMPONENT && payload.data?.custom_id) {
-    const buttonTestAction = parseButtonTestCustomId(payload.data.custom_id);
-
-    if (buttonTestAction) {
-      return jsonResponse({
-        type: DISCORD_RESPONSE_TYPES.UPDATE_MESSAGE,
-        data: createButtonTestClickResponseData(buttonTestAction),
-      });
-    }
-
-    return jsonResponse({
-      type: DISCORD_RESPONSE_TYPES.CHANNEL_MESSAGE_WITH_SOURCE,
-      data: createErrorResponseData("That button is not handled by this bot."),
-    });
   }
 
   return jsonResponse({
-    type: DISCORD_RESPONSE_TYPES.CHANNEL_MESSAGE_WITH_SOURCE,
+    type: InteractionResponseType.ChannelMessageWithSource,
     data: createErrorResponseData("Unknown command. Try `/help`."),
   });
 }

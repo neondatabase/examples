@@ -19,6 +19,7 @@
   "type": "module",
   "dependencies": {
     "@neon/config": "^0.8.1",
+    "discord-api-types": "^0.38.49",
     "drizzle-orm": "^0.45.2",
     "pg": "^8.21.0",
     "zod": "^4.4.3"

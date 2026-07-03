@@ -1,13 +1,9 @@
-import {
-  DISCORD_DB_RESPONSE_DEADLINE_MS,
-  DISCORD_EMBED_COLORS,
-  DISCORD_EPOCH_MS,
-  DISCORD_MESSAGE_FLAGS,
-} from "../constants/discord.js";
+import { MessageFlags } from "discord-api-types/v10";
+import { DISCORD_DB_RESPONSE_DEADLINE_MS, DISCORD_EMBED_COLORS, DISCORD_EPOCH_MS } from "../constants/discord.js";
 import type { DiscordEmbedResponseInput, DiscordInteraction, DiscordInteractionResponseData } from "../types/discord.js";
 
 export const getEphemeralFlag = (ephemeral: boolean): number | undefined =>
-  ephemeral ? DISCORD_MESSAGE_FLAGS.EPHEMERAL : undefined;
+  ephemeral ? MessageFlags.Ephemeral : undefined;
 
 const getDiscordSnowflakeTimestampMs = (snowflake: string | undefined): number | undefined => {
   if (!snowflake) {

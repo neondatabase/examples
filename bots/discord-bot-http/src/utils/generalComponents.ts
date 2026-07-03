@@ -1,11 +1,9 @@
+import { ButtonStyle, ComponentType, MessageFlags } from "discord-api-types/v10";
 import {
   DISCORD_APPLICATION_COMMANDS,
   DISCORD_BUTTON_TEST_ACTIONS,
   DISCORD_BUTTON_TEST_CUSTOM_ID_PREFIX,
-  DISCORD_BUTTON_STYLES,
-  DISCORD_COMPONENT_TYPES,
   DISCORD_EMBED_COLORS,
-  DISCORD_MESSAGE_FLAGS,
 } from "../constants/discord.js";
 import type {
   ButtonTestAction,
@@ -21,17 +19,17 @@ const withComponentsV2Flags = (
 ): DiscordInteractionResponseData => ({
   ...data,
   flags:
-    DISCORD_MESSAGE_FLAGS.IS_COMPONENTS_V2 | (ephemeral ? DISCORD_MESSAGE_FLAGS.EPHEMERAL : 0),
+    MessageFlags.IsComponentsV2 | (ephemeral ? MessageFlags.Ephemeral : 0),
   ...(allowedMentions ? { allowed_mentions: { parse: [] } } : {}),
 });
 
 const createTextDisplay = (content: string) => ({
-  type: DISCORD_COMPONENT_TYPES.TEXT_DISPLAY,
+  type: ComponentType.TextDisplay,
   content,
 });
 
 const createSeparator = () => ({
-  type: DISCORD_COMPONENT_TYPES.SEPARATOR,
+  type: ComponentType.Separator,
   divider: true,
   spacing: 1,
 });
@@ -40,7 +38,7 @@ const createContainer = (
   components: NonNullable<DiscordInteractionResponseData["components"]>,
   accentColor: number = DISCORD_EMBED_COLORS.PRIMARY,
 ) => ({
-  type: DISCORD_COMPONENT_TYPES.CONTAINER,
+  type: ComponentType.Container,
   accent_color: accentColor,
   components,
 });
@@ -49,31 +47,31 @@ const createButtonTestCustomId = (action: ButtonTestAction): string =>
   `${DISCORD_BUTTON_TEST_CUSTOM_ID_PREFIX}:${action}`;
 
 const createButtonTestActionRow = () => ({
-  type: DISCORD_COMPONENT_TYPES.ACTION_ROW,
+  type: ComponentType.ActionRow,
   components: [
     {
-      type: DISCORD_COMPONENT_TYPES.BUTTON,
+      type: ComponentType.Button,
       custom_id: createButtonTestCustomId(DISCORD_BUTTON_TEST_ACTIONS.PRIMARY),
       label: "Refresh",
-      style: DISCORD_BUTTON_STYLES.PRIMARY,
+      style: ButtonStyle.Primary,
     },
     {
-      type: DISCORD_COMPONENT_TYPES.BUTTON,
+      type: ComponentType.Button,
       custom_id: createButtonTestCustomId(DISCORD_BUTTON_TEST_ACTIONS.SECONDARY),
       label: "Echo",
-      style: DISCORD_BUTTON_STYLES.SECONDARY,
+      style: ButtonStyle.Secondary,
     },
     {
-      type: DISCORD_COMPONENT_TYPES.BUTTON,
+      type: ComponentType.Button,
       custom_id: createButtonTestCustomId(DISCORD_BUTTON_TEST_ACTIONS.SUCCESS),
       label: "Success",
-      style: DISCORD_BUTTON_STYLES.SUCCESS,
+      style: ButtonStyle.Success,
     },
     {
-      type: DISCORD_COMPONENT_TYPES.BUTTON,
+      type: ComponentType.Button,
       custom_id: createButtonTestCustomId(DISCORD_BUTTON_TEST_ACTIONS.DANGER),
       label: "Danger",
-      style: DISCORD_BUTTON_STYLES.DANGER,
+      style: ButtonStyle.Danger,
     },
   ],
 });

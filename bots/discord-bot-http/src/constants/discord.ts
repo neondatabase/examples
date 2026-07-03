@@ -1,14 +1,4 @@
-export const DISCORD_INTERACTION_TYPES = {
-  PING: 1,
-  APPLICATION_COMMAND: 2,
-  MESSAGE_COMPONENT: 3,
-} as const;
-
-export const DISCORD_RESPONSE_TYPES = {
-  PONG: 1,
-  CHANNEL_MESSAGE_WITH_SOURCE: 4,
-  UPDATE_MESSAGE: 7,
-} as const;
+import { ApplicationCommandOptionType, ApplicationCommandType } from "discord-api-types/v10";
 
 export const DISCORD_SIGNATURE_PUBLIC_KEY_PREFIX = "302a300506032b6570032100";
 
@@ -21,35 +11,6 @@ export const DISCORD_USER_AGENT = "DiscordBot (https://neon.tech, Neon Functions
 export const DISCORD_EPOCH_MS = 1_420_070_400_000n;
 
 export const DISCORD_DB_RESPONSE_DEADLINE_MS = 2500;
-
-export const DISCORD_COMMAND_TYPES = {
-  CHAT_INPUT: 1,
-} as const;
-
-export const DISCORD_COMMAND_OPTION_TYPES = {
-  STRING: 3,
-  BOOLEAN: 5,
-} as const;
-
-export const DISCORD_COMPONENT_TYPES = {
-  ACTION_ROW: 1,
-  BUTTON: 2,
-  SEPARATOR: 14,
-  TEXT_DISPLAY: 10,
-  CONTAINER: 17,
-} as const;
-
-export const DISCORD_BUTTON_STYLES = {
-  PRIMARY: 1,
-  SECONDARY: 2,
-  SUCCESS: 3,
-  DANGER: 4,
-} as const;
-
-export const DISCORD_MESSAGE_FLAGS = {
-  EPHEMERAL: 1 << 6,
-  IS_COMPONENTS_V2: 1 << 15,
-} as const;
 
 export const DISCORD_EMBED_COLORS = {
   PRIMARY: 0x00e599,
@@ -95,14 +56,14 @@ export const DISCORD_BUTTON_TEST_ACTIONS = {
 const DISCORD_EPHEMERAL_OPTION = {
   name: DISCORD_EPHEMERAL_OPTION_NAME,
   description: "Only show the response to you.",
-  type: DISCORD_COMMAND_OPTION_TYPES.BOOLEAN,
+  type: ApplicationCommandOptionType.Boolean,
   required: false,
 };
 
 const DISCORD_NAME_OPTION = {
   name: DISCORD_NAME_OPTION_NAME,
   description: "The name to store for yourself. Omit this to view your stored name.",
-  type: DISCORD_COMMAND_OPTION_TYPES.STRING,
+  type: ApplicationCommandOptionType.String,
   required: false,
   min_length: 1,
   max_length: 80,
@@ -112,37 +73,37 @@ export const DISCORD_APPLICATION_COMMANDS = [
   {
     name: DISCORD_PING_COMMAND_NAME,
     description: DISCORD_PING_COMMAND_DESCRIPTION,
-    type: DISCORD_COMMAND_TYPES.CHAT_INPUT,
+    type: ApplicationCommandType.ChatInput,
     options: [DISCORD_EPHEMERAL_OPTION],
   },
   {
     name: DISCORD_INFO_COMMAND_NAME,
     description: DISCORD_INFO_COMMAND_DESCRIPTION,
-    type: DISCORD_COMMAND_TYPES.CHAT_INPUT,
+    type: ApplicationCommandType.ChatInput,
     options: [DISCORD_EPHEMERAL_OPTION],
   },
   {
     name: DISCORD_HELP_COMMAND_NAME,
     description: DISCORD_HELP_COMMAND_DESCRIPTION,
-    type: DISCORD_COMMAND_TYPES.CHAT_INPUT,
+    type: ApplicationCommandType.ChatInput,
     options: [DISCORD_EPHEMERAL_OPTION],
   },
   {
     name: DISCORD_BUTTONS_COMMAND_NAME,
     description: DISCORD_BUTTONS_COMMAND_DESCRIPTION,
-    type: DISCORD_COMMAND_TYPES.CHAT_INPUT,
+    type: ApplicationCommandType.ChatInput,
     options: [DISCORD_EPHEMERAL_OPTION],
   },
   {
     name: DISCORD_NAME_COMMAND_NAME,
     description: DISCORD_NAME_COMMAND_DESCRIPTION,
-    type: DISCORD_COMMAND_TYPES.CHAT_INPUT,
+    type: ApplicationCommandType.ChatInput,
     options: [DISCORD_NAME_OPTION, DISCORD_EPHEMERAL_OPTION],
   },
   {
     name: DISCORD_PROFILE_COMMAND_NAME,
     description: DISCORD_PROFILE_COMMAND_DESCRIPTION,
-    type: DISCORD_COMMAND_TYPES.CHAT_INPUT,
+    type: ApplicationCommandType.ChatInput,
     options: [DISCORD_EPHEMERAL_OPTION],
   },
 ];
