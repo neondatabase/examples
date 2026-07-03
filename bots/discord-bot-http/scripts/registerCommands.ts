@@ -1,21 +1,16 @@
+import { registerDiscordCommandsInputSchema } from "../src/schemas/discord.js";
 import { registerDiscordCommands } from "../src/utils/discordApi.js";
 
-const applicationId = process.env.DISCORD_APPLICATION_ID;
-const botToken = process.env.DISCORD_BOT_TOKEN;
-const guildId = process.env.DISCORD_GUILD_ID;
-
-if (!applicationId) {
-  throw new Error("DISCORD_APPLICATION_ID is required.");
-}
-
-if (!botToken) {
-  throw new Error("DISCORD_BOT_TOKEN is required.");
-}
-
-const commands = await registerDiscordCommands({
-  applicationId,
-  botToken,
-  guildId,
+const parsedInput = registerDiscordCommandsInputSchema.safeParse({
+  applicationId: process.env.DISCORD_APPLICATION_ID,
+  botToken: process.env.DISCORD_BOT_TOKEN,
+  guildId: process.env.DISCORD_GUILD_ID,
 });
+
+if (!parsedInput.success) {
+  throw new Error(`Invalid Discord command registration environment: ${parsedInput.error.message}`);
+}
+
+const commands = await registerDiscordCommands(parsedInput.data);
 
 console.log(JSON.stringify(commands, null, 2));

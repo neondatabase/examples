@@ -90,7 +90,7 @@ templates:
       subdir: with-realtime-sse
   - id: discord-bot-http
     title: "Discord bot"
-    description: "A Discord interactions bot hosted on Neon Functions, with slash commands, button interactions, user profiles, and command usage tracking in Neon Postgres."
+    description: "A Discord interactions bot hosted on Neon Functions, with slash commands, embeds, Components v2 buttons, user profiles, and command usage tracking in Neon Postgres."
     tools:
       - Discord
       - Drizzle

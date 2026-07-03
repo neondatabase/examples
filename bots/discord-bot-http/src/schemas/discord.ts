@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 
 export const discordSnowflakeSchema = z.string().regex(/^\d+$/);
 
@@ -8,7 +8,15 @@ const discordCommandOptionSchema = z.object({
   value: z.union([z.string(), z.number(), z.boolean()]).optional(),
 });
 
+export const registerDiscordCommandsInputSchema = z.object({
+  applicationId: discordSnowflakeSchema,
+  botToken: z.string().min(1),
+  guildId: discordSnowflakeSchema.optional(),
+});
+
 export const discordInteractionSchema = z.object({
+  application_id: discordSnowflakeSchema.optional(),
+  guild_id: discordSnowflakeSchema.optional(),
   id: discordSnowflakeSchema.optional(),
   type: z.number().int(),
   data: z
@@ -53,8 +61,16 @@ export const discordApplicationCommandSchema = z.object({
     .optional(),
 });
 
+export const registeredDiscordCommandSchema = z.object({
+  id: discordSnowflakeSchema,
+  name: z.string(),
+});
+
+export const registeredDiscordCommandsSchema = z.array(registeredDiscordCommandSchema);
+
 export const discordInteractionResponseDataSchema = z.object({
   content: z.string().optional(),
+  embeds: z.array(z.unknown()).optional(),
   flags: z.number().int().optional(),
   allowed_mentions: z.unknown().optional(),
   components: z.array(z.unknown()).optional(),

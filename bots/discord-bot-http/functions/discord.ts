@@ -1,5 +1,6 @@
 import {
   DISCORD_BUTTONS_COMMAND_NAME,
+  DISCORD_EMBED_COLORS,
   DISCORD_EPHEMERAL_OPTION_NAME,
   DISCORD_HELP_COMMAND_NAME,
   DISCORD_INFO_COMMAND_NAME,
@@ -13,13 +14,16 @@ import {
   DISCORD_RESPONSE_TYPES,
 } from "../src/constants/discord.js";
 import { discordInteractionSchema } from "../src/schemas/discord.js";
-import type { DiscordInteraction } from "../src/types/discord.js";
+import type { DiscordEmbed, DiscordInteraction, DiscordInteractionResponseData } from "../src/types/discord.js";
 import {
   createButtonTestClickResponseData,
   createButtonTestResponseData,
   createHelpResponseData,
+  createInfoResponseData,
+  createProfileResponseData,
   parseButtonTestCustomId,
 } from "../src/utils/generalComponents.js";
+import { getRegisteredDiscordCommandMentions } from "../src/utils/discordApi.js";
 import { getDiscordInteractionUserId } from "../src/utils/getDiscordInteractionUserId.js";
 import { jsonResponse } from "../src/utils/jsonResponse.js";
 import { getCommandUsage, getStoredName, setStoredName, trackCommandRun } from "../src/utils/userNames.js";
@@ -67,17 +71,74 @@ const getInteractionLatencyMs = (interactionId: string | undefined): number | un
 };
 
 const formatLatency = (latencyMs: number | undefined): string =>
-  latencyMs === undefined ? "latency unavailable" : `${latencyMs}ms latency`;
+  latencyMs === undefined ? "latency unavailable" : `**${latencyMs}**ms latency`;
 
-const createInfoContent = (request: Request, url: URL): string =>
-  [
-    "Neon Discord Bot info",
-    `Runtime: Node.js ${process.version}`,
-    `Platform: ${process.platform} ${process.arch}`,
-    `Function URL: ${url.origin}${DISCORD_INTERACTIONS_PATH}`,
-    `Method: ${request.method}`,
-    `Neon branch: ${process.env.NEON_BRANCH ?? "not set"}`,
-  ].join("\n");
+const createEmbedResponseData = ({
+  embed,
+  ephemeral,
+  allowedMentions = false,
+}: {
+  embed: DiscordEmbed;
+  ephemeral: boolean;
+  allowedMentions?: boolean;
+}): DiscordInteractionResponseData => {
+  const embedData = { ...embed };
+  delete embedData.color;
+
+  return {
+    embeds: [
+      {
+        ...embedData,
+        color: DISCORD_EMBED_COLORS.PRIMARY,
+        timestamp: new Date().toISOString(),
+      },
+    ],
+    flags: getEphemeralFlag(ephemeral),
+    ...(allowedMentions ? { allowed_mentions: { parse: [] } } : {}),
+  };
+};
+
+const createErrorResponseData = (description: string): DiscordInteractionResponseData =>
+  createEmbedResponseData({
+    embed: {
+      title: "Something went wrong",
+      description,
+    },
+    ephemeral: true,
+  });
+
+const DB_RESPONSE_DEADLINE_MS = 2500;
+
+const withResponseDeadline = (
+  work: Promise<DiscordInteractionResponseData>,
+  fallback: () => DiscordInteractionResponseData,
+): Promise<DiscordInteractionResponseData> => {
+  let timer: ReturnType<typeof setTimeout>;
+  const deadline = new Promise<DiscordInteractionResponseData>((resolve) => {
+    timer = setTimeout(() => resolve(fallback()), DB_RESPONSE_DEADLINE_MS);
+  });
+
+  return Promise.race([work, deadline]).finally(() => clearTimeout(timer));
+};
+
+const createWarmingUpResponseData = (): DiscordInteractionResponseData =>
+  createEmbedResponseData({
+    embed: {
+      title: "Warming up",
+      description:
+        "The database is warming up (Neon scales to zero when idle). Please run the command again in a moment.",
+    },
+    ephemeral: true,
+  });
+
+const createPingResponseData = (payload: DiscordInteraction, ephemeral: boolean): DiscordInteractionResponseData =>
+  createEmbedResponseData({
+    embed: {
+      title: "Pong",
+      description: `Neon Functions replied with ${formatLatency(getInteractionLatencyMs(payload.id))}.`,
+    },
+    ephemeral,
+  });
 
 const createNameCommandResponse = async (
   payload: DiscordInteraction,
@@ -87,10 +148,7 @@ const createNameCommandResponse = async (
   const userId = getDiscordInteractionUserId(payload);
 
   if (!userId) {
-    return {
-      content: "Could not identify your Discord user for the `/name` command.",
-      flags: DISCORD_MESSAGE_FLAGS.EPHEMERAL,
-    };
+    return createErrorResponseData("Could not identify your Discord user for the `/name` command.");
   }
 
   try {
@@ -99,29 +157,32 @@ const createNameCommandResponse = async (
     if (trimmedName) {
       await setStoredName(userId, trimmedName);
 
-      return {
-        content: `Saved your name as **${trimmedName}**.`,
-        flags: getEphemeralFlag(ephemeral),
-        allowed_mentions: { parse: [] },
-      };
+      return createEmbedResponseData({
+        embed: {
+          title: "Name Saved",
+          description: `Saved your name as **${trimmedName}**.`,
+        },
+        ephemeral,
+        allowedMentions: true,
+      });
     }
 
     const storedName = await getStoredName(userId);
 
-    return {
-      content: storedName
-        ? `Your stored name is **${storedName}**.`
-        : "You do not have a stored name yet. Run `/name name:<your name>` to save one.",
-      flags: getEphemeralFlag(ephemeral),
-      allowed_mentions: { parse: [] },
-    };
+    return createEmbedResponseData({
+      embed: {
+        title: "Stored Name",
+        description: storedName
+          ? `Your stored name is **${storedName}**.`
+          : "You do not have a stored name yet. Run `/name name:<your name>` to save one.",
+      },
+      ephemeral,
+      allowedMentions: true,
+    });
   } catch (error) {
     console.error("Name command failed.", error);
 
-    return {
-      content: "The `/name` command could not reach the Neon database.",
-      flags: DISCORD_MESSAGE_FLAGS.EPHEMERAL,
-    };
+    return createErrorResponseData("The `/name` command could not reach the Neon database.");
   }
 };
 
@@ -143,14 +204,31 @@ const trackApplicationCommandRun = async (payload: DiscordInteraction): Promise<
   }
 };
 
+const getCommandMentions = async (payload: DiscordInteraction): Promise<Record<string, string>> => {
+  const applicationId = process.env.DISCORD_APPLICATION_ID ?? payload.application_id;
+  const botToken = process.env.DISCORD_BOT_TOKEN;
+
+  if (!applicationId || !botToken) {
+    return {};
+  }
+
+  try {
+    return await getRegisteredDiscordCommandMentions({
+      applicationId,
+      botToken,
+      guildId: process.env.DISCORD_GUILD_ID,
+    });
+  } catch (error) {
+    console.error("Discord command mention lookup failed.", error);
+    return {};
+  }
+};
+
 const createProfileCommandResponse = async (payload: DiscordInteraction, ephemeral: boolean) => {
   const userId = getDiscordInteractionUserId(payload);
 
   if (!userId) {
-    return {
-      content: "Could not identify your Discord user for the `/profile` command.",
-      flags: DISCORD_MESSAGE_FLAGS.EPHEMERAL,
-    };
+    return createErrorResponseData("Could not identify your Discord user for the `/profile` command.");
   }
 
   try {
@@ -164,26 +242,52 @@ const createProfileCommandResponse = async (payload: DiscordInteraction, ephemer
         ? sortedCommandUsage.map((usage) => `- \`/${usage.commandName}\`: ${usage.runCount}`)
         : ["- No command usage tracked yet."];
 
-    return {
-      content: [
-        "### Your Profile",
-        `Name: ${storedName ? `**${storedName}**` : "not set"}`,
-        `Total commands run: ${totalRuns}`,
-        "",
-        "Command usage:",
-        ...usageLines,
-      ].join("\n"),
-      flags: getEphemeralFlag(ephemeral),
-      allowed_mentions: { parse: [] },
-    };
+    return createProfileResponseData({
+      ephemeral,
+      name: storedName,
+      totalRuns,
+      usageLines,
+    });
   } catch (error) {
     console.error("Profile command failed.", error);
 
-    return {
-      content: "The `/profile` command could not reach the Neon database.",
-      flags: DISCORD_MESSAGE_FLAGS.EPHEMERAL,
-    };
+    return createErrorResponseData("The `/profile` command could not reach the Neon database.");
   }
+};
+
+type CommandContext = {
+  payload: DiscordInteraction;
+  request: Request;
+  url: URL;
+  ephemeral: boolean;
+  options: NonNullable<NonNullable<DiscordInteraction["data"]>["options"]>;
+};
+
+type CommandHandler = (
+  context: CommandContext,
+) => DiscordInteractionResponseData | Promise<DiscordInteractionResponseData>;
+
+const commandHandlers: Record<string, CommandHandler> = {
+  [DISCORD_PING_COMMAND_NAME]: ({ payload, ephemeral }) => createPingResponseData(payload, ephemeral),
+  [DISCORD_INFO_COMMAND_NAME]: ({ request, url, ephemeral }) =>
+    createInfoResponseData({
+      branch: process.env.NEON_BRANCH ?? "not set",
+      ephemeral,
+      functionUrl: `${url.origin}${DISCORD_INTERACTIONS_PATH}`,
+      method: request.method,
+      platform: `${process.platform} ${process.arch}`,
+      runtime: `Node.js ${process.version}`,
+    }),
+  [DISCORD_HELP_COMMAND_NAME]: async ({ payload, ephemeral }) =>
+    createHelpResponseData(ephemeral, await getCommandMentions(payload)),
+  [DISCORD_BUTTONS_COMMAND_NAME]: ({ ephemeral }) => createButtonTestResponseData(ephemeral),
+  [DISCORD_NAME_COMMAND_NAME]: ({ payload, options, ephemeral }) =>
+    withResponseDeadline(
+      createNameCommandResponse(payload, getStringCommandOption(options, DISCORD_NAME_OPTION_NAME), ephemeral),
+      createWarmingUpResponseData,
+    ),
+  [DISCORD_PROFILE_COMMAND_NAME]: ({ payload, ephemeral }) =>
+    withResponseDeadline(createProfileCommandResponse(payload, ephemeral), createWarmingUpResponseData),
 };
 
 export default async function handler(request: Request): Promise<Response> {
@@ -232,78 +336,22 @@ export default async function handler(request: Request): Promise<Response> {
   const payload = parsedPayload.data;
   const options = payload.data?.options ?? [];
   const ephemeral = getBooleanCommandOption(options, DISCORD_EPHEMERAL_OPTION_NAME);
-  const name = getStringCommandOption(options, DISCORD_NAME_OPTION_NAME);
 
   if (payload.type === DISCORD_INTERACTION_TYPES.PING) {
     return jsonResponse({ type: DISCORD_RESPONSE_TYPES.PONG });
   }
 
-  await trackApplicationCommandRun(payload);
+  if (payload.type === DISCORD_INTERACTION_TYPES.APPLICATION_COMMAND && payload.data?.name) {
+    const commandHandler = commandHandlers[payload.data.name];
 
-  if (
-    payload.type === DISCORD_INTERACTION_TYPES.APPLICATION_COMMAND &&
-    payload.data?.name === DISCORD_PING_COMMAND_NAME
-  ) {
-    return jsonResponse({
-      type: DISCORD_RESPONSE_TYPES.CHANNEL_MESSAGE_WITH_SOURCE,
-      data: {
-        content: `Pong from Neon Functions (${formatLatency(getInteractionLatencyMs(payload.id))}).`,
-        flags: getEphemeralFlag(ephemeral),
-      },
-    });
-  }
+    if (commandHandler) {
+      void trackApplicationCommandRun(payload);
 
-  if (
-    payload.type === DISCORD_INTERACTION_TYPES.APPLICATION_COMMAND &&
-    payload.data?.name === DISCORD_INFO_COMMAND_NAME
-  ) {
-    return jsonResponse({
-      type: DISCORD_RESPONSE_TYPES.CHANNEL_MESSAGE_WITH_SOURCE,
-      data: {
-        content: createInfoContent(request, url),
-        flags: getEphemeralFlag(ephemeral),
-      },
-    });
-  }
-
-  if (
-    payload.type === DISCORD_INTERACTION_TYPES.APPLICATION_COMMAND &&
-    payload.data?.name === DISCORD_HELP_COMMAND_NAME
-  ) {
-    return jsonResponse({
-      type: DISCORD_RESPONSE_TYPES.CHANNEL_MESSAGE_WITH_SOURCE,
-      data: createHelpResponseData(ephemeral),
-    });
-  }
-
-  if (
-    payload.type === DISCORD_INTERACTION_TYPES.APPLICATION_COMMAND &&
-    payload.data?.name === DISCORD_BUTTONS_COMMAND_NAME
-  ) {
-    return jsonResponse({
-      type: DISCORD_RESPONSE_TYPES.CHANNEL_MESSAGE_WITH_SOURCE,
-      data: createButtonTestResponseData(ephemeral),
-    });
-  }
-
-  if (
-    payload.type === DISCORD_INTERACTION_TYPES.APPLICATION_COMMAND &&
-    payload.data?.name === DISCORD_NAME_COMMAND_NAME
-  ) {
-    return jsonResponse({
-      type: DISCORD_RESPONSE_TYPES.CHANNEL_MESSAGE_WITH_SOURCE,
-      data: await createNameCommandResponse(payload, name, ephemeral),
-    });
-  }
-
-  if (
-    payload.type === DISCORD_INTERACTION_TYPES.APPLICATION_COMMAND &&
-    payload.data?.name === DISCORD_PROFILE_COMMAND_NAME
-  ) {
-    return jsonResponse({
-      type: DISCORD_RESPONSE_TYPES.CHANNEL_MESSAGE_WITH_SOURCE,
-      data: await createProfileCommandResponse(payload, ephemeral),
-    });
+      return jsonResponse({
+        type: DISCORD_RESPONSE_TYPES.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: await commandHandler({ payload, request, url, ephemeral, options }),
+      });
+    }
   }
 
   if (payload.type === DISCORD_INTERACTION_TYPES.MESSAGE_COMPONENT && payload.data?.custom_id) {
@@ -318,18 +366,12 @@ export default async function handler(request: Request): Promise<Response> {
 
     return jsonResponse({
       type: DISCORD_RESPONSE_TYPES.CHANNEL_MESSAGE_WITH_SOURCE,
-      data: {
-        content: "That button is not handled by this bot.",
-        flags: DISCORD_MESSAGE_FLAGS.EPHEMERAL,
-      },
+      data: createErrorResponseData("That button is not handled by this bot."),
     });
   }
 
   return jsonResponse({
     type: DISCORD_RESPONSE_TYPES.CHANNEL_MESSAGE_WITH_SOURCE,
-    data: {
-      content: "Unknown command. Try `/help`.",
-      flags: DISCORD_MESSAGE_FLAGS.EPHEMERAL,
-    },
+    data: createErrorResponseData("Unknown command. Try `/help`."),
   });
 }

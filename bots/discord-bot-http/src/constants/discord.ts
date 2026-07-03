@@ -30,7 +30,9 @@ export const DISCORD_COMMAND_OPTION_TYPES = {
 export const DISCORD_COMPONENT_TYPES = {
   ACTION_ROW: 1,
   BUTTON: 2,
+  SEPARATOR: 14,
   TEXT_DISPLAY: 10,
+  CONTAINER: 17,
 } as const;
 
 export const DISCORD_BUTTON_STYLES = {
@@ -43,6 +45,13 @@ export const DISCORD_BUTTON_STYLES = {
 export const DISCORD_MESSAGE_FLAGS = {
   EPHEMERAL: 1 << 6,
   IS_COMPONENTS_V2: 1 << 15,
+} as const;
+
+export const DISCORD_EMBED_COLORS = {
+  PRIMARY: 0x00e599,
+  SUCCESS: 0x57f287,
+  WARNING: 0xfee75c,
+  DANGER: 0xed4245,
 } as const;
 
 export const DISCORD_PING_COMMAND_NAME = "ping";

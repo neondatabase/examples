@@ -2,6 +2,7 @@ import {
   DISCORD_APPLICATION_COMMANDS,
   DISCORD_BUTTON_STYLES,
   DISCORD_COMPONENT_TYPES,
+  DISCORD_EMBED_COLORS,
   DISCORD_MESSAGE_FLAGS,
 } from "../constants/discord.js";
 import type { DiscordInteractionResponseData } from "../types/discord.js";
@@ -20,15 +21,32 @@ type ButtonTestAction = (typeof BUTTON_TEST_ACTIONS)[keyof typeof BUTTON_TEST_AC
 const withComponentsV2Flags = (
   data: Omit<DiscordInteractionResponseData, "flags">,
   ephemeral: boolean,
+  allowedMentions = false,
 ): DiscordInteractionResponseData => ({
   ...data,
   flags:
     DISCORD_MESSAGE_FLAGS.IS_COMPONENTS_V2 | (ephemeral ? DISCORD_MESSAGE_FLAGS.EPHEMERAL : 0),
+  ...(allowedMentions ? { allowed_mentions: { parse: [] } } : {}),
 });
 
 const createTextDisplay = (content: string) => ({
   type: DISCORD_COMPONENT_TYPES.TEXT_DISPLAY,
   content,
+});
+
+const createSeparator = () => ({
+  type: DISCORD_COMPONENT_TYPES.SEPARATOR,
+  divider: true,
+  spacing: 1,
+});
+
+const createContainer = (
+  components: NonNullable<DiscordInteractionResponseData["components"]>,
+  accentColor: number = DISCORD_EMBED_COLORS.PRIMARY,
+) => ({
+  type: DISCORD_COMPONENT_TYPES.CONTAINER,
+  accent_color: accentColor,
+  components,
 });
 
 const createButtonTestCustomId = (action: ButtonTestAction): string => `${BUTTON_TEST_CUSTOM_ID_PREFIX}:${action}`;
@@ -63,21 +81,102 @@ const createButtonTestActionRow = () => ({
   ],
 });
 
-export const createHelpResponseData = (ephemeral: boolean): DiscordInteractionResponseData =>
+export const createHelpResponseData = (
+  ephemeral: boolean,
+  commandMentions: Record<string, string> = {},
+): DiscordInteractionResponseData =>
   withComponentsV2Flags(
     {
       components: [
-        createTextDisplay(
+        createContainer(
           [
-            "### Neon Discord Bot Help",
-            ...DISCORD_APPLICATION_COMMANDS.map((command) => `- \`/${command.name}\` - ${command.description}`),
-            "",
-            "Each command supports an optional `ephemeral` boolean to keep the response private.",
-          ].join("\n"),
+            createTextDisplay("### Neon Discord Bot Help"),
+            createSeparator(),
+            createTextDisplay(
+              DISCORD_APPLICATION_COMMANDS.map((command) => {
+                const commandLabel = commandMentions[command.name] ?? `\`/${command.name}\``;
+
+                return `- ${commandLabel} - ${command.description}`;
+              }).join("\n"),
+            ),
+            createSeparator(),
+            createTextDisplay("Each command supports an optional `ephemeral` boolean to keep the response private."),
+          ],
         ),
       ],
     },
     ephemeral,
+  );
+
+export const createInfoResponseData = ({
+  branch,
+  ephemeral,
+  functionUrl,
+  method,
+  platform,
+  runtime,
+}: {
+  branch: string;
+  ephemeral: boolean;
+  functionUrl: string;
+  method: string;
+  platform: string;
+  runtime: string;
+}): DiscordInteractionResponseData =>
+  withComponentsV2Flags(
+    {
+      components: [
+        createContainer([
+          createTextDisplay("### Neon Discord Bot Info"),
+          createSeparator(),
+          createTextDisplay(
+            [
+              `- **Runtime:** ${runtime}`,
+              `- **Platform:** ${platform}`,
+              `- **Request method:** ${method}`,
+              `- **Neon branch:** ${branch}`,
+              `- **Function URL:** ${functionUrl}`,
+            ].join("\n"),
+          ),
+        ]),
+      ],
+    },
+    ephemeral,
+  );
+
+export const createProfileResponseData = ({
+  ephemeral,
+  name,
+  totalRuns,
+  usageLines,
+}: {
+  ephemeral: boolean;
+  name: string | undefined;
+  totalRuns: number;
+  usageLines: string[];
+}): DiscordInteractionResponseData =>
+  withComponentsV2Flags(
+    {
+      components: [
+        createContainer(
+          [
+            createTextDisplay("### Your Profile"),
+            createSeparator(),
+            createTextDisplay(
+              [
+                `- **Name:** ${name ? `**${name}**` : "not set"}`,
+                `- **Total commands run:** ${totalRuns}`,
+                "- **Storage:** Neon Postgres via Drizzle",
+              ].join("\n"),
+            ),
+            createSeparator(),
+            createTextDisplay(["**Command usage**", ...usageLines].join("\n")),
+          ],
+        ),
+      ],
+    },
+    ephemeral,
+    true,
   );
 
 export const createButtonTestResponseData = (
@@ -87,8 +186,11 @@ export const createButtonTestResponseData = (
   withComponentsV2Flags(
     {
       components: [
-        createTextDisplay(["### Button Test", status].join("\n")),
-        createButtonTestActionRow(),
+        createContainer([
+          createTextDisplay(["### Button Test", status].join("\n")),
+          createSeparator(),
+          createButtonTestActionRow(),
+        ]),
       ],
     },
     ephemeral,
@@ -107,11 +209,11 @@ export const parseButtonTestCustomId = (customId: string): ButtonTestAction | un
 };
 
 export const createButtonTestClickResponseData = (action: ButtonTestAction): DiscordInteractionResponseData => {
-  const clickedAt = new Date().toISOString();
+  const clickedAt = Math.floor(Date.now() / 1000);
 
   switch (action) {
     case BUTTON_TEST_ACTIONS.PRIMARY:
-      return createButtonTestResponseData(false, `Refreshed at \`${clickedAt}\`.`);
+      return createButtonTestResponseData(false, `Refreshed <t:${clickedAt}:R>.`);
     case BUTTON_TEST_ACTIONS.SECONDARY:
       return createButtonTestResponseData(false, "Echo: the secondary button was clicked.");
     case BUTTON_TEST_ACTIONS.SUCCESS:

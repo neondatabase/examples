@@ -9,6 +9,7 @@ It supports:
 - `/info` with basic runtime and request information
 - `/help` with a dynamic Components v2 help panel
 - `/buttons` with clickable Components v2 button examples
+- standard Discord embeds for non-Components v2 command responses
 - `/name` backed by Neon Postgres via the Neon serverless driver
 - `/profile` showing the stored name and command usage counts
 - per-user command usage tracking in Neon Postgres
@@ -49,7 +50,7 @@ DATABASE_URL_UNPOOLED=
 
 `DISCORD_PUBLIC_KEY` is required for the hosted interaction endpoint. It comes from Discord Developer Portal > Application > General Information > Public Key.
 
-`DISCORD_APPLICATION_ID` and `DISCORD_BOT_TOKEN` are required to register slash commands.
+`DISCORD_APPLICATION_ID` and `DISCORD_BOT_TOKEN` are required to register slash commands. The deployed function also uses them to resolve command IDs for Discord slash-command mentions in `/help`.
 
 `DISCORD_GUILD_ID` is optional. If set, commands are registered to one guild and update quickly. If omitted, commands are registered globally and may take longer to appear.
 
@@ -138,14 +139,33 @@ Neon serves the configured function from `neon.ts`.
 
 ## Commands
 
-`/ping` returns `Pong` plus latency calculated from the Discord interaction snowflake.
+`/ping` returns an embed with `Pong` plus latency calculated from the Discord interaction snowflake.
 
-`/info` reports basic runtime details such as Node.js version, platform, function URL, request method, and Neon branch.
+`/info` renders a Components v2 panel with runtime details such as Node.js version, platform, function URL, request method, and Neon branch.
 
-`/help` renders a dynamic Components v2 help panel from the registered command list.
+`/help` renders a dynamic Components v2 help panel from the registered command list. When the bot can resolve registered command IDs, commands are rendered with Discord slash-command mention syntax like `</profile:123>`.
 
 `/buttons` renders a Components v2 button test panel with primary, secondary, success, and danger buttons. Each button updates the message with a different result.
 
-`/name name:<your name>` stores your name in Neon Postgres. `/name` without a name reads back the stored value for your Discord user.
+`/name name:<your name>` stores your name in Neon Postgres and returns an embed. `/name` without a name reads back the stored value for your Discord user.
 
-`/profile` shows your stored name, total slash commands run, and per-command usage counts.
+`/profile` renders a Components v2 panel with your stored name, total slash commands run, per-command usage counts, and storage details.
+
+## Discord Message Formats
+
+The bot intentionally uses two Discord response formats:
+
+- Standard embeds for `/ping`, `/name`, and error messages.
+- Components v2 for `/info`, `/help`, `/buttons`, and `/profile`, using Text Display, Container, Separator, Action Row, and Button components.
+
+Discord requires Components v2 messages to set the `IS_COMPONENTS_V2` flag. When that flag is set, the response cannot include standard `content` or `embeds`, so Components v2 panels must be fully component-driven.
+
+## Command Dispatch and Cold Starts
+
+Slash commands are dispatched through a `name`-keyed command handler map in `functions/discord.ts`, so adding a command means adding one entry rather than another branch.
+
+Command usage tracking is best-effort and runs without blocking the response, so a slow analytics write never delays a reply.
+
+Discord fails an interaction that isn't answered within roughly three seconds. Because Neon scales to zero when idle, the first database query on a cold branch can be slow, so the database-backed `/name` and `/profile` commands fall back to a "warming up" reply if they exceed an internal deadline. Run the command again once the branch is warm.
+
+Textbook Discord deferral (acknowledge now, send a follow-up later) is not used because it relies on post-response execution via `waitUntil`, which is currently a stub in the Neon Functions preview.
