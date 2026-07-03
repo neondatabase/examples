@@ -18,6 +18,10 @@ export const DISCORD_API_BASE_URL = "https://discord.com/api/v10";
 
 export const DISCORD_USER_AGENT = "DiscordBot (https://neon.tech, Neon Functions Bot 1.0.0)";
 
+export const DISCORD_EPOCH_MS = 1_420_070_400_000n;
+
+export const DISCORD_DB_RESPONSE_DEADLINE_MS = 2500;
+
 export const DISCORD_COMMAND_TYPES = {
   CHAT_INPUT: 1,
 } as const;
@@ -49,9 +53,6 @@ export const DISCORD_MESSAGE_FLAGS = {
 
 export const DISCORD_EMBED_COLORS = {
   PRIMARY: 0x00e599,
-  SUCCESS: 0x57f287,
-  WARNING: 0xfee75c,
-  DANGER: 0xed4245,
 } as const;
 
 export const DISCORD_PING_COMMAND_NAME = "ping";
@@ -81,6 +82,15 @@ export const DISCORD_PROFILE_COMMAND_NAME = "profile";
 export const DISCORD_PROFILE_COMMAND_DESCRIPTION = "Show your stored profile and command usage.";
 
 export const DISCORD_EPHEMERAL_OPTION_NAME = "ephemeral";
+
+export const DISCORD_BUTTON_TEST_CUSTOM_ID_PREFIX = "button-test";
+
+export const DISCORD_BUTTON_TEST_ACTIONS = {
+  PRIMARY: "primary",
+  SECONDARY: "secondary",
+  SUCCESS: "success",
+  DANGER: "danger",
+} as const;
 
 const DISCORD_EPHEMERAL_OPTION = {
   name: DISCORD_EPHEMERAL_OPTION_NAME,

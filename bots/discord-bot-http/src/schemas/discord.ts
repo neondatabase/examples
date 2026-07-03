@@ -43,24 +43,6 @@ export const discordInteractionSchema = z.object({
     .optional(),
 });
 
-export const discordApplicationCommandSchema = z.object({
-  name: z.string(),
-  description: z.string(),
-  type: z.number().int(),
-  options: z
-    .array(
-      z.object({
-        name: z.string(),
-        description: z.string(),
-        type: z.number().int(),
-        required: z.boolean().optional(),
-        min_length: z.number().int().optional(),
-        max_length: z.number().int().optional(),
-      }),
-    )
-    .optional(),
-});
-
 export const registeredDiscordCommandSchema = z.object({
   id: discordSnowflakeSchema,
   name: z.string(),

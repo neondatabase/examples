@@ -1,12 +1,6 @@
 import { createPublicKey, verify } from "node:crypto";
 import { DISCORD_SIGNATURE_PUBLIC_KEY_PREFIX } from "../constants/discord.js";
-
-type VerifyDiscordRequestInput = {
-  body: string;
-  publicKey: string | undefined;
-  signature: string | null;
-  timestamp: string | null;
-};
+import type { VerifyDiscordRequestInput } from "../types/discord.js";
 
 const isHex = (value: string) => /^[0-9a-f]+$/i.test(value);
 
