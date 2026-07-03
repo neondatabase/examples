@@ -18,6 +18,7 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
+    "@discordjs/builders": "^1.14.1",
     "@neon/config": "^0.8.1",
     "@neon/env": "^0.10.0",
     "discord-api-types": "^0.38.49",

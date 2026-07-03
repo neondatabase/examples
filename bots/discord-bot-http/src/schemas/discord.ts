@@ -49,11 +49,3 @@ export const registeredDiscordCommandSchema = z.object({
 });
 
 export const registeredDiscordCommandsSchema = z.array(registeredDiscordCommandSchema);
-
-export const discordInteractionResponseDataSchema = z.object({
-  content: z.string().optional(),
-  embeds: z.array(z.unknown()).optional(),
-  flags: z.number().int().optional(),
-  allowed_mentions: z.unknown().optional(),
-  components: z.array(z.unknown()).optional(),
-});

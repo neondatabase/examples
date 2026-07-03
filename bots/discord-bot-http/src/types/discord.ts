@@ -1,6 +1,6 @@
+import type { APIEmbed, APIInteractionResponseCallbackData } from "discord-api-types/v10";
 import * as z from "zod";
 import {
-  discordInteractionResponseDataSchema,
   discordInteractionSchema,
   registerDiscordCommandsInputSchema,
 } from "../schemas/discord.js";
@@ -12,38 +12,9 @@ export type RegisterDiscordCommandsInput = z.infer<typeof registerDiscordCommand
 
 export type DiscordCommandOptions = NonNullable<NonNullable<DiscordInteraction["data"]>["options"]>;
 
-export type DiscordEmbed = {
-  title?: string;
-  description?: string;
-  color?: number;
-  fields?: Array<{
-    name: string;
-    value: string;
-    inline?: boolean;
-  }>;
-  footer?: {
-    text: string;
-  };
-  timestamp?: string;
-};
+export type DiscordEmbed = APIEmbed;
 
-export type DiscordComponent = {
-  type: number;
-  content?: string;
-  custom_id?: string;
-  label?: string;
-  style?: number;
-  disabled?: boolean;
-  divider?: boolean;
-  spacing?: number;
-  accent_color?: number;
-  components?: DiscordComponent[];
-};
-
-export type DiscordInteractionResponseData = z.infer<typeof discordInteractionResponseDataSchema> & {
-  components?: DiscordComponent[];
-  embeds?: DiscordEmbed[];
-};
+export type DiscordInteractionResponseData = APIInteractionResponseCallbackData;
 
 export type DiscordEmbedResponseInput = {
   embed: DiscordEmbed;

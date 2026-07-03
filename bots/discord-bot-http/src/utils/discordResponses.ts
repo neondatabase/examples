@@ -1,3 +1,4 @@
+import { EmbedBuilder } from "@discordjs/builders";
 import { MessageFlags } from "discord-api-types/v10";
 import { DISCORD_DB_RESPONSE_DEADLINE_MS, DISCORD_EMBED_COLORS, DISCORD_EPOCH_MS } from "../constants/discord.js";
 import type { DiscordEmbedResponseInput, DiscordInteraction, DiscordInteractionResponseData } from "../types/discord.js";
@@ -34,22 +35,16 @@ export const createEmbedResponseData = ({
   embed,
   ephemeral,
   allowedMentions = false,
-}: DiscordEmbedResponseInput): DiscordInteractionResponseData => {
-  const embedData = { ...embed };
-  delete embedData.color;
-
-  return {
-    embeds: [
-      {
-        ...embedData,
-        color: DISCORD_EMBED_COLORS.PRIMARY,
-        timestamp: new Date().toISOString(),
-      },
-    ],
-    flags: getEphemeralFlag(ephemeral),
-    ...(allowedMentions ? { allowed_mentions: { parse: [] } } : {}),
-  };
-};
+}: DiscordEmbedResponseInput): DiscordInteractionResponseData => ({
+  embeds: [
+    new EmbedBuilder(embed)
+      .setColor(DISCORD_EMBED_COLORS.PRIMARY)
+      .setTimestamp()
+      .toJSON(),
+  ],
+  flags: getEphemeralFlag(ephemeral),
+  ...(allowedMentions ? { allowed_mentions: { parse: [] } } : {}),
+});
 
 export const createErrorResponseData = (description: string): DiscordInteractionResponseData =>
   createEmbedResponseData({

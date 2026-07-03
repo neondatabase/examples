@@ -1,4 +1,13 @@
-import { ButtonStyle, ComponentType, MessageFlags } from "discord-api-types/v10";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ContainerBuilder,
+  SeparatorBuilder,
+  TextDisplayBuilder,
+} from "@discordjs/builders";
+import type { MessageActionRowComponentBuilder } from "@discordjs/builders";
+import type { APIContainerComponent } from "discord-api-types/v10";
+import { ButtonStyle, MessageFlags, SeparatorSpacingSize } from "discord-api-types/v10";
 import {
   DISCORD_APPLICATION_COMMANDS,
   DISCORD_BUTTON_TEST_ACTIONS,
@@ -23,58 +32,58 @@ const withComponentsV2Flags = (
   ...(allowedMentions ? { allowed_mentions: { parse: [] } } : {}),
 });
 
-const createTextDisplay = (content: string) => ({
-  type: ComponentType.TextDisplay,
-  content,
-});
+const createTextDisplay = (content: string): TextDisplayBuilder =>
+  new TextDisplayBuilder().setContent(content);
 
-const createSeparator = () => ({
-  type: ComponentType.Separator,
-  divider: true,
-  spacing: 1,
-});
-
-const createContainer = (
-  components: NonNullable<DiscordInteractionResponseData["components"]>,
-  accentColor: number = DISCORD_EMBED_COLORS.PRIMARY,
-) => ({
-  type: ComponentType.Container,
-  accent_color: accentColor,
-  components,
-});
+const createSeparator = (): SeparatorBuilder =>
+  new SeparatorBuilder()
+    .setDivider(true)
+    .setSpacing(SeparatorSpacingSize.Small);
 
 const createButtonTestCustomId = (action: ButtonTestAction): string =>
   `${DISCORD_BUTTON_TEST_CUSTOM_ID_PREFIX}:${action}`;
 
-const createButtonTestActionRow = () => ({
-  type: ComponentType.ActionRow,
-  components: [
-    {
-      type: ComponentType.Button,
-      custom_id: createButtonTestCustomId(DISCORD_BUTTON_TEST_ACTIONS.PRIMARY),
-      label: "Refresh",
-      style: ButtonStyle.Primary,
-    },
-    {
-      type: ComponentType.Button,
-      custom_id: createButtonTestCustomId(DISCORD_BUTTON_TEST_ACTIONS.SECONDARY),
-      label: "Echo",
-      style: ButtonStyle.Secondary,
-    },
-    {
-      type: ComponentType.Button,
-      custom_id: createButtonTestCustomId(DISCORD_BUTTON_TEST_ACTIONS.SUCCESS),
-      label: "Success",
-      style: ButtonStyle.Success,
-    },
-    {
-      type: ComponentType.Button,
-      custom_id: createButtonTestCustomId(DISCORD_BUTTON_TEST_ACTIONS.DANGER),
-      label: "Danger",
-      style: ButtonStyle.Danger,
-    },
-  ],
-});
+const createButtonTestButton = (
+  action: ButtonTestAction,
+  label: string,
+  style: ButtonStyle,
+): ButtonBuilder =>
+  new ButtonBuilder()
+    .setCustomId(createButtonTestCustomId(action))
+    .setLabel(label)
+    .setStyle(style);
+
+const createButtonTestActionRow = (): ActionRowBuilder<MessageActionRowComponentBuilder> =>
+  new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+    createButtonTestButton(DISCORD_BUTTON_TEST_ACTIONS.PRIMARY, "Refresh", ButtonStyle.Primary),
+    createButtonTestButton(DISCORD_BUTTON_TEST_ACTIONS.SECONDARY, "Echo", ButtonStyle.Secondary),
+    createButtonTestButton(DISCORD_BUTTON_TEST_ACTIONS.SUCCESS, "Success", ButtonStyle.Success),
+    createButtonTestButton(DISCORD_BUTTON_TEST_ACTIONS.DANGER, "Danger", ButtonStyle.Danger),
+  );
+
+type ContainerChildBuilder =
+  | ActionRowBuilder<MessageActionRowComponentBuilder>
+  | SeparatorBuilder
+  | TextDisplayBuilder;
+
+const createContainer = (
+  components: ContainerChildBuilder[],
+  accentColor: number = DISCORD_EMBED_COLORS.PRIMARY,
+): APIContainerComponent => {
+  const container = new ContainerBuilder().setAccentColor(accentColor);
+
+  for (const component of components) {
+    if (component instanceof TextDisplayBuilder) {
+      container.addTextDisplayComponents(component);
+    } else if (component instanceof SeparatorBuilder) {
+      container.addSeparatorComponents(component);
+    } else {
+      container.addActionRowComponents(component);
+    }
+  }
+
+  return container.toJSON();
+};
 
 export const createHelpResponseData = (
   ephemeral: boolean,
@@ -186,9 +195,15 @@ export const parseButtonTestCustomId = (customId: string): ButtonTestAction | un
     return undefined;
   }
 
-  return Object.values(DISCORD_BUTTON_TEST_ACTIONS).includes(action as ButtonTestAction)
-    ? (action as ButtonTestAction)
-    : undefined;
+  switch (action) {
+    case DISCORD_BUTTON_TEST_ACTIONS.PRIMARY:
+    case DISCORD_BUTTON_TEST_ACTIONS.SECONDARY:
+    case DISCORD_BUTTON_TEST_ACTIONS.SUCCESS:
+    case DISCORD_BUTTON_TEST_ACTIONS.DANGER:
+      return action;
+    default:
+      return undefined;
+  }
 };
 
 export const createButtonTestClickResponseData = (action: ButtonTestAction): DiscordInteractionResponseData => {
