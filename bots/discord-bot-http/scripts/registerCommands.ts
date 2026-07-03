@@ -1,10 +1,12 @@
 import { registerDiscordCommandsInputSchema } from "../src/schemas/discord.js";
+import { getDiscordEnv } from "../src/env.js";
 import { registerDiscordCommands } from "../src/utils/discordApi.js";
 
+const env = getDiscordEnv();
 const parsedInput = registerDiscordCommandsInputSchema.safeParse({
-  applicationId: process.env.DISCORD_APPLICATION_ID,
-  botToken: process.env.DISCORD_BOT_TOKEN,
-  guildId: process.env.DISCORD_GUILD_ID,
+  applicationId: env.DISCORD_APPLICATION_ID,
+  botToken: env.DISCORD_BOT_TOKEN,
+  guildId: env.DISCORD_GUILD_ID,
 });
 
 if (!parsedInput.success) {

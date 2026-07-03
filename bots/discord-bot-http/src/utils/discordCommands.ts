@@ -8,6 +8,7 @@ import {
   DISCORD_PING_COMMAND_NAME,
   DISCORD_PROFILE_COMMAND_NAME,
 } from "../constants/discord.js";
+import { getDiscordEnv } from "../env.js";
 import type { DiscordCommandHandler, DiscordInteraction, DiscordInteractionResponseData } from "../types/discord.js";
 import {
   createButtonTestResponseData,
@@ -28,8 +29,10 @@ import {
 import { getCommandUsage, getStoredName, setStoredName, trackCommandRun } from "./userNames.js";
 
 const getCommandMentions = async (payload: DiscordInteraction): Promise<Record<string, string>> => {
-  const applicationId = process.env.DISCORD_APPLICATION_ID ?? payload.application_id;
-  const botToken = process.env.DISCORD_BOT_TOKEN;
+  const applicationId = payload.application_id;
+
+  const env = getDiscordEnv();
+  const botToken = env.DISCORD_BOT_TOKEN;
 
   if (!applicationId || !botToken) {
     return {};
@@ -39,7 +42,7 @@ const getCommandMentions = async (payload: DiscordInteraction): Promise<Record<s
     return await getRegisteredDiscordCommandMentions({
       applicationId,
       botToken,
-      guildId: process.env.DISCORD_GUILD_ID,
+      guildId: env.DISCORD_GUILD_ID,
     });
   } catch (error) {
     console.error("Discord command mention lookup failed.", error);

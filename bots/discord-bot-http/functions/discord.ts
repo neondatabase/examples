@@ -1,5 +1,6 @@
 import { InteractionResponseType, InteractionType } from "discord-api-types/v10";
 import { DISCORD_EPHEMERAL_OPTION_NAME, DISCORD_INTERACTIONS_PATH } from "../src/constants/discord.js";
+import { getDiscordEnv } from "../src/env.js";
 import { discordInteractionSchema } from "../src/schemas/discord.js";
 import { commandHandlers, trackApplicationCommandRun } from "../src/utils/discordCommands.js";
 import { getBooleanCommandOption } from "../src/utils/discordOptions.js";
@@ -26,9 +27,10 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   const body = await request.text();
+  const env = getDiscordEnv();
   const isVerified = verifyDiscordRequest({
     body,
-    publicKey: process.env.DISCORD_PUBLIC_KEY,
+    publicKey: env.DISCORD_PUBLIC_KEY,
     signature: request.headers.get("x-signature-ed25519"),
     timestamp: request.headers.get("x-signature-timestamp"),
   });
