@@ -10,7 +10,7 @@ It supports:
 - `/help` with a dynamic Components v2 help panel
 - `/buttons` with clickable Components v2 button examples
 - standard Discord embeds for non-Components v2 command responses
-- `/name` backed by Neon Postgres via the Neon serverless driver
+- `/name` backed by Neon Postgres via Drizzle and node-postgres
 - `/profile` showing the stored name and command usage counts
 - per-user command usage tracking in Neon Postgres
 - optional ephemeral responses on every slash command

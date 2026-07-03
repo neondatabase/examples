@@ -1,6 +1,13 @@
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
-import * as schema from "./schema.js";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
+
+const createDb = (databaseUrl: string) => {
+  const pool = new Pool({ connectionString: databaseUrl, max: 5 });
+
+  return drizzle(pool);
+};
+
+let db: ReturnType<typeof createDb> | undefined;
 
 export const getDb = () => {
   const databaseUrl = process.env.DATABASE_URL;
@@ -9,5 +16,7 @@ export const getDb = () => {
     throw new Error("DATABASE_URL is required to use profile commands.");
   }
 
-  return drizzle({ client: neon(databaseUrl), schema });
+  db ??= createDb(databaseUrl);
+
+  return db;
 };

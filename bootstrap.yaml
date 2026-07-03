@@ -94,7 +94,6 @@ templates:
     tools:
       - Discord
       - Drizzle
-      - Neon serverless driver
       - TypeScript
     services:
       - Postgres
