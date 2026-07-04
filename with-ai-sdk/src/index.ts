@@ -2,17 +2,11 @@ import { neon } from '@neon/ai-sdk-provider';
 import { streamText, type ModelMessage } from 'ai';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
 import { randomUUID } from 'node:crypto';
-import { parseEnv } from '@neon/env';
-import config from '../neon';
+import { getDb } from './db/client';
 import { images } from './db/schema';
 
-const env = parseEnv(config);
-
-const pool = new Pool({ connectionString: env.postgres.databaseUrl, max: 5 });
-const db = drizzle(pool);
+const db = getDb();
 
 const s3 = new S3Client({
   forcePathStyle:

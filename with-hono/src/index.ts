@@ -1,14 +1,8 @@
 import { Hono } from 'hono';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
-import { parseEnv } from '@neon/env';
-import config from '../neon';
+import { getDb } from './db/client';
 import { todos } from './db/schema';
 
-const env = parseEnv(config);
-
-const pool = new Pool({ connectionString: env.postgres.databaseUrl, max: 5 });
-const db = drizzle(pool);
+const db = getDb();
 
 const app = new Hono();
 
