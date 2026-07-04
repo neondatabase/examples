@@ -1,0 +1,66 @@
+import { eq, sql } from "drizzle-orm";
+import { getDb } from "../db/client.js";
+import { commandUsage, profiles } from "../db/schema.js";
+
+export type CommandUsageSummary = {
+  commandName: string;
+  runCount: number;
+};
+
+export const setStoredName = async (telegramUserId: string, name: string): Promise<void> => {
+  const db = getDb();
+
+  await db
+    .insert(profiles)
+    .values({ userId: telegramUserId, name })
+    .onConflictDoUpdate({
+      target: profiles.userId,
+      set: {
+        name,
+        updatedAt: new Date(),
+      },
+    });
+};
+
+export const getStoredName = async (telegramUserId: string): Promise<string | undefined> => {
+  const db = getDb();
+  const rows = await db
+    .select({ name: profiles.name })
+    .from(profiles)
+    .where(eq(profiles.userId, telegramUserId))
+    .limit(1);
+
+  return rows[0]?.name;
+};
+
+export const trackCommandRun = async (telegramUserId: string, commandName: string): Promise<void> => {
+  const db = getDb();
+
+  await db
+    .insert(commandUsage)
+    .values({
+      userId: telegramUserId,
+      commandName,
+      runCount: 1,
+      lastRunAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: [commandUsage.userId, commandUsage.commandName],
+      set: {
+        runCount: sql`${commandUsage.runCount} + 1`,
+        lastRunAt: new Date(),
+      },
+    });
+};
+
+export const getCommandUsage = async (telegramUserId: string): Promise<CommandUsageSummary[]> => {
+  const db = getDb();
+
+  return db
+    .select({
+      commandName: commandUsage.commandName,
+      runCount: commandUsage.runCount,
+    })
+    .from(commandUsage)
+    .where(eq(commandUsage.userId, telegramUserId));
+};
