@@ -140,4 +140,4 @@ source.onerror = () => {/* EventSource auto-reconnects; nothing to do */};
 - **CORS.** A SPA hits the function cross-origin, so set `Access-Control-Allow-Origin`. `EventSource` sends no credentials by default, so `*` is fine for public streams.
 - **One-way only.** SSE is server → client. For client → server, the browser makes normal `fetch`/`POST` calls (often to the same function); reach for [WebSockets](../SKILL.md#websocket-servers) only when you need bidirectional, low-latency frames.
 
-A full, verified build of this pattern — Hono `fetch` SSE endpoint, `LISTEN`/`NOTIFY` fan-out, heartbeat, a counter persisted in Postgres, and a client-only TanStack Router SPA consuming it with `EventSource` — is the `with-realtime-sse` example in [`neondatabase/examples`](https://github.com/neondatabase/examples/tree/main/with-realtime-sse).
+Together — a Hono `fetch` SSE endpoint, `LISTEN`/`NOTIFY` fan-out, heartbeat, a counter persisted in Postgres, and a client-only TanStack Router SPA consuming it with `EventSource` — these compose into a complete realtime backend on a single function.

@@ -78,7 +78,7 @@ A minimal function — a Hono app that queries the branch's Postgres via the inj
 import { Hono } from "hono";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import { parseEnv } from "@neon/env/v1";
+import { parseEnv } from "@neon/env";
 import config from "../neon";
 import { todos } from "./db/schema";
 
@@ -98,7 +98,7 @@ app.get("/todos", async (c) => c.json(await db.select().from(todos)));
 export default app;
 ```
 
-This is the `with-hono` example, verified end to end. Create the `pg` pool at module scope (reused across requests on the same isolate) and keep `max` small (e.g. 5), since each isolate keeps its own pool.
+Create the `pg` pool at module scope (reused across requests on the same isolate) and keep `max` small (e.g. 5), since each isolate keeps its own pool.
 
 `parseEnv(config)` requires _every_ variable the config implies. A function that only talks to Postgres over the pooled URL can scope it to just that key — `parseEnv` then validates and returns only what you asked for (the keys autocomplete from your `neon.ts`):
 
@@ -197,7 +197,7 @@ const db = drizzle(pool);
 
 Keep `max` small (e.g. `5`): each isolate keeps its own pool, so total connections to Postgres scale with the number of live isolates. You don't need to close the pool on shutdown — when the runtime evicts an isolate it sends `SIGINT`/`SIGTERM`, and Neon's pooler reclaims those connections for you, so an explicit drain handler is redundant.
 
-> Reading `process.env.DATABASE_URL` directly works everywhere. The `with-hono` example in [Setup](#setup) instead uses `@neon/env/v1`'s `parseEnv(config)` to read the same value in a typed, validated way — either is fine.
+> Reading `process.env.DATABASE_URL` directly works everywhere. The function in [Setup](#setup) instead uses `@neon/env`'s `parseEnv(config)` to read the same value in a typed, validated way — either is fine.
 
 ## WebSocket servers
 
@@ -338,7 +338,7 @@ async function connect() {
 connect();
 ```
 
-A full, verified build of this pattern — Hono `fetch` + `ws` `upgrade`, JWT auth over `?token=`, `LISTEN`/`NOTIFY` fan-out, client backoff, plus image uploads and an in-function moderation agent — is the `with-realtime-chat` example in [`neondatabase/examples`](https://github.com/neondatabase/examples/tree/main/with-realtime-chat).
+Together — Hono `fetch` + `ws` `upgrade`, JWT auth over `?token=`, `LISTEN`/`NOTIFY` fan-out, and client backoff — these compose into a complete realtime chat backend on a single function.
 
 ## Server-sent events (SSE)
 
@@ -362,7 +362,21 @@ export default {
 };
 ```
 
-The same rules as WebSockets apply. **Heartbeat:** a stream stays open only while bytes flow — Neon's window is 15 minutes ([Timeouts and runtime limits](#timeouts-and-runtime-limits)) but proxies are usually far stricter, so emit a `: ping\n\n` comment every ~25–30s (shown above) to keep idle streams from being dropped. Keep state in Postgres, and fan out across isolates with [`LISTEN`/`NOTIFY`](#fan-out-across-isolates-do-not-skip-this) (hold a `Set` of stream controllers and `enqueue` to each). `EventSource` is GET-only and can't set headers, so authenticate with a `?token=` query param or cookie, exactly like the WebSocket case. [references/sse.md](references/sse.md) has the full pattern — Hono variant, cross-isolate fan-out, wire format, client, and caveats — and a verified end-to-end build is the `with-realtime-sse` example in [`neondatabase/examples`](https://github.com/neondatabase/examples/tree/main/with-realtime-sse).
+The same rules as WebSockets apply. **Heartbeat:** a stream stays open only while bytes flow — Neon's window is 15 minutes ([Timeouts and runtime limits](#timeouts-and-runtime-limits)) but proxies are usually far stricter, so emit a `: ping\n\n` comment every ~25–30s (shown above) to keep idle streams from being dropped. Keep state in Postgres, and fan out across isolates with [`LISTEN`/`NOTIFY`](#fan-out-across-isolates-do-not-skip-this) (hold a `Set` of stream controllers and `enqueue` to each). `EventSource` is GET-only and can't set headers, so authenticate with a `?token=` query param or cookie, exactly like the WebSocket case. [references/sse.md](references/sse.md) has the full pattern — Hono variant, cross-isolate fan-out, wire format, client, and caveats.
+
+## MCP servers
+
+An [MCP](https://modelcontextprotocol.io) server is a natural Functions workload: a long-running HTTP handler that exposes tools to AI clients (Cursor, Claude, ChatGPT, agents), with those tools reading and writing the branch's Postgres right next to the compute. MCP's **streamable HTTP transport** is a plain `POST`/`GET` on a single endpoint (conventionally `/mcp`), so it maps onto a function's `fetch` handler with no `upgrade` method or extra protocol — a Hono app using the official [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk) plus [`@hono/mcp`](https://github.com/honojs/middleware/tree/main/packages/mcp) (which bridges the transport to a route) is the simplest host. Build the server, register its tools, and create the transport once at module scope, then hand every `/mcp` request to it:
+
+```typescript
+const transport = new StreamableHTTPTransport();
+app.all("/mcp", async (c) => {
+  if (!mcpServer.isConnected()) await mcpServer.connect(transport);
+  return transport.handleRequest(c);
+});
+```
+
+Because the function's URL is public, **authenticate before connecting the transport** — [Better Auth](https://better-auth.com) covers both OAuth (its MCP plugin makes your app the authorization server so third-party clients self-authorize per the MCP spec) and a simpler API-key / session-JWT check for your own callers. [references/mcp.md](references/mcp.md) has the full pattern — server with Postgres-backed tools via Drizzle, both Better Auth auth options, and testing with `mcporter` / `add-mcp`.
 
 ## Integrations and observability
 
@@ -374,7 +388,7 @@ Functions are long-running but **still serverless** — they are a request/respo
 
 - **Time to first byte: 15 minutes.** Your handler must _begin_ returning a response within 15 minutes of receiving a request. Most handlers finish in seconds; the 15-minute ceiling exists so agent workloads like image/video generation have room.
 - **Heartbeat: 15 minutes.** Open WebSocket/SSE connections stay alive as long as data flows. The timeout only fires when a connection goes silent — send at least one byte every 15 minutes to keep a quiet stream alive.
-- **`waitUntil`: 15 minutes.** Work registered with `waitUntil` keeps the invocation alive after the response is sent, up to 15 minutes — for cleanup like analytics writes and audit logs, **not** a background job runner. (`waitUntil` from `@neon/functions/v1` is currently a stub during the preview.)
+- **`waitUntil`: 15 minutes.** Work registered with `waitUntil` keeps the invocation alive after the response is sent, up to 15 minutes — for cleanup like analytics writes and audit logs, **not** a background job runner. (`waitUntil` from `@neon/functions` is currently a stub during the preview.)
 - **Idle eviction.** With no active connections the platform shuts the function down; it may also evict/restart for operational reasons — e.g. maintenance, or moving the function to a different compute node (active functions can run for hours first). Treat eviction like a process restart — WebSocket/SSE clients must reconnect. The platform sends `SIGINT` before evicting, so a `process.on("SIGINT", ...)` handler lets you detect that the function is about to be evicted and run any last-minute cleanup. You don't need one just to close Postgres connections — Neon's pooler reclaims those on its own.
 
 - **Runtime:** Node.js 24, memory fixed at 2048 MiB during the preview. Slugs must match `^[a-z0-9]{1,20}$`. **An isolate is reused across many requests** — multiple requests can be in flight on the same isolate at once (interleaved on Node's single-threaded event loop), and under load the runtime runs several isolates in parallel, each with its own copy of module state. State held in module scope is therefore per-isolate (shared by every request that isolate handles) and in-memory only — persist anything that must survive eviction in Postgres. This reuse is exactly why you create a connection pool once at module scope rather than per request (see [Connecting to Postgres](#connecting-to-postgres)).
@@ -382,6 +396,8 @@ Functions are long-running but **still serverless** — they are a request/respo
 ## Functions as an agent backend (Next.js and similar frameworks)
 
 A Neon Function is a great home for an AI agent precisely because it **doesn't time out** the way lambda-style serverless does (15-minute budget, see above). But that advantage disappears the moment you **proxy the agent stream through your web app's backend** — a Next.js route handler, Remix/SvelteKit/Nuxt action, etc. hosted on Vercel, Netlify, Cloudflare, and the like. Those platforms cap serverless/edge execution at short windows (often ~10–60s, sometimes up to ~300s), so a long agent or image/video generation stream gets cut off mid-response even though the Neon Function would happily keep going.
+
+**Building the agent itself.** The [Vercel AI SDK](https://ai-sdk.dev) and [Mastra](https://mastra.ai) are the recommended ways to build the agent — point either at the Neon AI Gateway (see the `neon-ai-gateway` skill) for one credential across every model, with no extra provider keys. For a complete AI SDK agent running as a Function (streaming `toUIMessageStreamResponse`, multi-step tool calling next to Postgres, and persisting generated images to Object Storage), see [references/ai-sdk.md](references/ai-sdk.md); for the Mastra equivalent with built-in tracing, see [references/mastra-studio.md](references/mastra-studio.md).
 
 **The fix: call the function directly from the client.** Don't route the long request through your app server.
 

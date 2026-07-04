@@ -5,37 +5,37 @@
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon/SKILL.md",
-      "computedHash": "b2a846755ab5ee70ea02d2ed672750da24d877e72fc69e59087833d2178e97c6"
+      "computedHash": "1159ab3e02a317e45a6cf0a42c0138b173ead24921b2712b5ef8c90a7a5ef89d"
     },
     "neon-ai-gateway": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-ai-gateway/SKILL.md",
-      "computedHash": "5d7a26fa67873b228c85d914e26d6d77e83b3dd73b3cb333414f4aad903cde82"
+      "computedHash": "8ba5c98806795077bc41d167216694b3ecfa1f2a44df6cd9ba25d73001c71268"
     },
     "neon-functions": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-functions/SKILL.md",
-      "computedHash": "babaa68bb9b0f6ef57d577c56e450b0781170656056a6842e4aedd44470235b8"
+      "computedHash": "baa9b6fbe0d0e7ff82dd56cbb15f105c77f7f1b4ffe7a1306053a60fc3a25e68"
     },
     "neon-object-storage": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-object-storage/SKILL.md",
-      "computedHash": "01d4682b41b0e61d0a35050f4f52d2da74eaaeff314798f81992f75f4f384738"
+      "computedHash": "421d87db515648c3d7e9043eb2785e5fcaf1f2cc18c1247f1c3aaf02b7bc5f31"
     },
     "neon-postgres": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-postgres/SKILL.md",
-      "computedHash": "04b1701aa7be7ead8936a5455c9e448b71a6fb008001d8795b5d3cdca8008863"
+      "computedHash": "800cc5890f74962e4e0dc15584cc17ea6f4c49f73dda35704f9630981abc3e5d"
     },
     "neon-postgres-branches": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-postgres-branches/SKILL.md",
-      "computedHash": "c0ff429a18e64daa491469ce09a1b8e4b9de445b458c2d726b1b11d611044b04"
+      "computedHash": "1148b2aa240350469b168f0e860d4f5440f62ee408a6dfdb5e1d11f0bd2c138a"
     }
   }
 }

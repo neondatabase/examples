@@ -73,7 +73,7 @@ neon config apply    # create the declared buckets  (neon deploy is an alias)
 
 Buckets are **branch-scoped**: when a `neon.ts` is present, `neon checkout` applies the policy as it _creates_ a branch, so a fresh preview/CI branch comes up with its buckets already provisioned (and copy-on-write objects inherited from the parent). Checking out an _existing_ branch doesn't reconcile it — run `neon deploy` to apply changes. Provisioning (`config apply` / `deploy`), `link`, and `checkout` also pull the branch's S3 credentials into your local `.env.local`, so the same `env pull` step shown below happens for you on those commands.
 
-For typed, validated access to the injected S3 credentials, pass the same config object to `parseEnv` from `@neon/env` — it returns an `env.storage` namespace (`accessKeyId`, `secretAccessKey`, `endpoint`, `region`, `forcePathStyle`) derived from your `neon.ts`.
+For typed, validated access to the injected S3 credentials, pass the same config object to `parseEnv` from `@neon/env` — it returns an `env.storage` namespace (`accessKeyId`, `secretAccessKey`, `endpoint`, `region`) derived from your `neon.ts`.
 
 ## Environment variables
 
@@ -85,33 +85,63 @@ neon env pull            # writes the branch's vars into .env (or .env.local)
 neon-env run -- <your dev command>
 ```
 
-| Variable                        | Meaning                                                           |
-| ------------------------------- | ----------------------------------------------------------------- |
-| `AWS_ACCESS_KEY_ID`             | S3 Access Key ID (the branch credential's token id)               |
-| `AWS_SECRET_ACCESS_KEY`         | S3 Secret Access Key                                              |
-| `AWS_ENDPOINT_URL_S3`           | Branch S3 endpoint URL                                            |
-| `AWS_REGION`                    | Region, e.g. `us-east-2` (also injected as `NEON_STORAGE_REGION`) |
-| `NEON_STORAGE_FORCE_PATH_STYLE` | Always `"true"` — path-style addressing is required               |
+| Variable                | Meaning                                             |
+| ----------------------- | --------------------------------------------------- |
+| `AWS_ACCESS_KEY_ID`     | S3 Access Key ID (the branch credential's token id) |
+| `AWS_SECRET_ACCESS_KEY` | S3 Secret Access Key                                |
+| `AWS_ENDPOINT_URL_S3`   | Branch S3 endpoint URL                              |
+| `AWS_REGION`            | Region, e.g. `us-east-2`                            |
 
-Because the names are AWS-standard, the AWS SDK picks up the credentials, endpoint, and region from the environment automatically. The one Neon-specific concern is path-style addressing (`forcePathStyle: true`), which has no AWS env-var equivalent — and the AWS SDKs default to path-style for a custom endpoint anyway. Credentials are branch-scoped and valid for that branch and all its descendants.
+Because the names are AWS-standard, the AWS SDK picks up the credentials, endpoint, and region from the environment automatically. Credentials are branch-scoped and valid for that branch and all its descendants.
 
-## Configure the S3 client
+## Working with objects: the Files SDK (recommended)
 
-Because every value except `forcePathStyle` is read from the standard AWS env chain, the client is tiny — no hardcoded endpoint or keys:
+The simplest, most portable way to read and write objects is the [Files SDK](https://files-sdk.dev) with its `neon` adapter — a small, unified storage API (`upload`, `download`, `url`, `list`, `exists`, `copy`, `delete`, `signedUploadUrl`) over web-standard I/O. It uses the AWS S3 client under the hood, configured appropriately for Neon, and relabels errors as `Neon error` — so there's nothing to misconfigure. Reach for this first.
+
+Install it alongside the AWS S3 peer dependencies the adapter uses internally:
+
+```bash
+npm install files-sdk @aws-sdk/client-s3 @aws-sdk/s3-presigned-post @aws-sdk/s3-request-presigner
+```
+
+The adapter resolves its endpoint, region, and credentials from the same injected `AWS_*` env vars — pass only the bucket name:
+
+```typescript
+import { Files } from "files-sdk";
+import { neon } from "files-sdk/neon";
+
+const files = new Files({ adapter: neon({ bucket: "images" }) });
+
+// Upload — body may be a Buffer, Uint8Array, Blob, File, ReadableStream, or string
+await files.upload("generated/cat.jpg", fileBuffer, { contentType: "image/jpeg" });
+
+// Download
+const file = await files.download("generated/cat.jpg");
+const bytes = new Uint8Array(await file.arrayBuffer());
+
+// Presigned GET — share without exposing credentials (defaults to a 1h expiry)
+const url = await files.url("generated/cat.jpg", { expiresIn: 3600 });
+
+// Plus: files.exists(), files.list({ prefix }), files.copy(), files.delete(), files.signedUploadUrl()
+```
+
+Swap the adapter import (`files-sdk/s3`, `files-sdk/r2`, `files-sdk/gcs`, …) and the rest of your code is unchanged.
+
+## Working with objects: the AWS S3 client (alternative)
+
+Neon speaks the S3 API directly, so you can drop down to the AWS SDK whenever you prefer the native client or already depend on it. The credentials, endpoint, and region are read from the standard AWS env chain, so the only setting you pass is `forcePathStyle: true` — Neon requires path-style addressing, so the S3 client **must** set it:
 
 ```typescript
 import { S3Client } from "@aws-sdk/client-s3";
 
 const s3 = new S3Client({
-  forcePathStyle:
-    (process.env.NEON_STORAGE_FORCE_PATH_STYLE ?? "true").toLowerCase() !==
-    "false",
+  forcePathStyle: true, // required: Neon uses path-style addressing
 });
 ```
 
-If you prefer typed access instead of reading `process.env` directly, `parseEnv` (from `@neon/env`) returns a validated `env.storage` namespace (`accessKeyId`, `secretAccessKey`, `endpoint`, `region`, `forcePathStyle`) derived from your `neon.ts` — see the `neon` skill.
+If you prefer typed access instead of reading `process.env` directly, `parseEnv` (from `@neon/env`) returns a validated `env.storage` namespace (`accessKeyId`, `secretAccessKey`, `endpoint`, `region`) derived from your `neon.ts` — see the `neon` skill.
 
-## Upload, download, and presign
+Then upload, download, and presign with the raw command objects:
 
 ```typescript
 import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
@@ -143,9 +173,7 @@ const url = await getSignedUrl(
 );
 ```
 
-This is exactly the pattern used end to end in the `with-ai-sdk` example (agent generates an image → `PutObject` into the `images` bucket → row inserted in Postgres → presigned URL returned), which is the canonical reference for pairing storage with the database on a branch.
-
-A common app pattern: store the bucket key (not the bytes) in a Postgres column, and generate a presigned URL on read. Because both the row and the object live on the same branch, they branch together and never drift.
+The canonical pattern for pairing storage with the database on a branch: an agent generates an image → `PutObject` into the `images` bucket → a row is inserted in Postgres → a presigned URL is returned on read. Store the bucket **key** (not the bytes) in a Postgres column, and presign on read. Because both the row and the object live on the same branch, they branch together and never drift.
 
 `neon` also has first-class bucket/object commands (`neon bucket create|list|delete`, `neon bucket object put|get|list|delete`) for scripting and one-off operations.
 
@@ -166,3 +194,4 @@ The Neon documentation is the source of truth and Object Storage is evolving rap
 - https://neon.com/docs/storage/authentication.md
 - https://neon.com/docs/storage/s3-compatibility.md
 - https://neon.com/docs/storage/troubleshooting.md
+- https://files-sdk.dev — Files SDK docs (the `neon` adapter)
