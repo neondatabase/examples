@@ -88,3 +88,18 @@ templates:
       repo: examples
       ref: main
       subdir: with-realtime-sse
+  - id: discord-bot-http
+    title: "Discord bot"
+    description: "A Discord interactions bot hosted on Neon Functions, with slash commands, embeds, Components v2 buttons, user profiles, and command usage tracking in Neon Postgres."
+    tools:
+      - Discord
+      - Drizzle
+      - TypeScript
+    services:
+      - Postgres
+      - Functions
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: bots/discord-bot-http
