@@ -1,45 +1,87 @@
-# Neon Telegram Bot
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://neon.com/brand/neon-logo-dark-color.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://neon.com/brand/neon-logo-light-color.svg">
+  <img width="250px" alt="Neon Logo fallback" src="https://neon.com/brand/neon-logo-dark-color.svg">
+</picture>
 
-A small Telegram webhook bot hosted on Neon Functions.
+# Getting started with Neon and Telegram
 
-It supports:
+A Telegram webhook bot hosted on Neon Functions, backed by [Neon](https://neon.com) Postgres and [Drizzle ORM](https://orm.drizzle.team).
+
+## Project structure
+
+```
+bots/telegram-bot-http/
+├── neon.ts                  # Neon Functions policy (defineConfig)
+├── drizzle.config.ts        # Drizzle Kit config (schema location + DB credentials)
+├── functions/
+│   └── telegram.ts          # Telegram webhook handler
+├── scripts/
+│   ├── registerCommands.ts  # Registers Telegram bot commands
+│   └── setWebhook.ts        # Registers the Telegram webhook URL and secret
+├── src/
+│   ├── constants/           # Command names and Telegram constants
+│   ├── db/                  # Drizzle client and schema
+│   ├── schemas/             # Zod validation schemas
+│   ├── types/               # Shared TypeScript types
+│   ├── utils/               # Bot API, response, callback, and DB helpers
+│   └── env.ts               # Environment variable helpers
+└── package.json
+```
+
+## What it does
+
+The bot supports:
 
 - Telegram webhook verification with `X-Telegram-Bot-Api-Secret-Token`
 - `/ping` with estimated webhook latency
-- `/info` with basic runtime and request information
+- `/info` with runtime and request information
 - `/help` with a dynamic command list
-- `/buttons` with clickable inline keyboard examples
+- `/buttons` with inline keyboard callback examples
 - `/name` backed by Neon Postgres via Drizzle and node-postgres
 - `/profile` showing the stored name and command usage counts
 - per-user command usage tracking in Neon Postgres
 
-## Endpoint
+## Clone the repository
 
-Use this URL as the Telegram webhook URL:
-
-```text
-https://<branch-id>-telegram.compute.c-3.us-east-2.aws.neon.tech/api/webhook
+```bash
+npx degit neondatabase/examples/bots/telegram-bot-http ./telegram-bot-http
+cd telegram-bot-http
 ```
 
-The Neon function slug is `telegram`. The `/api/webhook` path is handled by the same function and matches the webhook path configured in this example.
+## Install and authenticate the Neon CLI
 
-## Requirements
+```bash
+npm i -g neon
+neon login
+```
 
-- Node.js 24 recommended
-- pnpm 11
-- Neon CLI authenticated and linked to the target Neon project
-- A Telegram bot token from [BotFather](https://t.me/BotFather)
+## Install dependencies
 
-## Environment
+```bash
+npm install
+```
 
-Copy `.env.example` to `.env` and fill in:
+## Link your Neon project
+
+Link (or create) a Neon project by running the `link` command from the workspace root:
+
+```bash
+neon link
+```
+
+If you let your agent drive this, add `--agent` to skip interactive mode.
+
+## Configure Telegram
+
+Create a bot with [BotFather](https://t.me/BotFather), then copy `.env.example` to `.env` and fill in:
 
 ```env
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_WEBHOOK_SECRET=
 TELEGRAM_WEBHOOK_URL=
 
-# Set automatically by Neon when running `pnpm deploy`.
+# Set automatically by Neon.
 NEON_BRANCH=
 DATABASE_URL=
 DATABASE_URL_UNPOOLED=
@@ -47,96 +89,53 @@ DATABASE_URL_UNPOOLED=
 
 `TELEGRAM_BOT_TOKEN` is required for the webhook handler and setup scripts.
 
-`TELEGRAM_WEBHOOK_SECRET` is sent to Telegram when you run `pnpm set:webhook`. Telegram includes it in the `X-Telegram-Bot-Api-Secret-Token` header on every webhook update, and the function rejects requests that do not match.
+`TELEGRAM_WEBHOOK_SECRET` can be any strong random string. Telegram includes it in the `X-Telegram-Bot-Api-Secret-Token` header on every webhook update, and the function rejects requests that do not match.
 
-`TELEGRAM_WEBHOOK_URL` is only used by `pnpm set:webhook`. Set it to the deployed function URL with `/api/webhook` appended.
+`TELEGRAM_WEBHOOK_URL` is only used by `npm run set:webhook`. After deployment, set it to the function invocation URL with `/api/webhook` appended.
 
-`NEON_BRANCH`, `DATABASE_URL`, and `DATABASE_URL_UNPOOLED` are written by Neon during `pnpm deploy`. They are shown in `.env.example` for completeness; you normally do not need to fill them in by hand. The `/name` and `/profile` commands use `DATABASE_URL` to query Drizzle-managed tables.
+## Apply the schema
 
-## Install
-
-```bash
-pnpm install
-```
-
-## Check
+The `/name` command stores each Telegram user's profile in Neon Postgres, and every bot command increments a per-user usage counter.
 
 ```bash
-pnpm check
+npm run db:push
 ```
 
-## Database
-
-The `/name` command stores each Telegram user's profile in Neon Postgres, and every bot command increments a per-user usage counter. The schema lives in `src/db/schema.ts`.
+## Run locally
 
 ```bash
-pnpm db:push
+neon dev
 ```
 
-This applies the `profiles` and `command_usage` tables to the database configured by `DATABASE_URL`.
+Neon serves the configured function from `neon.ts`. To receive real Telegram webhooks locally, expose the local function URL with a tunnel and set `TELEGRAM_WEBHOOK_URL` to the tunnel URL with `/api/webhook` appended.
 
-## Register Commands
+## Deploy to Neon Functions
+
+Deploy the Telegram webhook function with your Telegram secrets:
 
 ```bash
-pnpm register:commands
+neon deploy --env .env
 ```
 
-This registers:
+## Register the Telegram bot
 
-- `/ping`
-- `/info`
-- `/help`
-- `/buttons`
-- `/name`
-- `/profile`
-
-Telegram Bot API requests use this user agent:
-
-```text
-TelegramBot (https://neon.tech, Neon Functions Bot 1.0.0)
-```
-
-## Deploy
+Register the bot commands:
 
 ```bash
-pnpm deploy
+npm run register:commands
 ```
 
-This deploys the Neon Function and writes Neon-managed env vars such as `NEON_BRANCH`, `DATABASE_URL`, and `DATABASE_URL_UNPOOLED` into `.env`.
-
-Get the current hosted function URL:
+Grab the function invocation URL:
 
 ```bash
-pnpm endpoint
+neon functions get telegram
 ```
 
 Append `/api/webhook`, set `TELEGRAM_WEBHOOK_URL` in `.env`, then register the webhook with Telegram:
 
 ```bash
-pnpm set:webhook
+npm run set:webhook
 ```
-
-## Local Development
-
-```bash
-pnpm dev
-```
-
-Neon serves the configured function from `neon.ts`. To receive real Telegram webhooks locally, expose the local function URL with a tunnel and set `TELEGRAM_WEBHOOK_URL` to the tunnel URL with `/api/webhook` appended.
-
-## Project Structure
-
-- `neon.ts` declares the Neon Function.
-- `functions/telegram.ts` is the HTTP webhook handler.
-- `drizzle.config.ts` configures Drizzle Kit.
-- `scripts/registerCommands.ts` registers Telegram bot commands.
-- `scripts/setWebhook.ts` registers the Telegram webhook URL and secret.
-- `src/constants/` stores command names and Telegram constants.
-- `src/db/schema.ts` stores the Drizzle schema.
-- `src/env.ts` reads Neon-managed and Telegram-specific environment variables.
-- `src/schemas/` stores Zod validation schemas.
-- `src/types/` stores TypeScript types derived from schemas or shared across modules.
-- `src/utils/` stores helper logic for Telegram responses, Bot API calls, inline keyboards, webhook verification, and Neon Postgres access.
 
 ## Commands
 
@@ -144,7 +143,7 @@ Neon serves the configured function from `neon.ts`. To receive real Telegram web
 
 `/info` renders a runtime details panel with Node.js version, platform, function URL, request method, and Neon branch.
 
-`/help` renders a dynamic help panel from the command list used by `pnpm register:commands`.
+`/help` renders a dynamic help panel from the command list used by `npm run register:commands`.
 
 `/buttons` renders a Telegram inline keyboard with refresh, echo, time, and confirm callback examples. Each button edits the message with a different result.
 
