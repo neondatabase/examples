@@ -25,7 +25,42 @@ export type TelegramOutboundMessage = {
   replyMarkup?: InlineKeyboardMarkup;
 };
 
+export type TelegramApiRequestInput = {
+  botToken: string;
+  method: string;
+  payload: Record<string, unknown>;
+};
+
+export type SendTelegramMessageInput = {
+  botToken: string;
+} & TelegramOutboundMessage;
+
+export type EditTelegramMessageInput = {
+  botToken: string;
+  chatId: TelegramChatId;
+  messageId: number;
+  replyMarkup?: InlineKeyboardMarkup;
+  text: string;
+};
+
+export type AnswerTelegramCallbackQueryInput = {
+  botToken: string;
+  callbackQueryId: string;
+  text?: string;
+};
+
+export type SetTelegramWebhookInput = {
+  botToken: string;
+  secretToken: string;
+  url: string;
+};
+
 export type TelegramCommandInfo = BotCommand;
+
+export type CommandUsageSummary = {
+  commandName: string;
+  runCount: number;
+};
 
 export type TelegramInfoResponseInput = {
   branch: string;

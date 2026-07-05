@@ -1,4 +1,3 @@
-import type { BotCommand, InlineKeyboardMarkup } from "@grammyjs/types";
 import {
   TELEGRAM_API_BASE_URL,
   TELEGRAM_BOT_COMMANDS,
@@ -6,37 +5,14 @@ import {
   TELEGRAM_USER_AGENT,
 } from "../constants/telegram.js";
 import { telegramApiResponseSchema } from "../schemas/telegram.js";
-import type { TelegramChatId, TelegramOutboundMessage } from "../types/telegram.js";
-
-type TelegramApiRequestInput = {
-  botToken: string;
-  method: string;
-  payload: Record<string, unknown>;
-};
-
-type SendTelegramMessageInput = {
-  botToken: string;
-} & TelegramOutboundMessage;
-
-type EditTelegramMessageInput = {
-  botToken: string;
-  chatId: TelegramChatId;
-  messageId: number;
-  replyMarkup?: InlineKeyboardMarkup;
-  text: string;
-};
-
-type AnswerTelegramCallbackQueryInput = {
-  botToken: string;
-  callbackQueryId: string;
-  text?: string;
-};
-
-type SetTelegramWebhookInput = {
-  botToken: string;
-  secretToken: string;
-  url: string;
-};
+import type {
+  AnswerTelegramCallbackQueryInput,
+  EditTelegramMessageInput,
+  SendTelegramMessageInput,
+  SetTelegramWebhookInput,
+  TelegramApiRequestInput,
+  TelegramCommandInfo,
+} from "../types/telegram.js";
 
 const createTelegramApiUrl = (botToken: string, method: string): string =>
   `${TELEGRAM_API_BASE_URL}/bot${botToken}/${method}`;
@@ -112,7 +88,10 @@ export const answerTelegramCallbackQuery = ({
     },
   });
 
-export const registerTelegramCommands = (botToken: string, commands: BotCommand[] = TELEGRAM_BOT_COMMANDS) =>
+export const registerTelegramCommands = (
+  botToken: string,
+  commands: TelegramCommandInfo[] = TELEGRAM_BOT_COMMANDS,
+) =>
   telegramApiRequest({
     botToken,
     method: "setMyCommands",

@@ -1,11 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 import { getDb } from "../db/client.js";
 import { commandUsage, profiles } from "../db/schema.js";
-
-export type CommandUsageSummary = {
-  commandName: string;
-  runCount: number;
-};
+import type { CommandUsageSummary } from "../types/telegram.js";
 
 export const setStoredName = async (telegramUserId: string, name: string): Promise<void> => {
   const db = getDb();
