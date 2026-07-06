@@ -1,6 +1,8 @@
+import type { WhatsAppParsedCommand } from "../types/whatsapp.js";
+
 export const parseWhatsAppCommand = (
   text: string | undefined,
-): { name: string; args: string | undefined } | undefined => {
+): WhatsAppParsedCommand | undefined => {
   if (!text) {
     return undefined;
   }

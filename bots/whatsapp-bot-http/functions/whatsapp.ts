@@ -6,7 +6,12 @@ import {
   getWhatsAppVerifyToken,
 } from "../src/env.js";
 import { whatsAppWebhookPayloadSchema } from "../src/schemas/whatsapp.js";
-import type { WhatsAppMessage, WhatsAppWebhookPayload } from "../src/types/whatsapp.js";
+import type {
+  WhatsAppMessage,
+  WhatsAppMessageContext,
+  WhatsAppMessageHandlerContext,
+  WhatsAppWebhookPayload,
+} from "../src/types/whatsapp.js";
 import { createButtonTestClickMessage, parseButtonTestCallbackData } from "../src/utils/generalComponents.js";
 import { jsonResponse } from "../src/utils/jsonResponse.js";
 import { markWhatsAppMessageAsRead, sendWhatsAppMessage } from "../src/utils/whatsappApi.js";
@@ -28,11 +33,7 @@ const markIncomingMessageAsRead = async ({
   accessToken,
   message,
   phoneNumberId,
-}: {
-  accessToken: string;
-  message: WhatsAppMessage;
-  phoneNumberId: string;
-}): Promise<void> => {
+}: WhatsAppMessageContext): Promise<void> => {
   if (!message.id) {
     return;
   }
@@ -48,11 +49,7 @@ const handleButtonReply = async ({
   accessToken,
   message,
   phoneNumberId,
-}: {
-  accessToken: string;
-  message: WhatsAppMessage;
-  phoneNumberId: string;
-}): Promise<boolean> => {
+}: WhatsAppMessageContext): Promise<boolean> => {
   const buttonReplyId = getButtonReplyId(message);
   const action = buttonReplyId ? parseButtonTestCallbackData(buttonReplyId) : undefined;
 
@@ -78,13 +75,7 @@ const handleMessage = async ({
   phoneNumberId,
   request,
   url,
-}: {
-  accessToken: string;
-  message: WhatsAppMessage;
-  phoneNumberId: string;
-  request: Request;
-  url: URL;
-}): Promise<void> => {
+}: WhatsAppMessageHandlerContext): Promise<void> => {
   await markIncomingMessageAsRead({ accessToken, message, phoneNumberId });
 
   if (await handleButtonReply({ accessToken, message, phoneNumberId })) {

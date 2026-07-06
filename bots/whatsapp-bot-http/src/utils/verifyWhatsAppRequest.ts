@@ -1,14 +1,14 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import type {
+  VerifyWhatsAppRequestInput,
+  VerifyWhatsAppWebhookChallengeInput,
+} from "../types/whatsapp.js";
 
 export const verifyWhatsAppRequest = ({
   appSecret,
   body,
   signature,
-}: {
-  appSecret: string | undefined;
-  body: string;
-  signature: string | null;
-}): boolean => {
+}: VerifyWhatsAppRequestInput): boolean => {
   if (!appSecret || !signature?.startsWith("sha256=")) {
     return false;
   }
@@ -25,8 +25,4 @@ export const verifyWhatsAppWebhookChallenge = ({
   mode,
   token,
   verifyToken,
-}: {
-  mode: string | null;
-  token: string | null;
-  verifyToken: string | undefined;
-}): boolean => mode === "subscribe" && Boolean(verifyToken) && token === verifyToken;
+}: VerifyWhatsAppWebhookChallengeInput): boolean => mode === "subscribe" && Boolean(verifyToken) && token === verifyToken;

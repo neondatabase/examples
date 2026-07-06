@@ -9,6 +9,11 @@ export type WhatsAppMessage = z.infer<typeof whatsAppMessageSchema>;
 
 export type WhatsAppWebhookPayload = z.infer<typeof whatsAppWebhookPayloadSchema>;
 
+export type WhatsAppParsedCommand = {
+  args: string | undefined;
+  name: string;
+};
+
 export type WhatsAppButtonTestAction =
   (typeof WHATSAPP_BUTTON_TEST_ACTIONS)[keyof typeof WHATSAPP_BUTTON_TEST_ACTIONS];
 
@@ -40,6 +45,29 @@ export type MarkWhatsAppMessageAsReadInput = {
   accessToken: string;
   messageId: string;
   phoneNumberId: string;
+};
+
+export type VerifyWhatsAppRequestInput = {
+  appSecret: string | undefined;
+  body: string;
+  signature: string | null;
+};
+
+export type VerifyWhatsAppWebhookChallengeInput = {
+  mode: string | null;
+  token: string | null;
+  verifyToken: string | undefined;
+};
+
+export type WhatsAppMessageContext = {
+  accessToken: string;
+  message: WhatsAppMessage;
+  phoneNumberId: string;
+};
+
+export type WhatsAppMessageHandlerContext = WhatsAppMessageContext & {
+  request: Request;
+  url: URL;
 };
 
 export type CommandUsageSummary = {
