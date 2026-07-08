@@ -1,19 +1,12 @@
 import { Hono } from 'hono';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
 import { and, eq, ilike, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPTransport } from '@hono/mcp';
-import { parseEnv } from '@neon/env';
-import config from '../neon';
+import { getDb } from './db/client';
 import { contacts } from './db/schema';
 
-const { postgres } = parseEnv(config, ['DATABASE_URL']);
-
-// One pool per isolate, reused across requests (see the neon-functions skill).
-const pool = new Pool({ connectionString: postgres.databaseUrl, max: 5 });
-const db = drizzle(pool);
+const db = getDb();
 
 // Optional free-text field — a fresh schema per field so each carries its own
 // description in the generated tool schema (a shared instance would collapse to a $ref).

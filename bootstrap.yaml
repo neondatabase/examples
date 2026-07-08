@@ -103,6 +103,21 @@ templates:
       repo: examples
       ref: main
       subdir: bots/discord-bot-http
+  - id: telegram-bot-http
+    title: "Telegram bot"
+    description: "A Telegram webhook bot hosted on Neon Functions, with bot commands, inline keyboard buttons, user profiles, and command usage tracking in Neon Postgres."
+    tools:
+      - Telegram
+      - Drizzle
+      - TypeScript
+    services:
+      - Postgres
+      - Functions
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: bots/telegram-bot-http
   - id: whatsapp-bot-http
     title: "WhatsApp bot"
     description: "A WhatsApp Cloud API webhook bot hosted on Neon Functions, with bot commands, interactive reply buttons, user profiles, and command usage tracking in Neon Postgres."
