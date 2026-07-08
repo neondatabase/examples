@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { eq, sql } from 'drizzle-orm';
-import { Pool, Client } from 'pg';
+import { Client } from 'pg';
 import { parseEnv } from '@neon/env';
 import config from '../neon';
+import { getDb } from './db/client';
 import { counters } from './db/schema';
 
 const env = parseEnv(config);
@@ -13,8 +13,7 @@ const env = parseEnv(config);
 // SPA's origin. Defaults to "*" for the demo; set WEB_ORIGIN to lock it down.
 const WEB_ORIGIN = process.env.WEB_ORIGIN ?? '*';
 
-const pool = new Pool({ connectionString: env.postgres.databaseUrl, max: 5 });
-const db = drizzle(pool);
+const db = getDb();
 
 const COUNTER_ID = 1;
 const CHANNEL = 'counter_updates';
@@ -105,7 +104,7 @@ app.post('/increment', async (c) => {
   const value = await incrementCount();
   // NOTIFY fans the new value out to every isolate, each of which pushes it to
   // its own SSE clients (including whoever triggered the increment).
-  await pool.query('SELECT pg_notify($1, $2)', [CHANNEL, String(value)]);
+  await db.execute(sql`SELECT pg_notify(${CHANNEL}, ${String(value)})`);
   return c.json({ value });
 });
 

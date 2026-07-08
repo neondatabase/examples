@@ -2,17 +2,16 @@ import type { IncomingMessage } from 'node:http';
 import type { Duplex } from 'node:stream';
 import { Hono } from 'hono';
 import { WebSocketServer, type WebSocket } from 'ws';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool, Client } from 'pg';
+import { sql } from 'drizzle-orm';
+import { Client } from 'pg';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { parseEnv } from '@neon/env';
 import config from '../neon';
+import { getDb } from './db/client';
 import { messages } from './db/schema';
 
 const env = parseEnv(config);
-
-const pool = new Pool({ connectionString: env.postgres.databaseUrl, max: 5 });
-const db = drizzle(pool);
+const db = getDb();
 
 // Neon Auth signs tokens with the auth server's origin as the issuer.
 const jwks = createRemoteJWKSet(new URL(env.auth.jwksUrl));
@@ -84,7 +83,7 @@ export default {
           .returning();
         // NOTIFY fans the new row out to every isolate, which broadcasts to its
         // own connected clients (including the sender).
-        await pool.query('SELECT pg_notify($1, $2)', [CHANNEL, JSON.stringify(row)]);
+        await db.execute(sql`SELECT pg_notify(${CHANNEL}, ${JSON.stringify(row)})`);
       });
     });
   },
