@@ -1,0 +1,30 @@
+{
+  "name": "neon-telegram-bot",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "dev": "neon dev",
+    "deploy": "neon deploy --env .env",
+    "endpoint": "neon functions get telegram",
+    "register:commands": "rm -rf .tmp-register && tsc --outDir .tmp-register --noEmit false && node --env-file=.env .tmp-register/scripts/registerCommands.js",
+    "set:webhook": "rm -rf .tmp-register && tsc --outDir .tmp-register --noEmit false && node --env-file=.env .tmp-register/scripts/setWebhook.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "@grammyjs/types": "^3.28.0",
+    "@neon/config": "^0.8.1",
+    "@neon/env": "^0.10.0",
+    "drizzle-orm": "^0.45.2",
+    "pg": "^8.21.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.11.10",
+    "dotenv": "^16.4.5",
+    "drizzle-kit": "^0.31.10",
+    "typescript": "^5.8.3"
+  }
+}
