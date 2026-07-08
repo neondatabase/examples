@@ -1,8 +1,6 @@
 {
   "name": "neon-discord-bot",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
     "check": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
@@ -13,10 +11,6 @@
     "endpoint": "neon functions get discord",
     "register:commands": "rm -rf .tmp-register && tsc --outDir .tmp-register --noEmit false && node --env-file=.env .tmp-register/scripts/registerCommands.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
-  "type": "module",
   "dependencies": {
     "@discordjs/builders": "^1.14.1",
     "@neon/config": "^0.8.1",
