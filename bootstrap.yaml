@@ -118,3 +118,18 @@ templates:
       repo: examples
       ref: main
       subdir: bots/telegram-bot-http
+  - id: whatsapp-bot-http
+    title: "WhatsApp bot"
+    description: "A WhatsApp Cloud API webhook bot hosted on Neon Functions, with bot commands, interactive reply buttons, user profiles, and command usage tracking in Neon Postgres."
+    tools:
+      - WhatsApp
+      - Drizzle
+      - TypeScript
+    services:
+      - Postgres
+      - Functions
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: bots/whatsapp-bot-http
