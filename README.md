@@ -14,6 +14,7 @@ A good place to start:
 
 - [`neon-getting-started/`](./neon-getting-started) - a Next.js + Drizzle + Neon scaffold built for use with coding agents.
 - [`ai/`](./ai) - RAG, semantic search, hybrid search, and chatbot starters using pgvector on Neon.
+- [`bots/`](./bots) - Discord, Telegram, and WhatsApp bots hosted on Neon Functions, with commands, interactive UI, user profiles, and usage tracking in Neon Postgres.
 
 ## What is Neon?
 
