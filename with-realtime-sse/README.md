@@ -11,12 +11,13 @@ A minimal realtime counter: a client-only [TanStack Router](https://tanstack.com
 There is one shared counter for everyone:
 
 - The browser opens an **`EventSource` directly to the Neon Function** and renders the current value.
-- Clicking **Increment** `POST`s to the function, which bumps the counter in Postgres and `NOTIFY`s the new value.
-- Every isolate `LISTEN`s on that channel and pushes the value to its own SSE clients, so **all open tabs update at once** — no polling.
+- Clicking **Increment** `POST`s to the function, which bumps the counter in Postgres.
+- Every isolate polls Postgres and pushes the latest value to its own SSE clients, so **all open tabs update** within about a second.
 
 ```
 Browser ──(GET /events, SSE)──▶ Neon Function ──▶ keeps the stream open
-Browser ──(POST /increment)──▶ Neon Function ──▶ Postgres + NOTIFY ──▶ all SSE clients
+Browser ──(POST /increment)──▶ Neon Function ──▶ Postgres
+                               Neon Function ──(poll Postgres ~1s)──▶ all SSE clients
 ```
 
 ## Project structure
@@ -141,6 +142,13 @@ neon deploy --env <(echo "WEB_ORIGIN=https://<your-app>.vercel.app")
 
 - **SSE on Neon Functions.** Neon Functions are long-running Node.js handlers, so the function holds each `GET /events` connection open and streams new values down it. A comment heartbeat every 25s keeps otherwise-idle streams from being closed.
 - **State in Postgres, not memory.** The counter is a single row in Postgres. Module state doesn't survive isolate eviction, so the value (and every new client's starting point) always comes from the database.
-- **Fan-out across isolates.** Under load the runtime may run several isolates, each with its own set of SSE clients. Each isolate `LISTEN`s on a Postgres channel; an increment `NOTIFY`s the new value so every isolate pushes it to its own clients — making the counter genuinely shared.
+- **Fan-out across isolates.** Under load the runtime may run several isolates, each with its own set of SSE clients. Every isolate polls the counter in Postgres and pushes changes to its own clients, so the counter stays shared across isolates without any cross-isolate messaging. See [Real-time considerations](#real-time-considerations).
 - **Direct browser → function.** The SPA has no backend of its own; `EventSource` and the increment `fetch` call the function directly (cross-origin), so the function sets CORS headers and verifies nothing beyond the demo's needs. Add auth (e.g. a JWT check) before putting anything sensitive behind it.
 - **Reconnect for free.** `EventSource` reconnects automatically when an isolate is evicted or the network drops, so the client needs no manual backoff.
+
+## Real-time considerations
+
+This example fans out updates by **polling Postgres** on a short interval: each isolate re-reads the shared counter and pushes changes to its own clients. It needs no extra infrastructure and works with [Scale to Zero](https://neon.com/docs/introduction/scale-to-zero) — an idle compute can still suspend because polling stops when no clients are connected. That's a good fit for demos and low-to-moderate fan-out; the trade-off is up to ~1s of latency. Two alternatives:
+
+- **Postgres `LISTEN`/`NOTIFY`** — lower latency (push instead of poll), but a listener holds an idle connection that Scale to Zero drops on suspend, so it requires **disabling Scale to Zero** to keep the compute always on.
+- **A dedicated pub/sub such as [Upstash](https://upstash.com) Redis** — best for high-scale, high-fan-out, or multi-region realtime, at the cost of running another service.

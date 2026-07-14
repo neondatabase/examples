@@ -60,7 +60,7 @@ templates:
       subdir: with-mcp
   - id: realtime-chat
     title: "Realtime chat"
-    description: "A Next.js + Neon Auth chat over WebSockets to a Hono server, stored in Neon Postgres and fanned out across isolates with Postgres LISTEN/NOTIFY."
+    description: "A Next.js + Neon Auth chat over WebSockets to a Hono server, with messages stored in Neon Postgres via Drizzle."
     tools:
       - Next.js
       - Hono
@@ -76,7 +76,7 @@ templates:
       subdir: with-realtime-chat
   - id: realtime-sse
     title: "Realtime counter"
-    description: "A TanStack Router SPA with a shared counter over server-sent events, fanned out across isolates with Postgres LISTEN/NOTIFY."
+    description: "A TanStack Router SPA with a shared counter over server-sent events (SSE) from a Hono server on Neon Functions, stored in Neon Postgres via Drizzle."
     tools:
       - TanStack Router
       - Hono

@@ -1,13 +1,8 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { eq, sql } from 'drizzle-orm';
-import { Client } from 'pg';
-import { parseEnv } from '@neon/env';
-import config from '../neon';
 import { getDb } from './db/client';
 import { counters } from './db/schema';
-
-const env = parseEnv(config);
 
 // The browser talks to this function directly (cross-origin), so allow the
 // SPA's origin. Defaults to "*" for the demo; set WEB_ORIGIN to lock it down.
@@ -16,7 +11,6 @@ const WEB_ORIGIN = process.env.WEB_ORIGIN ?? '*';
 const db = getDb();
 
 const COUNTER_ID = 1;
-const CHANNEL = 'counter_updates';
 
 async function readCount(): Promise<number> {
   const [row] = await db
@@ -38,10 +32,10 @@ async function incrementCount(): Promise<number> {
   return row.value;
 }
 
-// SSE connections held open by THIS isolate. Under load the runtime runs
-// several isolates in parallel, each with its own copy of this set — which is
-// exactly why we fan out with Postgres LISTEN/NOTIFY below instead of only
-// broadcasting in-process.
+// SSE connections held open by THIS isolate. Under load the runtime runs several
+// isolates in parallel, each with its own copy of this set. Postgres is the
+// shared source of truth: every isolate polls it (below) and pushes changes to
+// its own clients, so all isolates converge without any cross-isolate messaging.
 const encoder = new TextEncoder();
 const clients = new Set<ReadableStreamDefaultController<Uint8Array>>();
 
@@ -62,18 +56,24 @@ function broadcast(value: number) {
   }
 }
 
-// One dedicated DIRECT connection per isolate, just to receive events. LISTEN
-// needs a real session, so use DATABASE_URL_UNPOOLED, not the pooled URL.
-const listener = new Client({ connectionString: env.postgres.databaseUrlUnpooled });
-listener
-  .connect()
-  .then(() => listener.query(`LISTEN ${CHANNEL}`))
-  .catch((error) => console.error('[listen] failed:', error));
-listener.on('notification', (msg) => {
-  if (!msg.payload) return;
-  const value = Number(msg.payload);
-  if (Number.isFinite(value)) broadcast(value);
-});
+// Fan-out by polling Postgres. One read per isolate per tick (not per client),
+// and none at all while this isolate has no clients — so an idle compute can
+// still scale to zero. This trades a little latency (up to the interval) for a
+// model that works across isolates and holds no unpooled LISTEN connection open.
+// See "Real-time considerations" in the README for the alternatives.
+let lastPushed: number | null = null;
+async function poll() {
+  if (clients.size === 0) return;
+  const value = await readCount();
+  if (value !== lastPushed) {
+    lastPushed = value;
+    broadcast(value);
+  }
+}
+const poller = setInterval(() => {
+  poll().catch((error) => console.error('[poll] failed:', error));
+}, 1000);
+poller.unref?.();
 
 // Keep otherwise-silent streams alive: SSE connections only stay open while
 // bytes flow (Neon's heartbeat window is 15 minutes; proxies are often
@@ -102,9 +102,8 @@ app.get('/count', async (c) => c.json({ value: await readCount() }));
 
 app.post('/increment', async (c) => {
   const value = await incrementCount();
-  // NOTIFY fans the new value out to every isolate, each of which pushes it to
-  // its own SSE clients (including whoever triggered the increment).
-  await db.execute(sql`SELECT pg_notify(${CHANNEL}, ${String(value)})`);
+  // Every isolate's poll loop picks this new value up from Postgres and pushes
+  // it to its own SSE clients (including whoever triggered the increment).
   return c.json({ value });
 });
 

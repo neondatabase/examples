@@ -12,11 +12,12 @@ There is one shared chat for all signed-in users:
 
 - The **Next.js app** (deployed on Vercel) handles sign in / sign up with Neon Auth and serves chat history from Postgres.
 - The browser opens a **WebSocket directly to the Neon Function**, authenticated with a Neon Auth JWT.
-- The function verifies the JWT, stores each message in Postgres, and fans it out to every connected client across isolates using Postgres `LISTEN`/`NOTIFY`.
+- The function verifies the JWT and stores each message in Postgres; every isolate polls for new messages and pushes them to its own clients.
 
 ```
 Browser ──(history)──▶ Next.js /api/messages ──▶ Postgres
-Browser ──(wss?token=JWT)──▶ Neon Function ──▶ Postgres + NOTIFY ──▶ all clients
+Browser ──(wss?token=JWT)──▶ Neon Function ──▶ Postgres
+                             Neon Function ──(poll Postgres ~1s)──▶ all clients
 ```
 
 ## Project structure
@@ -167,6 +168,13 @@ neon neon-auth domain add https://<your-app>.vercel.app
 
 - **WebSockets on Neon Functions.** Neon Functions are long-running Node.js handlers, so the function exports `{ fetch, upgrade }`: Hono serves HTTP via `fetch`, and the `ws` library handles the WebSocket handshake in `upgrade(req, socket, head)`. See `src/index.ts`.
 - **Auth over WebSockets.** Browsers can't set headers on a WebSocket, so the client passes its Neon Auth JWT as `?token=`. The function verifies it against the Neon Auth JWKS before accepting the connection.
-- **Fan-out across isolates.** Under load the runtime may run several isolates, each with its own connected clients. Each isolate `LISTEN`s on a Postgres channel; new messages are `NOTIFY`'d so every isolate broadcasts to its own sockets — making the chat genuinely shared.
+- **Fan-out across isolates.** Under load the runtime may run several isolates, each with its own connected clients. Every isolate polls Postgres for new messages and broadcasts them to its own sockets, so the chat stays shared across isolates without any cross-isolate messaging. See [Real-time considerations](#real-time-considerations).
 - **Reconnect.** The client reconnects with exponential backoff (re-minting a token each attempt), since serverless isolates can be evicted when idle.
 - **One way to reach Postgres.** Both the function and the Next.js app use Drizzle + `node-postgres` against the pooled `DATABASE_URL`. In the web app the pool is created once at module scope and registered with `attachDatabasePool` (`@vercel/functions`) so Vercel Fluid Compute drains idle connections before suspending the instance — reusing connections without leaking them.
+
+## Real-time considerations
+
+This example fans out messages by **polling Postgres** on a short interval: each isolate reads rows newer than the last one it saw and pushes them to its own clients. It needs no extra infrastructure and works with [Scale to Zero](https://neon.com/docs/introduction/scale-to-zero) — an idle compute can still suspend because polling stops when no clients are connected. That's a good fit for demos and low-to-moderate fan-out; the trade-off is up to ~1s of latency. Two alternatives:
+
+- **Postgres `LISTEN`/`NOTIFY`** — lower latency (push instead of poll), but a listener holds an idle connection that Scale to Zero drops on suspend, so it requires **disabling Scale to Zero** to keep the compute always on.
+- **A dedicated pub/sub such as [Upstash](https://upstash.com) Redis** — best for high-scale, high-fan-out, or multi-region realtime, at the cost of running another service.

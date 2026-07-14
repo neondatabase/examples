@@ -2,8 +2,7 @@ import type { IncomingMessage } from 'node:http';
 import type { Duplex } from 'node:stream';
 import { Hono } from 'hono';
 import { WebSocketServer, type WebSocket } from 'ws';
-import { sql } from 'drizzle-orm';
-import { Client } from 'pg';
+import { desc, gt } from 'drizzle-orm';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { parseEnv } from '@neon/env';
 import config from '../neon';
@@ -36,23 +35,46 @@ async function verifyToken(token: string | null): Promise<Identity | null> {
   }
 }
 
-// Sockets connected to THIS isolate. Several isolates can run under load, so we
-// fan messages out across all of them with Postgres LISTEN/NOTIFY rather than
-// only broadcasting in-process.
+// Sockets connected to THIS isolate. Several isolates can run under load, each
+// with its own sockets. Postgres is the shared source of truth: every isolate
+// polls for new rows (below) and pushes them to its own clients, so the chat is
+// shared across isolates without any cross-isolate messaging.
 const clients = new Set<WebSocket>();
-const CHANNEL = 'chat_messages';
 
-const listener = new Client({ connectionString: env.postgres.databaseUrlUnpooled });
-listener
-  .connect()
-  .then(() => listener.query(`LISTEN ${CHANNEL}`))
-  .catch((error) => console.error('[listen] failed:', error));
-listener.on('notification', (msg) => {
-  if (!msg.payload) return;
-  for (const ws of clients) {
-    if (ws.readyState === ws.OPEN) ws.send(msg.payload);
+// Fan-out by polling Postgres. One query per isolate per tick, and none while
+// this isolate has no clients — so an idle compute can still scale to zero.
+// `lastId` starts unset and is seeded to the latest row id on the first tick, so
+// we stream only NEW messages; clients load history separately over REST. See
+// "Real-time considerations" in the README for the alternatives.
+let lastId: number | null = null;
+async function poll() {
+  if (clients.size === 0) return;
+  if (lastId === null) {
+    const [latest] = await db
+      .select({ id: messages.id })
+      .from(messages)
+      .orderBy(desc(messages.id))
+      .limit(1);
+    lastId = latest?.id ?? 0;
+    return;
   }
-});
+  const rows = await db
+    .select()
+    .from(messages)
+    .where(gt(messages.id, lastId))
+    .orderBy(messages.id);
+  for (const row of rows) {
+    lastId = row.id;
+    const payload = JSON.stringify(row);
+    for (const ws of clients) {
+      if (ws.readyState === ws.OPEN) ws.send(payload);
+    }
+  }
+}
+const poller = setInterval(() => {
+  poll().catch((error) => console.error('[poll] failed:', error));
+}, 1000);
+poller.unref?.();
 
 const wss = new WebSocketServer({ noServer: true });
 
@@ -77,13 +99,11 @@ export default {
       ws.on('message', async (data) => {
         const body = data.toString().slice(0, 2000).trim();
         if (!body) return;
-        const [row] = await db
+        // Just persist it. Every isolate's poll loop (including this one) picks
+        // the new row up from Postgres and fans it out to its own clients.
+        await db
           .insert(messages)
-          .values({ userId: identity.id, userName: identity.name, body })
-          .returning();
-        // NOTIFY fans the new row out to every isolate, which broadcasts to its
-        // own connected clients (including the sender).
-        await db.execute(sql`SELECT pg_notify(${CHANNEL}, ${JSON.stringify(row)})`);
+          .values({ userId: identity.id, userName: identity.name, body });
       });
     });
   },
