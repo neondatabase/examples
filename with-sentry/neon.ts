@@ -10,6 +10,7 @@ export default defineConfig({
         env: {
           SENTRY_DSN: process.env.SENTRY_DSN!,
           SENTRY_RELEASE: process.env.SENTRY_RELEASE ?? "",
+          SENTRY_TRACES_SAMPLE_RATE: process.env.SENTRY_TRACES_SAMPLE_RATE ?? "1",
           PRODUCTION_BRANCH: process.env.PRODUCTION_BRANCH ?? "",
         },
       },

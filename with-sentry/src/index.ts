@@ -7,11 +7,10 @@ import { z } from "zod";
 
 const app = new Hono();
 
-// The Neon runtime invokes the handler through its own ingress, not a node:http server
-// the Sentry SDK can auto-instrument — so create the request root span (and per-request
-// isolation scope) ourselves. Everything else (gen_ai spans, logs) nests under it.
-app.use("*", (c, next) => {
-  return Sentry.withIsolationScope(() =>
+// The runtime's ingress isn't auto-instrumented — create the request root span and
+// isolation scope here, and flush before the isolate can idle.
+app.use("*", (c, next) =>
+  Sentry.withIsolationScope(() =>
     Sentry.startSpan(
       {
         op: "http.server",
@@ -23,20 +22,16 @@ app.use("*", (c, next) => {
         await next();
         span.setAttribute("http.response.status_code", c.res.status);
       },
-    ).finally(() =>
-      // The isolate's background timers are unreliable after the response is sent, so
-      // deliver buffered telemetry (streamed spans, logs) while the request is still alive.
-      Sentry.flush(2000),
-    ),
-  );
-});
+    ).finally(() => Sentry.flush(2000)),
+  ),
+);
 
 const MODEL = process.env.AGENT_MODEL ?? "meta-llama-3-3-70b-instruct";
 const FALLBACK_MODEL = process.env.AGENT_FALLBACK_MODEL ?? "llama-4-maverick";
 
 app.get("/", (c) =>
   c.json({
-    name: "neon-with-sentry",
+    name: "with-sentry",
     routes: {
       "POST /chat": "streaming tool-calling agent (gen_ai traces)",
       "POST /summarize": "agent with model fallback (recoverable failures -> Sentry logs)",
@@ -45,8 +40,6 @@ app.get("/", (c) =>
   }),
 );
 
-// The happy path: a streaming tool-calling agent. `experimental_telemetry` is what
-// makes the AI SDK emit gen_ai spans for Sentry to pick up.
 app.post("/chat", async (c) => {
   const { messages } = await c.req.json();
 
@@ -72,22 +65,18 @@ app.post("/chat", async (c) => {
     },
     stopWhen: stepCountIs(5),
     experimental_telemetry: { isEnabled: true },
-    // streamText never throws — failures surface as error parts inside the stream and the
-    // HTTP response just ends. Without this hook a dead agent looks like an empty reply.
+    // streamText never throws — report stream failures explicitly.
     onError: ({ error }) => {
       Sentry.captureException(error, { tags: { component: "agent", phase: "chat-stream" } });
     },
   });
 
-  // The isolate can be suspended as soon as the response stream closes (waitUntil is a
-  // stub in the preview), and the gen_ai spans only end once the model stream completes —
-  // after the middleware's flush already ran. Hold the response open a beat longer and
-  // flush from the stream's own finalizer, so telemetry ships while the request is alive.
+  // gen_ai spans end with the stream — flush while the request is still alive.
   const stream = result.textStream
     .pipeThrough(
       new TransformStream<string, string>({
         async flush() {
-          await new Promise((r) => setTimeout(r, 0)); // let the AI SDK end its spans first
+          await new Promise((r) => setTimeout(r, 0));
           await Sentry.flush(2000);
         },
       }),
@@ -98,12 +87,9 @@ app.post("/chat", async (c) => {
   });
 });
 
-// The agent-that-falls-back path: recoverable failures become Sentry *logs*,
-// only the terminal all-models-failed case becomes an *issue*.
 app.post("/summarize", async (c) => {
   const body = await c.req.json();
   const text: string = body.text;
-  // Model list can be overridden per request to demonstrate the fallback path.
   const models: string[] = body.models ?? [MODEL, FALLBACK_MODEL];
   let lastError: unknown;
 
@@ -118,7 +104,7 @@ app.post("/summarize", async (c) => {
       return c.json({ summary, model });
     } catch (err) {
       lastError = err;
-      // Recoverable: this attempt failed, we'll try the next model. A log, not an issue.
+      // Recoverable — the next model gets a shot. A log, not an issue.
       Sentry.logger.warn("model attempt failed", {
         component: "agent",
         phase: "summarize-attempt",
@@ -128,7 +114,7 @@ app.post("/summarize", async (c) => {
     }
   }
 
-  // Terminal: every model failed. This one is an issue.
+  // Terminal — every model failed. This one is an issue.
   Sentry.captureException(lastError, {
     tags: { component: "agent", phase: "summarize-all-failed" },
     contexts: { agent: { attempts: models.length } },
@@ -136,7 +122,6 @@ app.post("/summarize", async (c) => {
   return c.json({ error: "all models failed" }, 502);
 });
 
-// Verification route: an unhandled error that should surface as a Sentry issue via onError.
 app.get("/debug-sentry", () => {
   throw new Error("sentry test: unhandled route error");
 });
