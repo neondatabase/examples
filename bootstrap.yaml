@@ -29,6 +29,19 @@ templates:
       repo: examples
       ref: main
       subdir: with-ai-sdk
+  - id: files-sdk
+    title: "Files SDK quickstart"
+    description: "A minimal script that uploads local files to a branch-scoped Neon object storage bucket using the Files SDK and its `neon` adapter, then prints presigned URLs."
+    tools:
+      - Files SDK
+      - TypeScript
+    services:
+      - Object Storage
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: with-files-sdk
   - id: mastra
     title: "Personal-assistant agent"
     description: "A Mastra agent that streams chat through the Neon AI Gateway and uses Mastra Memory on Neon Postgres to remember you across threads."
