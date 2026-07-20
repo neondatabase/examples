@@ -70,7 +70,7 @@ Then check Sentry: **Issues** (the route error), **Explore → Logs** (the `mode
 
 The comments in `src/instrument.ts` and `src/index.ts` explain each piece; the short version:
 
-- **Clear the OTel API global before `Sentry.init`** — the runtime pre-creates it with its own `@opentelemetry/api` version, which otherwise silently blocks Sentry's tracer registration (spans vanish while errors/logs keep working).
+- **`@sentry/node` must be ≥10.67.0** — older versions cannot register their tracer against the OTel API global the runtime pre-creates, and spans silently vanish while errors/logs keep working.
 - **A Hono middleware creates the request root span** and flushes per request — the runtime's ingress isn't auto-instrumented, and telemetry must ship while the request is alive.
 - **`vercelAIIntegration({ force: true })`** + per-call `experimental_telemetry` — deploy bundling defeats the integration's module detection.
 - **Streaming routes flush from the stream's finalizer** and report stream errors via `onError` — `streamText` never throws.
