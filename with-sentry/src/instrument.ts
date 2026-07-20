@@ -1,9 +1,5 @@
 import * as Sentry from "@sentry/node";
 
-// The runtime pre-creates the OTel API global with its own @opentelemetry/api version,
-// which blocks Sentry's tracer from registering. Clear it so Sentry can recreate it.
-delete (globalThis as Record<symbol, unknown>)[Symbol.for("opentelemetry.js.api.1")];
-
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   enabled: Boolean(process.env.SENTRY_DSN),
