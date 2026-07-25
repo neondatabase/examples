@@ -5,31 +5,31 @@
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon/SKILL.md",
-      "computedHash": "e6ef33700cc74a83197d5681a937c5de3131472fbace2afd5d5219aea86545a3"
+      "computedHash": "f51065e397e6865a234c98a4688b23859fa7744cc0434d95d35dd4e8183fcc31"
     },
     "neon-ai-gateway": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-ai-gateway/SKILL.md",
-      "computedHash": "5799ce8864b2254499b19ed631b0eae9cd8aac062cbf8d919e8c24d4480e6810"
+      "computedHash": "cd28f1ae1c8c84319dc2bd7be7a5c9b9aa883949164ee0165590405a85a9c4dc"
     },
     "neon-functions": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-functions/SKILL.md",
-      "computedHash": "fcd1b80eea5c1188212e1d97600367ba7bbc57601e0198cc08579dce3f9ef58c"
+      "computedHash": "4e5314bb70a96ca144a4bf82cc625e4a4652c05ef0511a3d560ce2f5a017f2f3"
     },
     "neon-postgres": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-postgres/SKILL.md",
-      "computedHash": "6af0a5329c82ff5daa34ca633d755b917f0aab94f5244ecb11bb4b6bfe0b1459"
+      "computedHash": "d4c284e055236b2a3ea1eaaa7dbcf832918ffad5e2745d8c938fa5b5c671e9a3"
     },
     "neon-postgres-branches": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-postgres-branches/SKILL.md",
-      "computedHash": "e9d411c35009dfd8ddaca7eb5e6f3fd55d9fcdbfbd31d1c7838c499b262e283d"
+      "computedHash": "39a27a390d91bb944c604f9b703aae62fec265ff492ca749bcb9345c6759346b"
     }
   }
 }
