@@ -9,7 +9,6 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",
     "dotenv": "^17.2.1"
