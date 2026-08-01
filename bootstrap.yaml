@@ -59,7 +59,7 @@ templates:
       subdir: with-mastra
   - id: mcp
     title: "MCP server"
-    description: "An MCP server exposing CRUD contact tools over Lakebase Postgres, built with the Anthropic MCP SDK and Hono's streamable HTTP transport."
+    description: "An MCP server exposing CRUD contact tools over Lakebase Postgres on Neon, built with the Anthropic MCP SDK and Hono's streamable HTTP transport."
     tools:
       - Hono
       - Drizzle
