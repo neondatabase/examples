@@ -2,7 +2,7 @@
 
 ## RAG Chatbot (OpenAI + LlamaIndex)
 
-A starter application for an AI-powered RAG chatbot with Next.js, Neon Postgres (pgvector), OpenAI, and LlamaIndex.
+A starter application for an AI-powered RAG chatbot with Next.js, Lakebase Postgres (pgvector), OpenAI, and LlamaIndex.
 
 - It allows users to input new information, embeds the input using the OpenAI text embedding API and stores it in the Neon database along with the original text. 
 - Users can then query the system through a chat interface. The app takes the user's input, embeds it, and retrieves relevant information from the Neon database using similarity search. It then uses the OpenAI chat API to generate a contextually appropriate response based on the retrieved data and chat history.
@@ -31,7 +31,7 @@ npx degit neondatabase/examples/ai/llamaindex/rag-nextjs ./rag-nextjs
 cp .env.example .env
 ```
 
-2. Update the environment variables with your OpenAI API Key and Neon Postgres URL.
+2. Update the environment variables with your OpenAI API Key and Lakebase Postgres URL.
 
 3. Install the dependencies:
 

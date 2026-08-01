@@ -36,7 +36,7 @@ Demo searches a Netflix dataset (~8,800 shows). No external AI APIs required —
 
 ## Why Neon?
 
-[Neon](https://neon.com) is serverless Postgres with native support for `pg_trgm`, `pgvector`, and `pg_stat_statements` — extensions used in this demo. The free tier is plenty for this example.
+[Neon](https://neon.com) gives you Lakebase Postgres, with native support for `pg_trgm`, `pgvector`, and `pg_stat_statements` — extensions used in this demo. The free tier is plenty for this example.
 
 - [pg_trgm docs](https://neon.com/docs/extensions/pg_trgm) — fuzzy text matching
 - [pgvector docs](https://neon.com/docs/extensions/pgvector) — vector similarity search

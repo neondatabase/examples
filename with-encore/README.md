@@ -6,7 +6,7 @@
 
 # Getting started with Neon and Encore
 
-This example demonstrates how to connect an Encore.ts application to a Neon Postgres database.
+This example demonstrates how to connect an Encore.ts application to a Lakebase Postgres database.
 
 [Encore](https://encore.dev) is a backend development framework that uses static analysis and type-safe primitives to provide automatic infrastructure provisioning, distributed tracing, and API documentation.
 

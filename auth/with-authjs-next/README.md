@@ -1,6 +1,6 @@
-# Next.js application with Neon Postgres and Auth.js authentication
+# Next.js application with Lakebase Postgres and Auth.js authentication
 
-This is a Next.js application that uses `Neon Postgres` as the database and `Auth.js` for user authentication. It allows users to log in using magic links and manage a simple todo list.
+This is a Next.js application that uses `Lakebase Postgres` as the database and `Auth.js` for user authentication. It allows users to log in using magic links and manage a simple todo list.
 
 ## Prerequisites
 

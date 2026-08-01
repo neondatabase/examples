@@ -70,7 +70,7 @@ export const createProfileMessage = (
     "",
     `<b>Name:</b> ${name ? `<b>${escapeTelegramHtml(name)}</b>` : "not set"}`,
     `<b>Total commands run:</b> ${totalRuns}`,
-    "<b>Storage:</b> Neon Postgres via Drizzle",
+    "<b>Storage:</b> Lakebase Postgres via Drizzle",
     "",
     "<b>Command usage</b>",
     ...usageLines.map(escapeTelegramHtml),

@@ -158,7 +158,7 @@ export const createProfileResponseData = ({
               [
                 `- **Name:** ${name ? `**${name}**` : "not set"}`,
                 `- **Total commands run:** ${totalRuns}`,
-                "- **Storage:** Neon Postgres via Drizzle",
+                "- **Storage:** Lakebase Postgres via Drizzle",
               ].join("\n"),
             ),
             createSeparator(),

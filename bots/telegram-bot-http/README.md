@@ -38,9 +38,9 @@ The bot supports:
 - `/info` with runtime and request information
 - `/help` with a dynamic command list
 - `/buttons` with inline keyboard callback examples
-- `/name` backed by Neon Postgres via Drizzle and node-postgres
+- `/name` backed by Lakebase Postgres via Drizzle and node-postgres
 - `/profile` showing the stored name and command usage counts
-- per-user command usage tracking in Neon Postgres
+- per-user command usage tracking in Lakebase Postgres
 
 ## Clone the repository
 
@@ -95,7 +95,7 @@ DATABASE_URL_UNPOOLED=
 
 ## Apply the schema
 
-The `/name` command stores each Telegram user's profile in Neon Postgres, and every bot command increments a per-user usage counter.
+The `/name` command stores each Telegram user's profile in Lakebase Postgres, and every bot command increments a per-user usage counter.
 
 ```bash
 npm run db:push
@@ -147,7 +147,7 @@ npm run set:webhook
 
 `/buttons` renders a Telegram inline keyboard with refresh, echo, time, and confirm callback examples. Each button edits the message with a different result.
 
-`/name <your name>` stores your name in Neon Postgres. `/name` without a name reads back the stored value for your Telegram user.
+`/name <your name>` stores your name in Lakebase Postgres. `/name` without a name reads back the stored value for your Telegram user.
 
 `/profile` renders your stored name, total bot commands run, per-command usage counts, and storage details.
 
