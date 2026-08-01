@@ -1,7 +1,7 @@
 {
   "name": "neon-encore-example",
   "version": "1.0.0",
-  "description": "Example Encore.ts application with Lakebase Postgres",
+  "description": "Example Encore.ts application with Lakebase Postgres on Neon",
   "private": true,
   "type": "module",
   "scripts": {
