@@ -2,7 +2,7 @@
 
 ## Chat with PDF (OpenAI + LangChain)
 
-A starter application for an AI-powered Chat with PDF with Next.js, Neon Postgres (pgvector), OpenAI, and LangChain.
+A starter application for an AI-powered Chat with PDF with Next.js, Lakebase Postgres (pgvector), OpenAI, and LangChain.
 
 - It allows users to upload PDF documents, which are then split into chunks, embedded using the OpenAI text embedding API, and stored in a Neon database.
 - Users can then ask questions about the uploaded document. It uses similarity search to retrieve relevant document chunks from the database and generates contextually appropriate responses using the OpenAI chat API. 
@@ -31,7 +31,7 @@ npx degit neondatabase/examples/ai/langchain/chat-with-pdf-nextjs ./chat-with-pd
 cp .env.example .env
 ```
 
-2. Update the environment variables with your OpenAI API Key and Neon Postgres URL.
+2. Update the environment variables with your OpenAI API Key and Lakebase Postgres URL.
 
 3. Install the dependencies:
 

@@ -2,7 +2,7 @@
 
 ## Hybrid Search Chatbot (OpenAI)
 
-A starter application for an AI-powered Hybrid Search chatbot with Next.js, Neon Postgres (pgvector), and OpenAI. 
+A starter application for an AI-powered Hybrid Search chatbot with Next.js, Lakebase Postgres (pgvector), and OpenAI. 
 
 - It allows users to input new information, embeds the input using the OpenAI text embedding API, and stores it in the Neon database along with the original text. 
 - Users can then query the system through a chat interface. The app takes the user's input, embeds it, and uses a hybrid search (combining full-text and semantic search) to retrieve the most relevant stored information. It then returns a list of relevant snippets to the user.
@@ -31,7 +31,7 @@ npx degit neondatabase/examples/ai/hybrid-search-nextjs ./hybrid-search-nextjs
 cp .env.example .env
 ```
 
-2. Update the environment variables with your OpenAI API Key and Neon Postgres URL.
+2. Update the environment variables with your OpenAI API Key and Lakebase Postgres URL.
 
 3. Install the dependencies:
 

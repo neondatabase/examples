@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   const fileBlob = new Blob([fileBuffer], { type: file.type })
   // Get the image embedding using ClipEmbedding
   const image_embedding = await new ClipEmbedding().getImageEmbedding(fileBlob)
-  // Query the Neon Postgres vector store for similar images
+  // Query the Lakebase Postgres vector store for similar images
   const { similarities, nodes } = await vectorStore.query({
     similarityTopK: 100,
     queryEmbedding: image_embedding,

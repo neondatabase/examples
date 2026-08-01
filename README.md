@@ -14,11 +14,11 @@ A good place to start:
 
 - [`neon-getting-started/`](./neon-getting-started) - a Next.js + Drizzle + Neon scaffold built for use with coding agents.
 - [`ai/`](./ai) - RAG, semantic search, hybrid search, and chatbot starters using pgvector on Neon.
-- [`bots/`](./bots) - Discord, Telegram, and WhatsApp bots hosted on Neon Functions, with commands, interactive UI, user profiles, and usage tracking in Neon Postgres.
+- [`bots/`](./bots) - Discord, Telegram, and WhatsApp bots hosted on Neon Functions, with commands, interactive UI, user profiles, and usage tracking in Lakebase Postgres.
 
 ## What is Neon?
 
-Neon is serverless Postgres. It separates storage from compute, scales to zero when idle, autoscales under load, and supports instant database branching for development, preview environments, and CI. The [Neon serverless driver](https://github.com/neondatabase/serverless) lets you query Postgres from edge runtimes over HTTP and WebSockets.
+Neon is a complete set of cloud backend primitives built around Lakebase Postgres, for developers, startups, and agent platforms, from Databricks. Lakebase Postgres runs on the lakebase architecture — OLTP built directly on cloud object storage — so it separates storage from compute, scales to zero when idle, autoscales under load, and supports instant database branching for development, preview environments, and CI. The [Neon serverless driver](https://github.com/neondatabase/serverless) lets you query Postgres from edge runtimes over HTTP and WebSockets.
 
 ## Documentation
 
