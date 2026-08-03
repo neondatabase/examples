@@ -5,37 +5,37 @@
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon/SKILL.md",
-      "computedHash": "f51065e397e6865a234c98a4688b23859fa7744cc0434d95d35dd4e8183fcc31"
+      "computedHash": "34714c04b6ab06adc728df602131f8c23fcbf79bf6a54c4b82e9021ad138cb72"
     },
     "neon-ai-gateway": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-ai-gateway/SKILL.md",
-      "computedHash": "cd28f1ae1c8c84319dc2bd7be7a5c9b9aa883949164ee0165590405a85a9c4dc"
+      "computedHash": "3c0263aa4a8a13e2cce7297edd5b2e12060cbfb8bc74e8d8fe839d7049cfb286"
     },
     "neon-functions": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-functions/SKILL.md",
-      "computedHash": "4e5314bb70a96ca144a4bf82cc625e4a4652c05ef0511a3d560ce2f5a017f2f3"
+      "computedHash": "6db834c9570b02759f19368931aad5e4f0f1b7d21c8b158dbc5f261a40fb9ee4"
     },
     "neon-object-storage": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-object-storage/SKILL.md",
-      "computedHash": "7d24b809f8c1bd5d7fdaf12b86c3a5c7a2c1f774bd6a1982569389245ea499b0"
+      "computedHash": "5201503865f470de38c5ddbd991b906c51f0a2beb53add04c666364864946c54"
     },
     "neon-postgres": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-postgres/SKILL.md",
-      "computedHash": "d4c284e055236b2a3ea1eaaa7dbcf832918ffad5e2745d8c938fa5b5c671e9a3"
+      "computedHash": "7985b983f8ae5e36d88b82bcc2f3353726d22ced9be97d438681b308afed509e"
     },
     "neon-postgres-branches": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-postgres-branches/SKILL.md",
-      "computedHash": "39a27a390d91bb944c604f9b703aae62fec265ff492ca749bcb9345c6759346b"
+      "computedHash": "3a97ec5cbcbb4c28e60bbb03197feb735bda7a35b44069a6a1144357511235f2"
     }
   }
 }

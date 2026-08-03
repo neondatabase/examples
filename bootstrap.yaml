@@ -1,7 +1,7 @@
 templates:
   - id: hono
     title: "REST API"
-    description: "A Hono REST API on Neon Functions, backed by Neon Postgres via Drizzle."
+    description: "A Hono REST API on Neon Functions, backed by Lakebase Postgres via Drizzle."
     tools:
       - Hono
       - Drizzle
@@ -44,7 +44,7 @@ templates:
       subdir: with-files-sdk
   - id: mastra
     title: "Personal-assistant agent"
-    description: "A Mastra agent that streams chat through the Neon AI Gateway and uses Mastra Memory on Neon Postgres to remember you across threads."
+    description: "A Mastra agent that streams chat through the Neon AI Gateway and uses Mastra Memory on Lakebase Postgres to remember you across threads."
     tools:
       - Mastra
       - Mastra Memory
@@ -59,7 +59,7 @@ templates:
       subdir: with-mastra
   - id: mcp
     title: "MCP server"
-    description: "An MCP server exposing CRUD contact tools over Neon Postgres, built with the Anthropic MCP SDK and Hono's streamable HTTP transport."
+    description: "An MCP server exposing CRUD contact tools over Lakebase Postgres on Neon, built with the Anthropic MCP SDK and Hono's streamable HTTP transport."
     tools:
       - Hono
       - Drizzle
@@ -73,7 +73,7 @@ templates:
       subdir: with-mcp
   - id: realtime-chat
     title: "Realtime chat"
-    description: "A Next.js + Neon Auth chat over WebSockets to a Hono server, with messages stored in Neon Postgres via Drizzle."
+    description: "A Next.js + Neon Auth chat over WebSockets to a Hono server, with messages stored in Lakebase Postgres via Drizzle."
     tools:
       - Next.js
       - Hono
@@ -89,7 +89,7 @@ templates:
       subdir: with-realtime-chat
   - id: realtime-sse
     title: "Realtime counter"
-    description: "A TanStack Router SPA with a shared counter over server-sent events (SSE) from a Hono server on Neon Functions, stored in Neon Postgres via Drizzle."
+    description: "A TanStack Router SPA with a shared counter over server-sent events (SSE) from a Hono server on Neon Functions, stored in Lakebase Postgres via Drizzle."
     tools:
       - TanStack Router
       - Hono
@@ -103,7 +103,7 @@ templates:
       subdir: with-realtime-sse
   - id: discord-bot-http
     title: "Discord bot"
-    description: "A Discord interactions bot hosted on Neon Functions, with slash commands, embeds, Components v2 buttons, user profiles, and command usage tracking in Neon Postgres."
+    description: "A Discord interactions bot hosted on Neon Functions, with slash commands, embeds, Components v2 buttons, user profiles, and command usage tracking in Lakebase Postgres."
     tools:
       - Discord
       - Drizzle
@@ -118,7 +118,7 @@ templates:
       subdir: bots/discord-bot-http
   - id: telegram-bot-http
     title: "Telegram bot"
-    description: "A Telegram webhook bot hosted on Neon Functions, with bot commands, inline keyboard buttons, user profiles, and command usage tracking in Neon Postgres."
+    description: "A Telegram webhook bot hosted on Neon Functions, with bot commands, inline keyboard buttons, user profiles, and command usage tracking in Lakebase Postgres."
     tools:
       - Telegram
       - Drizzle
@@ -133,7 +133,7 @@ templates:
       subdir: bots/telegram-bot-http
   - id: whatsapp-bot-http
     title: "WhatsApp bot"
-    description: "A WhatsApp Cloud API webhook bot hosted on Neon Functions, with bot commands, interactive reply buttons, user profiles, and command usage tracking in Neon Postgres."
+    description: "A WhatsApp Cloud API webhook bot hosted on Neon Functions, with bot commands, interactive reply buttons, user profiles, and command usage tracking in Lakebase Postgres."
     tools:
       - WhatsApp
       - Drizzle

@@ -55,7 +55,7 @@ export const createProfileMessage = (
     "",
     `Name: ${name ?? "not set"}`,
     `Total commands run: ${totalRuns}`,
-    "Storage: Neon Postgres via Drizzle",
+    "Storage: Lakebase Postgres via Drizzle",
     "",
     "*Command usage*",
     ...usageLines,

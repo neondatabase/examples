@@ -10,9 +10,9 @@ It supports:
 - `/help` with a dynamic Components v2 help panel
 - `/buttons` with clickable Components v2 button examples
 - standard Discord embeds for non-Components v2 command responses
-- `/name` backed by Neon Postgres via Drizzle and node-postgres
+- `/name` backed by Lakebase Postgres via Drizzle and node-postgres
 - `/profile` showing the stored name and command usage counts
-- per-user command usage tracking in Neon Postgres
+- per-user command usage tracking in Lakebase Postgres
 - optional ephemeral responses on every slash command
 
 ## Endpoint
@@ -70,7 +70,7 @@ pnpm check
 
 ## Database
 
-The `/name` command stores each Discord user's profile in Neon Postgres, and every slash command increments a per-user usage counter. The schema lives in `src/db/schema.ts`.
+The `/name` command stores each Discord user's profile in Lakebase Postgres, and every slash command increments a per-user usage counter. The schema lives in `src/db/schema.ts`.
 
 ```bash
 pnpm db:push
@@ -135,7 +135,7 @@ Neon serves the configured function from `neon.ts`.
 - `src/db/schema.ts` stores the Drizzle schema.
 - `src/schemas/` stores Zod validation schemas.
 - `src/types/` stores TypeScript types derived from schemas or shared across modules.
-- `src/utils/` stores helper logic for Discord responses, signature verification, Components v2 panels, and Neon Postgres access.
+- `src/utils/` stores helper logic for Discord responses, signature verification, Components v2 panels, and Lakebase Postgres access.
 
 ## Commands
 
@@ -147,7 +147,7 @@ Neon serves the configured function from `neon.ts`.
 
 `/buttons` renders a Components v2 button test panel with primary, secondary, success, and danger buttons. Each button updates the message with a different result.
 
-`/name name:<your name>` stores your name in Neon Postgres and returns an embed. `/name` without a name reads back the stored value for your Discord user.
+`/name name:<your name>` stores your name in Lakebase Postgres and returns an embed. `/name` without a name reads back the stored value for your Discord user.
 
 `/profile` renders a Components v2 panel with your stored name, total slash commands run, per-command usage counts, and storage details.
 

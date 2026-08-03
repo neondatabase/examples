@@ -2,7 +2,7 @@
 
 ## Reverse Image Search (OpenAI + LlamaIndex)
 
-A starter application for AI-powered Reverse Image Search with Next.js, Neon Postgres (pgvector), OpenAI, and LlamaIndex.
+A starter application for AI-powered Reverse Image Search with Next.js, Lakebase Postgres (pgvector), OpenAI, and LlamaIndex.
 
 - It allows users to uplaod images, which are embedded using the OpenAI CLIP-embedding API and stored in the Neon database along with the original image. 
 - Users can then query the system using new images, which are also embedded using the OpenAI CLIP-embedding API. The embedding vector is used to retrieve visually similar images from the Neon database. 
@@ -31,7 +31,7 @@ npx degit neondatabase/examples/ai/llamaindex/reverse-image-search-nextjs ./reve
 cp .env.example .env
 ```
 
-2. Update the environment variables with your OpenAI API Key and Neon Postgres URL.
+2. Update the environment variables with your OpenAI API Key and Lakebase Postgres URL.
 
 3. Install the dependencies:
 

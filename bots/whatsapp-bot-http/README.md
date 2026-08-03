@@ -37,9 +37,9 @@ The bot supports:
 - `/info` with runtime and request information
 - `/help` with a dynamic command list
 - `/buttons` with interactive reply button examples
-- `/name` backed by Neon Postgres via Drizzle and node-postgres
+- `/name` backed by Lakebase Postgres via Drizzle and node-postgres
 - `/profile` showing the stored name and command usage counts
-- per-user command usage tracking in Neon Postgres
+- per-user command usage tracking in Lakebase Postgres
 
 ## Clone the repository
 
@@ -97,7 +97,7 @@ DATABASE_URL_UNPOOLED=
 
 ## Apply the schema
 
-The `/name` command stores each WhatsApp user's profile in Neon Postgres, and every bot command increments a per-user usage counter.
+The `/name` command stores each WhatsApp user's profile in Lakebase Postgres, and every bot command increments a per-user usage counter.
 
 ```bash
 npm run db:push
@@ -139,7 +139,7 @@ Append `/api/webhook`, then configure that URL in the Meta app dashboard as the 
 
 `/buttons` sends a WhatsApp interactive message with refresh, echo, and time reply buttons. Each button sends a reply message with a different result.
 
-`/name <your name>` stores your name in Neon Postgres. `/name` without a name reads back the stored value for your WhatsApp user.
+`/name <your name>` stores your name in Lakebase Postgres. `/name` without a name reads back the stored value for your WhatsApp user.
 
 `/profile` renders your stored name, total bot commands run, per-command usage counts, and storage details.
 
