@@ -79,7 +79,9 @@ async function handleStripeEvent(tx: Db, event: Stripe.Event): Promise<void> {
       break;
 
     case "customer.deleted":
-      await upsertCustomer(tx, event.data.object, eventAt);
+      // Stripe sends the full customer snapshot (no `deleted` flag) for this event,
+      // so mark it as a deletion explicitly rather than relying on the payload shape.
+      await upsertCustomer(tx, event.data.object, eventAt, true);
       break;
 
     case "customer.subscription.created":
@@ -113,8 +115,11 @@ async function upsertCustomer(
   tx: Db,
   customer: Stripe.Customer | Stripe.DeletedCustomer,
   eventAt: Date,
+  isDeleted = false,
 ): Promise<void> {
-  if ("deleted" in customer && customer.deleted) {
+  const deleted = isDeleted || ("deleted" in customer && customer.deleted);
+  if (deleted) {
+    // Soft delete: keep the row (subscriptions reference it via FK) but wipe the PII.
     await tx
       .insert(customers)
       .values({

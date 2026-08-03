@@ -16,7 +16,7 @@ export default defineConfig({
         name: "Stripe webhooks",
         source: "src/index.ts",
         env: {
-          STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET!,
+          STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || "",
         },
         dev: {
           port: 8787,
