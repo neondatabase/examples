@@ -6,7 +6,7 @@
 
 # Getting started with Neon and GraphQL
 
-A minimal [GraphQL](https://graphql.org) API running [GraphQL Yoga](https://the-guild.dev/graphql/yoga-server) on [Hono](https://hono.dev), backed by [Lakebase Postgres](https://neon.com/docs/postgres/overview) and [Drizzle ORM](https://orm.drizzle.team), deployed as a [Neon Function](https://neon.com/docs/compute/functions/overview).
+A [GraphQL](https://graphql.org) API running [GraphQL Yoga](https://the-guild.dev/graphql/yoga-server) on [Hono](https://hono.dev), backed by [Lakebase Postgres](https://neon.com/docs/postgres/overview) and [Drizzle ORM](https://orm.drizzle.team), deployed as a [Neon Function](https://neon.com/docs/compute/functions/overview).
 
 ## Project structure
 
@@ -79,7 +79,7 @@ If you let your agent drive this, add `--agent` to skip interactive mode.
 Push the Drizzle schema to your Neon database:
 
 ```bash
-npm run db:generate && npm run db:migrate
+npm run db:push
 ```
 
 ## Run locally
