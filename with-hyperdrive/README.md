@@ -15,7 +15,7 @@ npx degit neondatabase/examples/with-hyperdrive ./with-hyperdrive
 ## Get your Neon credentials
 
 ```
-DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL="postgresql://<user>:<password>@<endpoint_hostname>/<dbname>?sslmode=require"
 ```
 
 - `user` is the database user.
@@ -31,7 +31,7 @@ DATABASE_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb
 To create a Hyperdrive configuration with the Wrangler CLI, open your terminal and run the following command:
 
 ```bash
-npx wrangler hyperdrive create <NAME_OF_HYPERDRIVE_CONFIG> --connection-string="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
+npx wrangler hyperdrive create <NAME_OF_HYPERDRIVE_CONFIG> --connection-string="postgresql://<user>:<password>@<endpoint_hostname>/<dbname>?sslmode=require"
 ```
 
 This command outputs a binding to be used in the `wrangler.toml` file:

@@ -29,7 +29,7 @@ Obtain the database connection string from the Connection Details widget on the 
 Update the `.env` file with your database connection string:
 
 ```txt
-# The connection string has the format `postgres://user:pass@host/db`
+# The connection string has the format `postgres://<user>:<password>@<host>/<db>`
 DATABASE_URL=<your-string-here>
 ```
 

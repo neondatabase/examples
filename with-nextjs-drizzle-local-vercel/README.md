@@ -29,7 +29,7 @@ docker-compose up -d
 Store your Neon credentials in your `.env` file.
 
 ```
-POSTGRES_URL="postgresql://neondb_owner:...@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
+POSTGRES_URL="postgresql://<user>:<password>@<endpoint_hostname>/<dbname>?sslmode=require"
 ```
 
 - `user` is the database user.

@@ -172,8 +172,8 @@ The app prefers `DATABASE_URL_POOLER` if set:
 
 ```bash
 # .env
-DATABASE_URL_POOLER=postgres://user:pass@ep-xxx-pooler.region.aws.neon.tech/db
-DATABASE_URL=postgres://user:pass@ep-xxx.region.aws.neon.tech/db
+DATABASE_URL_POOLER=postgres://<user>:<password>@ep-xxx-pooler.region.aws.neon.tech/db
+DATABASE_URL=postgres://<user>:<password>@ep-xxx.region.aws.neon.tech/db
 ```
 
 ### Connection Caching
