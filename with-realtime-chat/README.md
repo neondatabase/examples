@@ -28,7 +28,7 @@ with-realtime-chat/
 ├── drizzle.config.ts       # Drizzle Kit config
 ├── .env.example            # Function environment variables
 ├── src/
-│   ├── index.ts            # Hono `fetch` + WebSocket `upgrade` (the function)
+│   ├── index.ts            # Hono `fetch` + `upgradeWebSocket` (the function)
 │   └── db/
 │       └── schema.ts       # Drizzle schema (messages)
 └── web/                    # Next.js app (Neon Auth + chat UI), deploy on Vercel
@@ -166,8 +166,15 @@ neon neon-auth domain add https://<your-app>.vercel.app
 
 ## How it works
 
-- **WebSockets on Neon Functions.** Neon Functions are long-running Node.js handlers, so the function exports `{ fetch, upgrade }`: Hono serves HTTP via `fetch`, and the `ws` library handles the WebSocket handshake in `upgrade(req, socket, head)`. See `src/index.ts`.
-- **Auth over WebSockets.** Browsers can't set headers on a WebSocket, so the client passes its Neon Auth JWT as `?token=`. The function verifies it against the Neon Auth JWKS before accepting the connection.
+- **WebSockets on Neon Functions.** Neon Functions are long-running Node.js handlers, so a single `fetch` export serves both. A handshake is turned into a live connection with `upgradeWebSocket(request)` from [`@neon/functions`](https://www.npmjs.com/package/@neon/functions), which returns `{ socket, response }` — `socket` is a standard `WebSocket`, and returning `response` completes the upgrade. No WebSocket library in the bundle. See `src/index.ts`.
+- **Auth over WebSockets.** Browsers can't set headers on a WebSocket, so the client passes its Neon Auth JWT as `?token=`. The function verifies it against the Neon Auth JWKS and refuses an invalid one by returning an ordinary `Response`:
+
+  ```ts
+  const identity = await verifyToken(url.searchParams.get('token'));
+  if (!identity) return new Response('unauthorized', { status: 401 });
+
+  const { socket, response } = upgradeWebSocket(request);
+  ```
 - **Fan-out across isolates.** Under load the runtime may run several isolates, each with its own connected clients. Every isolate polls Postgres for new messages and broadcasts them to its own sockets, so the chat stays shared across isolates without any cross-isolate messaging. See [Real-time considerations](#real-time-considerations).
 - **Reconnect.** The client reconnects with exponential backoff (re-minting a token each attempt), since serverless isolates can be evicted when idle.
 - **One way to reach Postgres.** Both the function and the Next.js app use Drizzle + `node-postgres` against the pooled `DATABASE_URL`. In the web app the pool is created once at module scope and registered with `attachDatabasePool` (`@vercel/functions`) so Vercel Fluid Compute drains idle connections before suspending the instance — reusing connections without leaking them.

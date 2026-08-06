@@ -1,7 +1,5 @@
-import type { IncomingMessage } from 'node:http';
-import type { Duplex } from 'node:stream';
 import { Hono } from 'hono';
-import { WebSocketServer, type WebSocket } from 'ws';
+import { upgradeWebSocket } from '@neon/functions';
 import { desc, gt } from 'drizzle-orm';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { parseEnv } from '@neon/env';
@@ -66,8 +64,8 @@ async function poll() {
   for (const row of rows) {
     lastId = row.id;
     const payload = JSON.stringify(row);
-    for (const ws of clients) {
-      if (ws.readyState === ws.OPEN) ws.send(payload);
+    for (const socket of clients) {
+      if (socket.readyState === socket.OPEN) socket.send(payload);
     }
   }
 }
@@ -76,35 +74,33 @@ const poller = setInterval(() => {
 }, 1000);
 poller.unref?.();
 
-const wss = new WebSocketServer({ noServer: true });
-
 const app = new Hono();
 app.get('/', (c) => c.text('Neon realtime chat — connect over WebSocket with ?token=<jwt>'));
 
 export default {
-  fetch: (request: Request) => app.fetch(request),
-
-  async upgrade(req: IncomingMessage, socket: Duplex, head: Buffer) {
-    const url = new URL(req.url ?? '/', 'http://localhost');
-    const identity = await verifyToken(url.searchParams.get('token'));
-    if (!identity) {
-      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-      socket.destroy();
-      return;
+  async fetch(request: Request): Promise<Response> {
+    if (request.headers.get('upgrade')?.toLowerCase() !== 'websocket') {
+      return app.fetch(request);
     }
 
-    wss.handleUpgrade(req, socket, head, (ws) => {
-      clients.add(ws);
-      ws.on('close', () => clients.delete(ws));
-      ws.on('message', async (data) => {
-        const body = data.toString().slice(0, 2000).trim();
-        if (!body) return;
-        // Just persist it. Every isolate's poll loop (including this one) picks
-        // the new row up from Postgres and fans it out to its own clients.
-        await db
-          .insert(messages)
-          .values({ userId: identity.id, userName: identity.name, body });
-      });
+    const url = new URL(request.url);
+    const identity = await verifyToken(url.searchParams.get('token'));
+    if (!identity) return new Response('unauthorized', { status: 401 });
+
+    const { socket, response } = upgradeWebSocket(request);
+
+    clients.add(socket);
+    socket.addEventListener('close', () => clients.delete(socket));
+    socket.addEventListener('message', (event) => {
+      const body = typeof event.data === 'string' ? event.data.slice(0, 2000).trim() : '';
+      if (!body) return;
+      // Just persist it. Every isolate's poll loop (including this one) picks
+      // the new row up from Postgres and fans it out to its own clients.
+      db.insert(messages)
+        .values({ userId: identity.id, userName: identity.name, body })
+        .catch((error) => console.error('[insert] failed:', error));
     });
+
+    return response;
   },
 };

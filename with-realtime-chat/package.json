@@ -8,17 +8,15 @@
   "dependencies": {
     "@neon/config": "^0.9.1",
     "@neon/env": "^0.11.0",
-    "@neon/functions": "^0.5.0",
+    "@neon/functions": "^0.7.0",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.4.2",
     "jose": "^6.2.3",
-    "pg": "^8.21.0",
-    "ws": "^8.18.0"
+    "pg": "^8.21.0"
   },
   "devDependencies": {
     "@types/pg": "^8.11.10",
-    "@types/ws": "^8.5.12",
     "drizzle-kit": "^0.31.10",
     "typescript": "^5.6.3"
   }
