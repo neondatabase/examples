@@ -146,3 +146,18 @@ templates:
       repo: examples
       ref: main
       subdir: bots/whatsapp-bot-http
+  - id: stripe-webhooks
+    title: "Stripe webhooks"
+    description: "A Stripe webhook handler on Neon Functions that verifies signatures, stores events idempotently in Postgres, and mirrors customers and subscriptions via Drizzle."
+    tools:
+      - Stripe
+      - Hono
+      - Drizzle
+    services:
+      - Postgres
+      - Functions
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: with-stripe-webhooks
