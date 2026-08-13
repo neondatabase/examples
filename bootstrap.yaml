@@ -13,6 +13,21 @@ templates:
       repo: examples
       ref: main
       subdir: with-hono
+  - id: graphql
+    title: "GraphQL API"
+    description: "A GraphQL Yoga API on Hono running on Neon Functions, backed by Lakebase Postgres via Drizzle."
+    tools:
+      - GraphQL
+      - Hono
+      - Drizzle
+    services:
+      - Postgres
+      - Functions
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: with-graphql
   - id: ai-sdk
     title: "Image-generation agent"
     description: "A Vercel AI SDK agent that streams chat through the Neon AI Gateway and stores generated images in Neon object storage, indexed in Postgres via Drizzle."
@@ -146,3 +161,18 @@ templates:
       repo: examples
       ref: main
       subdir: bots/whatsapp-bot-http
+  - id: trpc
+    title: "tRPC API"
+    description: "A type-safe tRPC API on Neon Functions with Hono, backed by Lakebase Postgres via Drizzle — list, get, create, and delete procedures over a todos table."
+    tools:
+      - tRPC
+      - Hono
+      - Drizzle
+    services:
+      - Postgres
+      - Functions
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: with-trpc
