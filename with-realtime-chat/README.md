@@ -170,7 +170,7 @@ neon neon-auth domain add https://<your-app>.vercel.app
 - **Auth over WebSockets.** Browsers can't set headers on a WebSocket, so the client passes its Neon Auth JWT as `?token=`. The function verifies it against the Neon Auth JWKS before accepting the connection.
 - **Fan-out across isolates.** Under load the runtime may run several isolates, each with its own connected clients. Every isolate polls Postgres for new messages and broadcasts them to its own sockets, so the chat stays shared across isolates without any cross-isolate messaging. See [Real-time considerations](#real-time-considerations).
 - **Reconnect.** The client reconnects with exponential backoff (re-minting a token each attempt), since serverless isolates can be evicted when idle.
-- **One way to reach Postgres.** Both the function and the Next.js app use Drizzle + `node-postgres` against the pooled `DATABASE_URL`. In the web app the pool is created once at module scope and registered with `attachDatabasePool` (`@vercel/functions`) so Vercel Fluid Compute drains idle connections before suspending the instance — reusing connections without leaking them.
+- **One way to reach Postgres.** Both the function and the Next.js app use Drizzle + `node-postgres` against the pooled `DATABASE_URL`. The function calls `attachDatabasePool` from `@neon/functions` after constructing the pool so an idle disconnect is not an uncaught exception. In the web app the pool is created once at module scope and registered with `attachDatabasePool` (`@vercel/functions`) so Vercel Fluid Compute drains idle connections before suspending the instance — reusing connections without leaking them.
 
 ## Real-time considerations
 
