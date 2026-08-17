@@ -5,13 +5,13 @@
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon/SKILL.md",
-      "computedHash": "6338251b632f9d362c845d0c2a6eb03cf8e5cede98904dee4e3633718d77284f"
+      "computedHash": "4a11ddb79d07e83a542af0f8dbae232824a3c5260e226580fea9807a02b5ebee"
     },
     "neon-object-storage": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-object-storage/SKILL.md",
-      "computedHash": "3f9b50f5eb2fc880c5b53fb2c5475752704eb2b8579852e7ec258e0b3e2fd8f7"
+      "computedHash": "873813a63df76ff53a67679298c43701e0943f1ab14efdad8468222a363fa57d"
     }
   }
 }
