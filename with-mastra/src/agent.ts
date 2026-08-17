@@ -2,17 +2,12 @@ import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { PostgresStore } from '@mastra/pg';
 import { parseEnv } from '@neon/env';
-import { attachDatabasePool } from '@neon/functions';
-import { Pool } from 'pg';
 import config from '../neon';
 
 const env = parseEnv(config);
 
-const pool = new Pool({ connectionString: env.postgres.databaseUrl, max: 5 });
-attachDatabasePool(pool);
-
 const memory = new Memory({
-  storage: new PostgresStore({ id: 'neon', pool }),
+  storage: new PostgresStore({ id: 'neon', connectionString: env.postgres.databaseUrl }),
   options: {
     lastMessages: 20,
     workingMemory: {

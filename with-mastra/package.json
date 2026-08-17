@@ -10,11 +10,9 @@
     "@mastra/pg": "^1.14.2",
     "@neon/config": "^0.9.1",
     "@neon/env": "^0.11.0",
-    "@neon/functions": "^0.8.0",
-    "pg": "^8.21.0"
+    "@neon/functions": "^0.5.0"
   },
   "devDependencies": {
-    "@types/pg": "^8.11.10",
     "mastra": "^1.16.0",
     "typescript": "^5.6.3"
   }
