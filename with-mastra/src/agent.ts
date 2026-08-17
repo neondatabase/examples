@@ -2,12 +2,29 @@ import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { PostgresStore } from '@mastra/pg';
 import { parseEnv } from '@neon/env';
+import { Pool } from 'pg';
 import config from '../neon';
+
+const PG_ADMIN_SHUTDOWN = '57P01';
+const IDLE_DISCONNECT_CODES = new Set(['ECONNRESET', 'EPIPE', 'ETIMEDOUT', PG_ADMIN_SHUTDOWN]);
+
+function isIdleDisconnect(err: Error): boolean {
+  const code = 'code' in err && typeof err.code === 'string' ? err.code : undefined;
+  return (
+    (code !== undefined && IDLE_DISCONNECT_CODES.has(code)) ||
+    err.message === 'Connection terminated unexpectedly'
+  );
+}
 
 const env = parseEnv(config);
 
+const pool = new Pool({ connectionString: env.postgres.databaseUrl, max: 5 });
+pool.on('error', (err) => {
+  if (!isIdleDisconnect(err)) console.error(err);
+});
+
 const memory = new Memory({
-  storage: new PostgresStore({ id: 'neon', connectionString: env.postgres.databaseUrl }),
+  storage: new PostgresStore({ id: 'neon', pool }),
   options: {
     lastMessages: 20,
     workingMemory: {
