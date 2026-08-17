@@ -16,6 +16,7 @@
     "@grammyjs/types": "^3.28.0",
     "@neon/config": "^0.9.1",
     "@neon/env": "^0.11.0",
+    "@neon/functions": "^0.8.0",
     "drizzle-orm": "^0.45.2",
     "pg": "^8.21.0",
     "zod": "^4.4.3"

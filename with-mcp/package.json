@@ -10,7 +10,7 @@
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@neon/config": "^0.9.1",
     "@neon/env": "^0.11.0",
-    "@neon/functions": "^0.5.0",
+    "@neon/functions": "^0.8.0",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.11.4",
