@@ -270,7 +270,7 @@ function buildReport(validated, ok) {
   } else {
     lines.push(
       "",
-      `❌ Found the following ${problems.length} issue(s) in this PR:`,
+      `Found the following ${problems.length} ${problems.length > 1 ? "issues" : "issue"} in this PR:`,
       "",
     );
     // Group problems by the file they belong to.
