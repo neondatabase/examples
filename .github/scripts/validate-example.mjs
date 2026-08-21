@@ -122,7 +122,7 @@ function validatePackageJson(pkgPath, isRoot) {
   const empties = findEmptyFields(pkg);
   if (empties.length > 0) {
     const list = empties.map((e) => `\`${e}\``).join(', ');
-    fail(dir, rel, `Remove or fill empty field(s): ${list}.`);
+    fail(dir, rel, `Remove empty field(s): ${list}.`);
   }
 
   // Meaningful, single-line description — required at the example root.
@@ -213,9 +213,9 @@ const COMMENT_MARKER = '<!-- validate-example-bot -->';
 
 /**
  * Render a repo-relative path as a markdown link to that path in the PR head,
- * when REPO_URL + HEAD_SHA are provided (CI). Existing files link to the blob;
- * paths that don't exist yet (e.g. a missing README.md) link to the directory
- * listing so the reader lands somewhere real. Falls back to inline code.
+ * when REPO_URL + HEAD_SHA are provided (CI). Only existing files are linked
+ * (to the blob); paths that don't exist yet (e.g. a missing README.md) render
+ * as plain inline code. Also falls back to inline code outside CI.
  */
 function pathLink(rel) {
   const label = `\`${rel}\``;
@@ -223,11 +223,8 @@ function pathLink(rel) {
   const sha = process.env.HEAD_SHA;
   if (!repoUrl || !sha) return label;
   const abs = path.join(repoRoot, rel);
-  if (fs.existsSync(abs)) {
-    return `[${label}](${repoUrl}/blob/${sha}/${rel})`;
-  }
-  const dir = path.dirname(rel);
-  return `[${label}](${repoUrl}/tree/${sha}/${dir})`;
+  if (!fs.existsSync(abs)) return label;
+  return `[${label}](${repoUrl}/blob/${sha}/${rel})`;
 }
 
 /** Build the markdown body posted as a PR comment. */
@@ -237,7 +234,7 @@ function buildReport(validated, ok) {
     lines.push('', '✅ All checks passed for the example(s) added in this PR:', '');
     for (const name of validated) lines.push(`- ${pathLink(name)}`);
   } else {
-    lines.push('', `❌ Found ${problems.length} problem(s) in the example(s) added in this PR.`, '');
+    lines.push('', `❌ Found the following ${problems.length} issue(s) in this PR:`, '');
     // Group problems by the file they belong to.
     const byFile = new Map();
     for (const p of problems) {
@@ -247,7 +244,7 @@ function buildReport(validated, ok) {
     }
     for (const [file, msgs] of byFile) {
       lines.push(`**${pathLink(file)}**`, '');
-      for (const m of msgs) lines.push(`- ${m}`);
+      for (const m of msgs) lines.push(`- [ ] ${m}`);
       lines.push('');
     }
   }
@@ -311,7 +308,7 @@ function main() {
   emitReport(validated, ok);
 
   if (!ok) {
-    console.error(`\n${problems.length} validation problem(s) found:\n`);
+    console.error(`\n${problems.length} validation issue(s) found:\n`);
     for (const p of problems) {
       console.error(`  ✗ ${p.message}`);
     }
