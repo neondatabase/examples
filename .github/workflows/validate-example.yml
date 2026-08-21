@@ -5,6 +5,7 @@ name: Validate example
 # existing examples are unaffected. Whatever it finds is posted to the PR as a
 # single sticky comment (updated in place on each push).
 on:
+  workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -35,7 +36,10 @@ jobs:
         continue-on-error: true
         env:
           VALIDATION_REPORT: ${{ runner.temp }}/validation-report.md
-        run: bun scripts/validate-example.mjs
+          # Used to build links to the changed files in the PR head.
+          REPO_URL: ${{ github.event.pull_request.head.repo.html_url }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bun .github/scripts/validate-example.mjs
 
       - name: Comment result on PR
         if: steps.validate.outputs.should_comment == 'true'

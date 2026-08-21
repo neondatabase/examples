@@ -19,8 +19,8 @@
 // implements, so it runs the same under `bun` or `node`.
 //
 // Usage:
-//   bun scripts/validate-example.mjs                # diff mode (CI): validate examples added vs. the base ref
-//   bun scripts/validate-example.mjs with-foo bots/bar   # validate the given example roots directly
+//   bun .github/scripts/validate-example.mjs                # diff mode (CI): validate examples added vs. the base ref
+//   bun .github/scripts/validate-example.mjs with-foo bots/bar   # validate the given example roots directly
 //
 // Environment (diff mode):
 //   GITHUB_BASE_REF   base branch of the PR (e.g. "main"); falls back to "main"
@@ -94,7 +94,7 @@ function validatePackageJson(pkgPath, isRoot) {
   try {
     raw = fs.readFileSync(pkgPath, 'utf8');
   } catch (err) {
-    fail(path.dirname(pkgPath), rel, `Unable to read ${rel}: ${err.message}`);
+    fail(path.dirname(pkgPath), rel, `Unable to read this file: ${err.message}`);
     return;
   }
 
@@ -102,7 +102,7 @@ function validatePackageJson(pkgPath, isRoot) {
   try {
     pkg = JSON.parse(raw);
   } catch (err) {
-    fail(path.dirname(pkgPath), rel, `${rel} is not valid JSON: ${err.message}`);
+    fail(path.dirname(pkgPath), rel, `Not valid JSON: ${err.message}`);
     return;
   }
 
@@ -110,38 +110,39 @@ function validatePackageJson(pkgPath, isRoot) {
 
   // No version field.
   if ('version' in pkg) {
-    fail(dir, rel, `${rel} must not declare a "version" field (found "${pkg.version}").`);
+    fail(dir, rel, `Remove the \`version\` field (found \`${pkg.version}\`).`);
   }
 
   // private: true must be present.
   if (pkg.private !== true) {
-    fail(dir, rel, `${rel} must set "private": true.`);
+    fail(dir, rel, 'Set `"private": true`.');
   }
 
   // No empty fields anywhere in the object.
   const empties = findEmptyFields(pkg);
   if (empties.length > 0) {
-    fail(dir, rel, `${rel} has empty field(s): ${empties.join(', ')}. Remove them or give them a value.`);
+    const list = empties.map((e) => `\`${e}\``).join(', ');
+    fail(dir, rel, `Remove or fill empty field(s): ${list}.`);
   }
 
   // Meaningful, single-line description — required at the example root.
   if (isRoot) {
     const desc = pkg.description;
     if (typeof desc !== 'string' || desc.trim() === '') {
-      fail(dir, rel, `${rel} must include a non-empty "description".`);
+      fail(dir, rel, 'Add a non-empty `description`.');
     } else {
       const trimmed = desc.trim();
       if (/[\r\n]/.test(desc)) {
-        fail(dir, rel, `${rel} "description" must be a single line (no line breaks).`);
+        fail(dir, rel, 'Make `description` a single line (no line breaks).');
       }
       if (trimmed.length < 15) {
-        fail(dir, rel, `${rel} "description" is too short to be meaningful (min 15 chars).`);
+        fail(dir, rel, '`description` is too short to be meaningful (min 15 chars).');
       }
       if (trimmed.split(/\s+/).length < 3) {
-        fail(dir, rel, `${rel} "description" should be a meaningful phrase of at least 3 words.`);
+        fail(dir, rel, '`description` should be a meaningful phrase of at least 3 words.');
       }
       if (pkg.name && trimmed.toLowerCase() === String(pkg.name).toLowerCase()) {
-        fail(dir, rel, `${rel} "description" must not simply repeat the package name.`);
+        fail(dir, rel, '`description` must not simply repeat the package name.');
       }
     }
   }
@@ -149,19 +150,17 @@ function validatePackageJson(pkgPath, isRoot) {
 
 /** Full validation of an example root directory. */
 function validateExampleRoot(dir) {
-  const rel = path.relative(repoRoot, dir) || '.';
-
   const pkgPath = path.join(dir, 'package.json');
   if (fs.existsSync(pkgPath)) {
     validatePackageJson(pkgPath, true);
   }
 
   if (!fs.existsSync(path.join(dir, 'README.md'))) {
-    fail(dir, path.join(rel, 'README.md'), `${rel} is missing a README.md.`);
+    fail(dir, path.join(path.relative(repoRoot, dir), 'README.md'), 'Add a `README.md`.');
   }
 
   if (!fs.existsSync(path.join(dir, '.env.example'))) {
-    fail(dir, path.join(rel, '.env.example'), `${rel} is missing an .env.example.`);
+    fail(dir, path.join(path.relative(repoRoot, dir), '.env.example'), 'Add an `.env.example`.');
   }
 }
 
@@ -212,12 +211,31 @@ function collectAddedExampleRoots() {
 /** Marker so the workflow can find and update its own sticky comment. */
 const COMMENT_MARKER = '<!-- validate-example-bot -->';
 
+/**
+ * Render a repo-relative path as a markdown link to that path in the PR head,
+ * when REPO_URL + HEAD_SHA are provided (CI). Existing files link to the blob;
+ * paths that don't exist yet (e.g. a missing README.md) link to the directory
+ * listing so the reader lands somewhere real. Falls back to inline code.
+ */
+function pathLink(rel) {
+  const label = `\`${rel}\``;
+  const repoUrl = process.env.REPO_URL;
+  const sha = process.env.HEAD_SHA;
+  if (!repoUrl || !sha) return label;
+  const abs = path.join(repoRoot, rel);
+  if (fs.existsSync(abs)) {
+    return `[${label}](${repoUrl}/blob/${sha}/${rel})`;
+  }
+  const dir = path.dirname(rel);
+  return `[${label}](${repoUrl}/tree/${sha}/${dir})`;
+}
+
 /** Build the markdown body posted as a PR comment. */
 function buildReport(validated, ok) {
-  const lines = [COMMENT_MARKER, '## Example validator'];
+  const lines = [COMMENT_MARKER, '## Pre-review requirements'];
   if (ok) {
     lines.push('', '✅ All checks passed for the example(s) added in this PR:', '');
-    for (const name of validated) lines.push(`- \`${name}\``);
+    for (const name of validated) lines.push(`- ${pathLink(name)}`);
   } else {
     lines.push('', `❌ Found ${problems.length} problem(s) in the example(s) added in this PR.`, '');
     // Group problems by the file they belong to.
@@ -228,21 +246,12 @@ function buildReport(validated, ok) {
       byFile.get(key).push(p.message);
     }
     for (const [file, msgs] of byFile) {
-      lines.push(`**\`${file}\`**`);
+      lines.push(`**${pathLink(file)}**`, '');
       for (const m of msgs) lines.push(`- ${m}`);
       lines.push('');
     }
-    lines.push('---', '');
-    lines.push('Every added example must satisfy:');
-    lines.push('- `package.json` has **no `version`** field');
-    lines.push('- `package.json` sets **`private: true`**');
-    lines.push('- `package.json` has **no empty fields** (`""`, `[]`, `{}`, `null`)');
-    lines.push('- `package.json` has a **meaningful, single-line `description`**');
-    lines.push('- a **`README.md`** is present');
-    lines.push('- an **`.env.example`** is present');
-    lines.push('', 'See `CONTRIBUTING.md` for the example conventions.');
   }
-  return lines.join('\n');
+  return lines.join('\n').trimEnd();
 }
 
 /** Write the markdown report and tell the workflow whether to post it. */
@@ -306,11 +315,10 @@ function main() {
     for (const p of problems) {
       console.error(`  ✗ ${p.message}`);
     }
-    console.error('\nSee CONTRIBUTING.md for the example conventions.');
     process.exit(1);
   }
 
-  console.log('\n✓ All example checks passed.');
+  console.log('\n✓ All checks passed.');
 }
 
 main();
