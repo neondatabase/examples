@@ -122,8 +122,9 @@ function validatePackageJson(pkgPath, isRoot) {
     fail(dir, rel, 'Set `"private": true`.');
   }
 
-  // No empty fields anywhere in the object.
-  const empties = findEmptyFields(pkg);
+  // No empty fields anywhere in the object. `description` is required to be
+  // present (checked below), so an empty one is reported as "add", not "remove".
+  const empties = findEmptyFields(pkg).filter((e) => e !== "description");
   if (empties.length > 0) {
     const list = empties.map((e) => `\`${e}\``).join(", ");
     fail(dir, rel, `Remove empty field(s): ${list}.`);
