@@ -25,12 +25,12 @@
 // Environment (diff mode):
 //   GITHUB_BASE_REF   base branch of the PR (e.g. "main"); falls back to "main"
 
-import { execFileSync } from 'node:child_process';
-import fs from 'node:fs';
-import path from 'node:path';
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
 
-const repoRoot = execFileSync('git', ['rev-parse', '--show-toplevel'], {
-  encoding: 'utf8',
+const repoRoot = execFileSync("git", ["rev-parse", "--show-toplevel"], {
+  encoding: "utf8",
 }).trim();
 
 const isCI = Boolean(process.env.GITHUB_ACTIONS);
@@ -38,7 +38,7 @@ const isCI = Boolean(process.env.GITHUB_ACTIONS);
 /** Emit a GitHub Actions error annotation (falls back to plain text locally). */
 function annotate(file, message) {
   if (isCI) {
-    const clean = message.replace(/\n/g, '%0A');
+    const clean = message.replace(/\n/g, "%0A");
     console.log(`::error file=${file}::${clean}`);
   }
 }
@@ -53,27 +53,27 @@ function fail(dir, file, message) {
 function hasAncestorPackageJson(dir) {
   let cur = path.dirname(dir);
   while (cur.startsWith(repoRoot) && cur !== repoRoot) {
-    if (fs.existsSync(path.join(cur, 'package.json'))) return true;
+    if (fs.existsSync(path.join(cur, "package.json"))) return true;
     cur = path.dirname(cur);
   }
   return false;
 }
 
 /** Recursively find keys whose value is empty ("", [], {}, or null). */
-function findEmptyFields(value, prefix = '') {
+function findEmptyFields(value, prefix = "") {
   const empties = [];
   if (value === null) {
-    empties.push(prefix || '(root)');
+    empties.push(prefix || "(root)");
     return empties;
   }
-  if (typeof value === 'string' && value.trim() === '') {
+  if (typeof value === "string" && value.trim() === "") {
     empties.push(prefix);
   } else if (Array.isArray(value)) {
     if (value.length === 0) empties.push(prefix);
-  } else if (typeof value === 'object') {
+  } else if (typeof value === "object") {
     const keys = Object.keys(value);
     if (keys.length === 0) {
-      empties.push(prefix || '(root)');
+      empties.push(prefix || "(root)");
     } else {
       for (const key of keys) {
         const next = prefix ? `${prefix}.${key}` : key;
@@ -92,9 +92,13 @@ function validatePackageJson(pkgPath, isRoot) {
   const rel = path.relative(repoRoot, pkgPath);
   let raw;
   try {
-    raw = fs.readFileSync(pkgPath, 'utf8');
+    raw = fs.readFileSync(pkgPath, "utf8");
   } catch (err) {
-    fail(path.dirname(pkgPath), rel, `Unable to read this file: ${err.message}`);
+    fail(
+      path.dirname(pkgPath),
+      rel,
+      `Unable to read this file: ${err.message}`,
+    );
     return;
   }
 
@@ -109,7 +113,7 @@ function validatePackageJson(pkgPath, isRoot) {
   const dir = path.dirname(pkgPath);
 
   // No version field.
-  if ('version' in pkg) {
+  if ("version" in pkg) {
     fail(dir, rel, `Remove the \`version\` field (found \`${pkg.version}\`).`);
   }
 
@@ -121,28 +125,43 @@ function validatePackageJson(pkgPath, isRoot) {
   // No empty fields anywhere in the object.
   const empties = findEmptyFields(pkg);
   if (empties.length > 0) {
-    const list = empties.map((e) => `\`${e}\``).join(', ');
+    const list = empties.map((e) => `\`${e}\``).join(", ");
     fail(dir, rel, `Remove empty field(s): ${list}.`);
   }
 
   // Meaningful, single-line description — required at the example root.
   if (isRoot) {
     const desc = pkg.description;
-    if (typeof desc !== 'string' || desc.trim() === '') {
-      fail(dir, rel, 'Add a non-empty `description`.');
+    if (typeof desc !== "string" || desc.trim() === "") {
+      fail(dir, rel, "Add a non-empty `description`.");
     } else {
       const trimmed = desc.trim();
       if (/[\r\n]/.test(desc)) {
-        fail(dir, rel, 'Make `description` a single line (no line breaks).');
+        fail(dir, rel, "Make `description` a single line (no line breaks).");
       }
       if (trimmed.length < 15) {
-        fail(dir, rel, '`description` is too short to be meaningful (min 15 chars).');
+        fail(
+          dir,
+          rel,
+          "`description` is too short to be meaningful (min 15 chars).",
+        );
       }
       if (trimmed.split(/\s+/).length < 3) {
-        fail(dir, rel, '`description` should be a meaningful phrase of at least 3 words.');
+        fail(
+          dir,
+          rel,
+          "`description` should be a meaningful phrase of at least 3 words.",
+        );
       }
-      if (pkg.name && trimmed.toLowerCase() === String(pkg.name).toLowerCase()) {
-        fail(dir, rel, '`description` must not simply repeat the package name.');
+      if (
+        pkg.name &&
+        trimmed.toLowerCase() === String(pkg.name).toLowerCase()
+      ) {
+        fail(
+          dir,
+          rel,
+          "`description` must not simply repeat the package name.",
+        );
       }
     }
   }
@@ -150,28 +169,36 @@ function validatePackageJson(pkgPath, isRoot) {
 
 /** Full validation of an example root directory. */
 function validateExampleRoot(dir) {
-  const pkgPath = path.join(dir, 'package.json');
+  const pkgPath = path.join(dir, "package.json");
   if (fs.existsSync(pkgPath)) {
     validatePackageJson(pkgPath, true);
   }
 
-  if (!fs.existsSync(path.join(dir, 'README.md'))) {
-    fail(dir, path.join(path.relative(repoRoot, dir), 'README.md'), 'Add a `README.md`.');
+  if (!fs.existsSync(path.join(dir, "README.md"))) {
+    fail(
+      dir,
+      path.join(path.relative(repoRoot, dir), "README.md"),
+      "Add a `README.md`.",
+    );
   }
 
-  if (!fs.existsSync(path.join(dir, '.env.example'))) {
-    fail(dir, path.join(path.relative(repoRoot, dir), '.env.example'), 'Add an `.env.example`.');
+  if (!fs.existsSync(path.join(dir, ".env.example"))) {
+    fail(
+      dir,
+      path.join(path.relative(repoRoot, dir), ".env.example"),
+      "Add an `.env.example`.",
+    );
   }
 }
 
 /** Diff mode: figure out which examples were added in this PR. */
 function collectAddedExampleRoots() {
-  const baseRef = process.env.GITHUB_BASE_REF || 'main';
+  const baseRef = process.env.GITHUB_BASE_REF || "main";
   let diffBase = baseRef;
   // Prefer the remote-tracking ref when it exists (CI checks out a detached HEAD).
   try {
-    execFileSync('git', ['rev-parse', '--verify', `origin/${baseRef}`], {
-      stdio: 'ignore',
+    execFileSync("git", ["rev-parse", "--verify", `origin/${baseRef}`], {
+      stdio: "ignore",
     });
     diffBase = `origin/${baseRef}`;
   } catch {
@@ -181,22 +208,25 @@ function collectAddedExampleRoots() {
   let out;
   try {
     out = execFileSync(
-      'git',
-      ['diff', '--name-only', '--diff-filter=A', `${diffBase}...HEAD`],
-      { encoding: 'utf8' },
+      "git",
+      ["diff", "--name-only", "--diff-filter=A", `${diffBase}...HEAD`],
+      { encoding: "utf8" },
     );
   } catch (err) {
     console.error(`Could not diff against ${diffBase}: ${err.message}`);
     process.exit(1);
   }
 
-  const addedFiles = out.split('\n').map((l) => l.trim()).filter(Boolean);
+  const addedFiles = out
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
 
   const roots = new Set();
   const subPackages = new Set();
 
   for (const file of addedFiles) {
-    if (path.basename(file) !== 'package.json') continue;
+    if (path.basename(file) !== "package.json") continue;
     const absDir = path.join(repoRoot, path.dirname(file));
     if (hasAncestorPackageJson(absDir)) {
       subPackages.add(absDir); // nested sub-package (e.g. web/)
@@ -209,7 +239,7 @@ function collectAddedExampleRoots() {
 }
 
 /** Marker so the workflow can find and update its own sticky comment. */
-const COMMENT_MARKER = '<!-- validate-example-bot -->';
+const COMMENT_MARKER = "<!-- validate-example-bot -->";
 
 /**
  * Render a repo-relative path as a markdown link to that path in the PR head,
@@ -229,12 +259,20 @@ function pathLink(rel) {
 
 /** Build the markdown body posted as a PR comment. */
 function buildReport(validated, ok) {
-  const lines = [COMMENT_MARKER, '## Pre-review requirements'];
+  const lines = [COMMENT_MARKER, "## Pre-review requirements"];
   if (ok) {
-    lines.push('', '✅ All checks passed for the example(s) added in this PR:', '');
+    lines.push(
+      "",
+      "✅ All checks passed for the example(s) added in this PR:",
+      "",
+    );
     for (const name of validated) lines.push(`- ${pathLink(name)}`);
   } else {
-    lines.push('', `❌ Found the following ${problems.length} issue(s) in this PR:`, '');
+    lines.push(
+      "",
+      `❌ Found the following ${problems.length} issue(s) in this PR:`,
+      "",
+    );
     // Group problems by the file they belong to.
     const byFile = new Map();
     for (const p of problems) {
@@ -243,12 +281,12 @@ function buildReport(validated, ok) {
       byFile.get(key).push(p.message);
     }
     for (const [file, msgs] of byFile) {
-      lines.push(`**${pathLink(file)}**`, '');
+      lines.push(`**${pathLink(file)}**`, "");
       for (const m of msgs) lines.push(`- [ ] ${m}`);
-      lines.push('');
+      lines.push("");
     }
   }
-  return lines.join('\n').trimEnd();
+  return lines.join("\n").trimEnd();
 }
 
 /** Write the markdown report and tell the workflow whether to post it. */
@@ -258,7 +296,7 @@ function emitReport(validated, ok) {
   // Comment only when we actually validated something in this PR.
   const shouldComment = validated.length > 0;
   if (shouldComment && reportPath) {
-    fs.writeFileSync(reportPath, buildReport(validated, ok) + '\n');
+    fs.writeFileSync(reportPath, buildReport(validated, ok) + "\n");
   }
   if (outPath) {
     fs.appendFileSync(outPath, `should_comment=${shouldComment}\n`);
@@ -266,7 +304,7 @@ function emitReport(validated, ok) {
 }
 
 function main() {
-  const args = process.argv.slice(2).filter((a) => !a.startsWith('-'));
+  const args = process.argv.slice(2).filter((a) => !a.startsWith("-"));
   const validated = []; // human-readable names of what we validated
 
   if (args.length > 0) {
@@ -284,13 +322,15 @@ function main() {
     const { roots, subPackages } = collectAddedExampleRoots();
 
     if (roots.length === 0 && subPackages.length === 0) {
-      console.log('No newly added example detected in this PR. Nothing to validate.');
+      console.log(
+        "No newly added example detected in this PR. Nothing to validate.",
+      );
       emitReport(validated, true);
       return;
     }
 
     for (const dir of roots) {
-      const name = path.relative(repoRoot, dir) || '.';
+      const name = path.relative(repoRoot, dir) || ".";
       console.log(`Validating new example: ${name}`);
       validated.push(name);
       validateExampleRoot(dir);
@@ -300,7 +340,7 @@ function main() {
       const name = path.relative(repoRoot, dir);
       console.log(`Validating sub-package: ${name}`);
       validated.push(name);
-      validatePackageJson(path.join(dir, 'package.json'), false);
+      validatePackageJson(path.join(dir, "package.json"), false);
     }
   }
 
@@ -315,7 +355,7 @@ function main() {
     process.exit(1);
   }
 
-  console.log('\n✓ All checks passed.');
+  console.log("\n✓ All checks passed.");
 }
 
 main();
