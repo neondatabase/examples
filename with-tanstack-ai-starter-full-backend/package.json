@@ -1,0 +1,53 @@
+{
+  "name": "with-tanstack-ai-starter-full-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "setup": "npm run db:schema && npm run db:rls && npm run db:faces && tsx --env-file=.env.local scripts/setup.ts",
+    "db:schema": "set -a && . ./.env.local && set +a && psql \"$DATABASE_URL\" -f db/schema.sql",
+    "db:rls": "set -a && . ./.env.local && set +a && psql \"$DATABASE_URL\" -f db/002_auth_rls.sql",
+    "db:faces": "set -a && . ./.env.local && set +a && psql \"$DATABASE_URL\" -f db/003_faces.sql",
+    "seed": "tsx --env-file=.env.local scripts/seed.ts",
+    "prefaces": "npm i --no-save --no-package-lock @tensorflow/tfjs-node@^4.22.0",
+    "faces": "tsx --env-file=.env.local scripts/faces.ts",
+    "index": "tsx --env-file=.env.local scripts/create-index.ts",
+    "caption": "tsx --env-file=.env.local scripts/caption.ts",
+    "search": "tsx --env-file=.env.local scripts/search.ts",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.7.6",
+    "@neondatabase/auth-ui": "^0.3.0-beta",
+    "@neondatabase/neon-js": "^0.7.0-beta",
+    "@neondatabase/serverless": "^1.1.0",
+    "@tanstack/react-router": "^1.170.0",
+    "@tanstack/react-start": "^1.168.0",
+    "@vladmandic/human": "^3.3.6",
+    "aws4fetch": "^1.0.20",
+    "jose": "^6.2.9",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/router-plugin": "^1.168.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.1.0",
+    "nitro": "npm:nitro-nightly@latest",
+    "prettier": "^3.9.6",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vite": "^8.2.2",
+    "vite-font": "^0.3.2"
+  },
+  "overrides": {
+    "sharp": "^0.35.3"
+  }
+}
