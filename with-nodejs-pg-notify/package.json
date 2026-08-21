@@ -1,5 +1,7 @@
 {
   "name": "with-nodejs-pg-notify",
+  "description": "Node.js example that uses pg_notify for Postgres notifications with Neon.",
+  "private": true,
   "dependencies": {
     "@neondatabase/serverless": "^1.0.0",
     "dotenv": "^16.4.5",

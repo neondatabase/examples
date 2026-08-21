@@ -1,5 +1,7 @@
 {
   "name": "with-trpc",
+  "description": "End-to-end typesafe tRPC API on Hono, backed by Neon Postgres and Drizzle ORM, deployed as a Neon Function.",
+  "private": true,
   "scripts": {
     "check": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",

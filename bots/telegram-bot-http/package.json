@@ -1,5 +1,7 @@
 {
   "name": "neon-telegram-bot",
+  "description": "Telegram webhook bot hosted on Neon Functions, backed by Neon Postgres and Drizzle ORM.",
+  "private": true,
   "scripts": {
     "check": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",

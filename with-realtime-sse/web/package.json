@@ -1,5 +1,6 @@
 {
   "name": "with-realtime-sse-web",
+  "description": "TanStack Router frontend for the Neon realtime SSE example.",
   "private": true,
   "type": "module",
   "scripts": {

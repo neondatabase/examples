@@ -1,5 +1,7 @@
 {
   "name": "with-mastra",
+  "description": "Personal-assistant agent built with Mastra on Neon Functions that streams chat through the Neon AI Gateway and remembers users with Mastra Memory backed by Neon Postgres.",
+  "private": true,
   "type": "module",
   "scripts": {
     "studio": "mastra dev"

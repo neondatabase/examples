@@ -1,5 +1,7 @@
 {
   "name": "with-hono",
+  "description": "Minimal Hono API backed by Neon Postgres and Drizzle ORM, running on Neon Functions.",
+  "private": true,
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
