@@ -31,10 +31,14 @@ function load(): Promise<Captioner> {
   return captioner
 }
 
-/** Generate a caption for raw image bytes. Returns '' if the model produces nothing. */
-export async function captionImageBytes(bytes: Uint8Array, contentType = 'image/jpeg'): Promise<string> {
+/** Generate a caption for an already-decoded image. Returns '' if the model produces nothing. */
+export async function captionImage(img: RawImage): Promise<string> {
   const model = await load()
-  const img = await RawImage.fromBlob(new Blob([bytes as BlobPart], { type: contentType }))
   const out = await model(img)
   return out[0]?.generated_text?.trim() ?? ''
+}
+
+/** Generate a caption for raw image bytes. Returns '' if the model produces nothing. */
+export async function captionImageBytes(bytes: Uint8Array, contentType = 'image/jpeg'): Promise<string> {
+  return captionImage(await RawImage.fromBlob(new Blob([bytes as BlobPart], { type: contentType })))
 }

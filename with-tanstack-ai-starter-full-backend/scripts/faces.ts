@@ -17,6 +17,7 @@ import { resolve } from 'node:path'
 import { Human } from '@vladmandic/human'
 import { eq, sql } from 'drizzle-orm'
 import { db, toVector } from '../src/lib/db'
+import { DEMO_EMAIL } from '../src/lib/demo'
 import { rebuildPeople } from '../src/lib/faces-db'
 import { faces, people, photos } from '../src/lib/schema'
 import { deleteImage, imageUrl, putImage } from '../src/lib/storage'
@@ -127,11 +128,9 @@ export async function processOwnerFaces(ownerId: string): Promise<void> {
 }
 
 async function resolveOwner(): Promise<string> {
-  const email = process.env.SEED_OWNER_EMAIL ?? process.env.VITE_DEMO_EMAIL
-  if (!email) throw new Error('set VITE_DEMO_EMAIL in .env')
-  const { rows } = await db.execute(sql`select id from neon_auth."user" where email = ${email} limit 1`)
+  const { rows } = await db.execute(sql`select id from neon_auth."user" where email = ${DEMO_EMAIL} limit 1`)
   const row = rows[0] as { id: string } | undefined
-  if (!row) throw new Error(`owner ${email} not found, run npm run setup first`)
+  if (!row) throw new Error(`owner ${DEMO_EMAIL} not found, run npm run setup first`)
   return row.id
 }
 

@@ -1,14 +1,10 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
+import { DEMO_EMAIL, DEMO_PASSWORD } from '@/lib/demo'
 import { authClient } from '@/lib/neon'
 
 /** Custom Hallmark-designed auth screen driving Neon Auth directly. */
 export const Route = createFileRoute('/auth/$pathname')({ component: Auth })
-
-// Optional one-click demo account. Set these to expose a "Try the demo" button.
-// Leave them unset (e.g. in a fork) and the button simply doesn't render.
-const DEMO_EMAIL = import.meta.env.VITE_DEMO_EMAIL as string | undefined
-const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD as string | undefined
 
 function Auth() {
   const { pathname } = Route.useParams()
@@ -52,7 +48,6 @@ function Auth() {
   }
 
   const demoLogin = async () => {
-    if (!DEMO_EMAIL || !DEMO_PASSWORD) return
     setError('')
     setBusy(true)
     try {
@@ -74,7 +69,7 @@ function Auth() {
         </a>
         <h1 className="auth-title">{isSignup ? 'Create your library' : 'Welcome back'}</h1>
         <p className="auth-sub">{isSignup ? 'A private photo library, searchable by meaning.' : 'Sign in to search your photos by meaning and face.'}</p>
-        {!isSignup && DEMO_EMAIL && DEMO_PASSWORD && (
+        {!isSignup && (
           <button type="button" className="btn auth-demo" onClick={demoLogin} disabled={busy}>
             Try the demo account
           </button>

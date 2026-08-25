@@ -92,7 +92,7 @@ npm run setup
 npm run dev                          # http://localhost:3000
 ```
 
-`npm run setup` assigns the photos to the demo account (`VITE_DEMO_EMAIL`), creating it if `VITE_NEON_AUTH_URL` + `VITE_DEMO_PASSWORD` are set, so after it finishes you can sign in with the **Try the demo account** button.
+`npm run setup` creates the demo account and assigns the photos to it, so after it finishes you can sign in with the **Try the demo account** button.
 
 The demo images in `scripts/demo-photos.json` are the Next.js Conf photos, from Vercel's [animated image gallery](https://vercel.com/blog/building-a-fast-animated-image-gallery-with-next-js).
 

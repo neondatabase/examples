@@ -7,16 +7,16 @@
  * the owner-scoped read functions return it once you sign in as that user.
  *
  * The demo library is *replaced* on each run: existing photos for the owner (and
- * their storage objects) are cleared first. Sign the account up first
- * (SEED_OWNER_EMAIL, defaulting to VITE_DEMO_EMAIL), then run this.
+ * their storage objects) are cleared first. The demo account must already exist
+ * (run `npm run setup`), then run this.
  *
  *   npm run seed
  */
 import { readFileSync } from 'node:fs'
-import { basename } from 'node:path'
 import { eq, sql } from 'drizzle-orm'
 import { embedImageBytes } from '../src/lib/clip'
 import { db, toVector } from '../src/lib/db'
+import { DEMO_EMAIL } from '../src/lib/demo'
 import { photos } from '../src/lib/schema'
 import { deleteImage, putImage } from '../src/lib/storage'
 
@@ -24,11 +24,9 @@ const MANIFEST = new URL('./demo-photos.json', import.meta.url)
 
 /** The demo account's user id, so seeded rows are owned by (and returned to) it. */
 async function resolveOwnerId(): Promise<string> {
-  const email = process.env.SEED_OWNER_EMAIL ?? process.env.VITE_DEMO_EMAIL
-  if (!email) throw new Error('set SEED_OWNER_EMAIL (or VITE_DEMO_EMAIL) to the demo account email')
-  const { rows } = await db.execute(sql`select id from neon_auth."user" where email = ${email} limit 1`)
+  const { rows } = await db.execute(sql`select id from neon_auth."user" where email = ${DEMO_EMAIL} limit 1`)
   const row = rows[0] as { id: string } | undefined
-  if (!row) throw new Error(`no user ${email}, sign that account up in the app first, then re-run seed`)
+  if (!row) throw new Error(`no user ${DEMO_EMAIL}, run npm run setup first`)
   return row.id
 }
 
@@ -60,8 +58,10 @@ async function main() {
 
   let inserted = 0
   for (const url of urls) {
-    const filename = basename(new URL(url).pathname)
-    const id = filename.replace(/\.[a-z]+$/i, '')
+    // UUID key, not the source filename, so stored objects match the app's upload
+    // path (api/upload) and carry nothing from where the demo images came from.
+    const id = crypto.randomUUID()
+    const filename = `${id}.jpg`
     try {
       const bytes = await download(url)
       const { embedding, width, height } = await embedImageBytes(bytes)

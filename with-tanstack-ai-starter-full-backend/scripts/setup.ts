@@ -16,16 +16,20 @@
  */
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
-import { basename } from 'node:path'
 import { eq, sql } from 'drizzle-orm'
-import { captionImageBytes } from '../src/lib/caption'
-import { embedImageBytes } from '../src/lib/clip'
+import { captionImage } from '../src/lib/caption'
+import { embedImages, RawImage } from '../src/lib/clip'
 import { db, toVector } from '../src/lib/db'
+import { DEMO_EMAIL, DEMO_PASSWORD } from '../src/lib/demo'
 import { photos } from '../src/lib/schema'
 import { deleteImage, putImage } from '../src/lib/storage'
 import { processOwnerFaces } from './faces'
 
 const MANIFEST = new URL('./demo-photos.json', import.meta.url)
+
+// Photos per wave. The wave downloads and uploads in parallel and embeds in one CLIP
+// forward pass, so the only serial CPU cost left is the (autoregressive) captioning.
+const BATCH = 12
 
 // The Postgres extensions the schema needs, created before the push (the schema
 // declares `vector(n)` columns). vector = pgvector, and lakebase_vector/lakebase_text
@@ -41,28 +45,29 @@ async function applyExtensions() {
 
 /** Make sure the demo account exists (so its owner_id is available), then return its id. */
 async function ensureDemoUser(): Promise<string> {
-  const email = process.env.SEED_OWNER_EMAIL ?? process.env.VITE_DEMO_EMAIL
-  const password = process.env.VITE_DEMO_PASSWORD
   const authUrl = process.env.VITE_NEON_AUTH_URL
-  if (!email) throw new Error('set VITE_DEMO_EMAIL in .env')
+  if (!authUrl) throw new Error('set VITE_NEON_AUTH_URL in .env so setup can create the demo account')
 
-  // Best-effort sign-up. If the account already exists this just no-ops.
-  if (authUrl && password) {
-    try {
-      const res = await fetch(`${authUrl}/sign-up/email`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', origin: 'http://localhost:3000' },
-        body: JSON.stringify({ name: 'Demo', email, password }),
-      })
-      if (res.ok) console.log(`  created demo account ${email}`)
-    } catch {
-      /* ignore, fall through to the lookup */
-    }
+  // Best-effort sign-up with the hard-coded demo credentials (src/lib/demo). If the
+  // account already exists this fails and we fall through to the lookup. Any other
+  // failure (untrusted origin, wrong auth URL) is kept as a hint so the "not found"
+  // error below can explain what actually happened.
+  let signUpHint = ''
+  try {
+    const res = await fetch(`${authUrl}/sign-up/email`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: 'http://localhost:3000' },
+      body: JSON.stringify({ name: 'Demo', email: DEMO_EMAIL, password: DEMO_PASSWORD }),
+    })
+    if (res.ok) console.log(`  created demo account ${DEMO_EMAIL}`)
+    else signUpHint = ` (sign-up returned ${res.status}: ${(await res.text()).slice(0, 200)})`
+  } catch (err) {
+    signUpHint = ` (sign-up request failed: ${err instanceof Error ? err.message : err})`
   }
 
-  const { rows } = await db.execute(sql`select id from neon_auth."user" where email = ${email} limit 1`)
+  const { rows } = await db.execute(sql`select id from neon_auth."user" where email = ${DEMO_EMAIL} limit 1`)
   const row = rows[0] as { id: string } | undefined
-  if (!row) throw new Error(`demo account ${email} not found, sign it up in the app first (or set VITE_NEON_AUTH_URL + VITE_DEMO_PASSWORD so this can), then re-run`)
+  if (!row) throw new Error(`demo account ${DEMO_EMAIL} not found${signUpHint}. Check VITE_NEON_AUTH_URL, then re-run`)
   return row.id
 }
 
@@ -115,23 +120,53 @@ async function main() {
   console.log('  loading models (first run downloads them) …')
 
   let inserted = 0
-  for (const url of urls) {
-    const filename = basename(new URL(url).pathname)
-    const id = filename.replace(/\.[a-z]+$/i, '')
-    try {
-      const bytes = await download(url)
-      const { embedding, width, height } = await embedImageBytes(bytes)
-      const caption = await captionImageBytes(bytes)
-      await putImage(filename, bytes)
-      await db
-        .insert(photos)
-        .values({ id, ownerId, filename, width, height, embedding: toVector(embedding), caption })
-        .onConflictDoNothing()
-      inserted++
-      if (inserted % 10 === 0 || inserted === 1) process.stdout.write(`  [${inserted}/${urls.length}] ${filename}: "${caption}"\n`)
-    } catch (err) {
-      console.warn(`  skip ${filename}: ${err instanceof Error ? err.message : err}`)
-    }
+  for (let start = 0; start < urls.length; start += BATCH) {
+    // Download this wave in parallel and decode each JPEG once (the RawImage feeds
+    // both the embedder and the captioner). A failed download drops just that photo.
+    // UUID keys, not the source filenames, so stored objects match the app's upload
+    // path (api/upload) and carry nothing from where the demo images came from.
+    const items = (
+      await Promise.all(
+        urls.slice(start, start + BATCH).map(async (url) => {
+          try {
+            const bytes = await download(url)
+            const img = await RawImage.fromBlob(new Blob([bytes as BlobPart], { type: 'image/jpeg' }))
+            const id = crypto.randomUUID()
+            return { id, filename: `${id}.jpg`, bytes, img }
+          } catch (err) {
+            console.warn(`  skip ${url}: ${err instanceof Error ? err.message : err}`)
+            return null
+          }
+        }),
+      )
+    ).filter((it): it is NonNullable<typeof it> => it !== null)
+    if (items.length === 0) continue
+
+    // Upload the bytes to storage in parallel, overlapped with the model work below.
+    const uploads = Promise.all(items.map((it) => putImage(it.filename, it.bytes)))
+    // One CLIP forward pass for the whole wave, then caption each (the serial CPU floor).
+    const embeds = await embedImages(items.map((it) => it.img))
+    const captions: string[] = []
+    for (const it of items) captions.push(await captionImage(it.img))
+    await uploads
+
+    // One bulk insert per wave, not one round trip per photo.
+    await db
+      .insert(photos)
+      .values(
+        items.map((it, i) => ({
+          id: it.id,
+          ownerId,
+          filename: it.filename,
+          width: embeds[i]!.width,
+          height: embeds[i]!.height,
+          embedding: toVector(embeds[i]!.embedding),
+          caption: captions[i]!,
+        })),
+      )
+      .onConflictDoNothing()
+    inserted += items.length
+    process.stdout.write(`  [${inserted}/${urls.length}] +${items.length}, e.g. "${captions[0]}"\n`)
   }
 
   console.log('  building the lakebase_ann index …')
