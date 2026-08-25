@@ -6,14 +6,20 @@
  *   npm run caption          # caption all photos missing a caption
  *   npm run caption -- 5     # just the first 5 (for a quick check)
  */
+import { eq, isNull, or } from 'drizzle-orm'
 import { captionImageBytes } from '../src/lib/caption'
-import { sql } from '../src/lib/db'
+import { db } from '../src/lib/db'
+import { photos } from '../src/lib/schema'
 import { imageUrl } from '../src/lib/storage'
 
 const LIMIT = process.argv[2] ? Number(process.argv[2]) : Infinity
 
 async function main() {
-  const all = (await sql`select id, filename from photos where caption is null or caption = '' order by filename`) as { id: string; filename: string }[]
+  const all = await db
+    .select({ id: photos.id, filename: photos.filename })
+    .from(photos)
+    .where(or(isNull(photos.caption), eq(photos.caption, '')))
+    .orderBy(photos.filename)
   const rows = all.slice(0, LIMIT)
   console.log(`Captioning ${rows.length} photos (of ${all.length} missing) …`)
 
@@ -22,7 +28,7 @@ async function main() {
     try {
       const bytes = new Uint8Array(await (await fetch(await imageUrl(r.filename))).arrayBuffer())
       const caption = await captionImageBytes(bytes)
-      await sql`update photos set caption = ${caption} where id = ${r.id}`
+      await db.update(photos).set({ caption }).where(eq(photos.id, r.id))
       done++
       if (done % 10 === 0 || done === 1) process.stdout.write(`  [${done}/${rows.length}] ${r.filename}: "${caption}"\n`)
     } catch (err) {

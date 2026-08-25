@@ -1,6 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { authClient, neon } from '@/lib/neon'
+import { getToken } from '@/lib/auth-token'
+import { authClient } from '@/lib/neon'
+import { faceSearch, listPeople, listPhotos, neighbors, personPhotos, searchPhotos, type Card, type Person } from '@/lib/server/library'
 
 type Search = { q?: string; photo?: string; person?: string }
 
@@ -15,40 +17,15 @@ export const Route = createFileRoute('/')({
   }),
 })
 
-const AUTH_URL = import.meta.env.VITE_NEON_AUTH_URL as string
-
-type Card = { id: string; filename: string; url?: string; caption: string; distance: number; width: number; height: number }
-type Person = { id: string; label: string | null; cover_key: string | null; cover_url?: string; face_count: number }
 type Mode = 'recent' | 'text' | 'image' | 'photo' | 'person' | 'face'
 
 // The library grid loads this many photos per page (fast first paint after login).
 const PAGE_SIZE = 30
-// The People row loads this many face groups per page — same batch idea as the grid.
+// The People row loads this many face groups per page, same batch idea as the grid.
 const PEOPLE_PAGE_SIZE = 33
 // Fetch this many batches up front before the "More" button appears, so the row is
 // well populated on open (3 × 33 = 99) and only long tails need a click.
 const PEOPLE_INITIAL_BATCHES = 3
-
-/** The Neon Auth JWT, for the app's own compute routes (embed / upload / presign). */
-async function getToken(): Promise<string> {
-  const res = await fetch(`${AUTH_URL}/token`, { credentials: 'include' })
-  const data = (await res.json()) as { token?: string }
-  if (!data.token) throw new Error('not signed in')
-  return data.token
-}
-
-/** Turn owned filenames into presigned URLs via the ownership-checked route. */
-async function presign(rows: Card[]): Promise<Card[]> {
-  if (rows.length === 0) return rows
-  const token = await getToken()
-  const res = await fetch('/api/presign', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
-    body: JSON.stringify({ filenames: rows.map((r) => r.filename) }),
-  })
-  const { urls } = (await res.json()) as { urls: Record<string, string> }
-  return rows.map((r) => ({ ...r, url: urls[r.filename] }))
-}
 
 async function embed(body: { text: string } | FormData): Promise<number[]> {
   const token = await getToken()
@@ -111,7 +88,7 @@ function NeonMark() {
 }
 
 // A small line-art illustration for the landing: two stacked photo cards (one with
-// the classic mountains-and-sun image mark), a face bubble, and a search glint —
+// the classic mountains-and-sun image mark), a face bubble, and a search glint,
 // a compact picture of "photos searchable by meaning and by face".
 function LandingArt() {
   return (
@@ -138,7 +115,7 @@ function Home() {
   const { data } = authClient.useSession()
   // Signed-in visitors get their library. Everyone else, including the
   // prerendered/pending state, gets the static marketing landing, so the "Your
-  // photos, searchable by meaning — and by face." page is in the prerendered HTML.
+  // photos, searchable by meaning and by face." page is in the prerendered HTML.
   return <div className="app">{data ? <Library /> : <Landing />}</div>
 }
 
@@ -206,7 +183,7 @@ function Landing() {
         <hr className="mt-8 text-gray-100/10 h-px" />
         <div className="landing-links">
           <a className="built-with" href="https://neon.com" target="_blank">
-            <NeonMark /> Neon powering the backend: Postgres, Data API, Auth, and Object Storage
+            <NeonMark /> Neon powering the backend: Postgres, Auth, and Object Storage
           </a>
         </div>
         <hr className="mt-8 text-gray-100/10 h-px" />
@@ -261,73 +238,42 @@ function Library() {
     })
   }, [])
 
-  const show = useCallback(async (rows: Card[], m: Mode, label: string) => {
-    setCards(await presign(rows))
+  const show = useCallback((rows: Card[], m: Mode, label: string) => {
+    setCards(rows)
     setMode(m)
     setNote(label)
   }, [])
 
-  // Presign each cover crop through the ownership-checked route, turning a page of
-  // people rows into circles with resolved image URLs.
-  const presignPeopleCovers = useCallback(async (rows: Person[]): Promise<Person[]> => {
-    const keys = rows.map((p) => p.cover_key).filter((k): k is string => !!k)
-    let urls: Record<string, string> = {}
-    if (keys.length) {
-      const token = await getToken()
-      const res = await fetch('/api/presign', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
-        body: JSON.stringify({ faceKeys: keys }),
-      })
-      urls = ((await res.json()) as { urls: Record<string, string> }).urls
-    }
-    return rows.map((p) => ({ ...p, cover_url: p.cover_key ? urls[p.cover_key] : undefined }))
-  }, [])
-
-  // The face groups shown as circles. Read straight from the Data API (RLS scopes
-  // them to the owner). Most recently photographed people first (last_face_at), so a
-  // just-uploaded face surfaces at the front; `id` breaks ties so paging stays stable
-  // (the same batch idea as the photo grid). This loads the first few batches up front
-  // and the exact count, so the row opens well populated and knows when there are more.
+  // The face groups shown as circles. The listPeople server function scopes them to
+  // the owner (JWT), orders most recently photographed first (last_face_at, so a
+  // just-uploaded face surfaces at the front, with id breaking ties for stable paging), and
+  // returns each cover crop already presigned. This loads the first few batches up
+  // front and the exact count, so the row opens well populated and knows when there
+  // are more.
   const loadPeople = useCallback(async () => {
     try {
-      const { data, count, error } = await neon
-        .from('people')
-        .select('id,label,cover_key,face_count', { count: 'exact' })
-        .order('last_face_at', { ascending: false })
-        .order('id', { ascending: true })
-        .range(0, PEOPLE_PAGE_SIZE * PEOPLE_INITIAL_BATCHES - 1)
-      if (error) throw error
-      const rows = (data ?? []) as Person[]
-      setPeopleTotal(count ?? rows.length)
-      setPeople(await presignPeopleCovers(rows))
+      const { people: rows, total } = await listPeople({ data: { offset: 0, limit: PEOPLE_PAGE_SIZE * PEOPLE_INITIAL_BATCHES } })
+      setPeopleTotal(total)
+      setPeople(rows)
     } catch {
       // Faces are a nice-to-have on top of search, never block the library on them.
       setPeople([])
       setPeopleTotal(0)
     }
-  }, [presignPeopleCovers])
+  }, [])
 
   // Append the next page of circles (same ordering, so it dovetails with page one).
   const loadMorePeople = useCallback(async () => {
     setPeopleBusy(true)
     try {
-      const from = people.length
-      const { data, error } = await neon
-        .from('people')
-        .select('id,label,cover_key,face_count')
-        .order('last_face_at', { ascending: false })
-        .order('id', { ascending: true })
-        .range(from, from + PEOPLE_PAGE_SIZE - 1)
-      if (error) throw error
-      const withUrls = await presignPeopleCovers((data ?? []) as Person[])
-      setPeople((prev) => [...prev, ...withUrls])
+      const { people: rows } = await listPeople({ data: { offset: people.length, limit: PEOPLE_PAGE_SIZE } })
+      setPeople((prev) => [...prev, ...rows])
     } catch {
       /* leave the row as-is on a failed page fetch */
     } finally {
       setPeopleBusy(false)
     }
-  }, [people.length, presignPeopleCovers])
+  }, [people.length])
 
   // Detect faces for freshly uploaded photos in the browser (no face model on the
   // server, see src/lib/faces-client), post the descriptors + crops to /api/faces,
@@ -366,16 +312,9 @@ function Library() {
     try {
       // Only the first page, with an exact count so the label shows the true
       // total while the grid stays fast to load. More pages load on demand.
-      const { data, count, error } = await neon
-        .from('photos')
-        .select('id,filename,caption,width,height', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(0, PAGE_SIZE - 1)
-      if (error) throw error
-      const rows = (data ?? []).map((r: any) => ({ ...r, distance: 0 }))
-      const n = count ?? rows.length
+      const { cards: rows, total: n } = await listPhotos({ data: { offset: 0, limit: PAGE_SIZE } })
       setTotal(n)
-      await show(rows, 'recent', n ? `${n} photos in your library` : 'Your library is empty. Upload a photo to begin.')
+      show(rows, 'recent', n ? `${n} photos in your library` : 'Your library is empty. Upload a photo to begin.')
     } catch (e) {
       setNote(`Error: ${e instanceof Error ? e.message : e}`)
     } finally {
@@ -387,16 +326,8 @@ function Library() {
   const loadMore = async () => {
     setBusy(true)
     try {
-      const from = cards.length
-      const { data, error } = await neon
-        .from('photos')
-        .select('id,filename,caption,width,height')
-        .order('created_at', { ascending: false })
-        .range(from, from + PAGE_SIZE - 1)
-      if (error) throw error
-      const rows = (data ?? []).map((r: any) => ({ ...r, distance: 0 }))
-      const withUrls = await presign(rows)
-      setCards((prev) => [...prev, ...withUrls])
+      const { cards: rows } = await listPhotos({ data: { offset: cards.length, limit: PAGE_SIZE } })
+      setCards((prev) => [...prev, ...rows])
     } catch (e) {
       setNote(`Error: ${e instanceof Error ? e.message : e}`)
     } finally {
@@ -406,9 +337,8 @@ function Library() {
 
   const rank = useCallback(
     async (vec: number[], m: Mode, label: string) => {
-      const { data, error } = await neon.rpc('match_photos', { query_embedding: JSON.stringify(vec), match_count: 48 })
-      if (error) throw error
-      await show((data ?? []) as Card[], m, label)
+      const rows = await searchPhotos({ data: { embedding: vec, limit: 48 } })
+      show(rows, m, label)
     },
     [show],
   )
@@ -434,15 +364,11 @@ function Library() {
       setBusy(true)
       setNote('Finding similar photos …')
       try {
-        // Show the photo we're finding neighbours of as the "searching with"
-        // thumbnail (neighbors_of excludes it from the results, so fetch it here).
-        const { data: src } = await neon.from('photos').select('filename').eq('id', id).limit(1)
-        const srcFile = (src as { filename: string }[] | null)?.[0]?.filename
-        const [withUrl] = srcFile ? await presign([{ id, filename: srcFile, caption: '', distance: 0, width: 0, height: 0 }]) : []
-        setQueryPreview(withUrl?.url ?? null)
-        const { data, error } = await neon.rpc('neighbors_of', { photo_id: id, match_count: 48 })
-        if (error) throw error
-        await show((data ?? []) as Card[], 'photo', 'Similar photos')
+        // The server function returns the source photo (excluded from the ranked
+        // results) already presigned, so it can be the "searching with" thumbnail.
+        const { source, cards: rows } = await neighbors({ data: { photoId: id, limit: 48 } })
+        setQueryPreview(source?.url ?? null)
+        show(rows, 'photo', 'Similar photos')
       } catch (e) {
         setNote(`Error: ${e instanceof Error ? e.message : e}`)
       } finally {
@@ -459,10 +385,8 @@ function Library() {
       setQueryPreview(null)
       setNote('Loading this person’s photos …')
       try {
-        const { data, error } = await neon.rpc('photos_of_person', { person_id: personId, match_count: 200 })
-        if (error) throw error
-        const rows = (data ?? []) as Card[]
-        await show(rows, 'person', rows.length ? `${rows.length} photo${rows.length > 1 ? 's' : ''} of this person` : 'No photos for this person')
+        const rows = await personPhotos({ data: { personId, limit: 200 } })
+        show(rows, 'person', rows.length ? `${rows.length} photo${rows.length > 1 ? 's' : ''} of this person` : 'No photos for this person')
       } catch (e) {
         setNote(`Error: ${e instanceof Error ? e.message : e}`)
       } finally {
@@ -530,8 +454,8 @@ function Library() {
 
   // Search by face: detect the clearest face in the dropped photo (in the browser,
   // same human path as uploads), then rank the library by face-embedding distance
-  // via /api/face-search. This is identity search over the faces table, not the
-  // whole-image CLIP search above.
+  // via the faceSearch server function. This is identity search over the faces
+  // table, not the whole-image CLIP search above.
   const onFaceImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -553,15 +477,8 @@ function Library() {
         return
       }
       const best = faces.sort((a, b) => b.score - a.score)[0]!
-      const token = await getToken()
-      const res = await fetch('/api/face-search', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
-        body: JSON.stringify({ embedding: best.embedding }),
-      })
-      if (!res.ok) throw new Error((await res.json()).error ?? 'face search failed')
-      const { results } = (await res.json()) as { results: Card[] }
-      await show(results, 'face', 'Photos of this person')
+      const results = await faceSearch({ data: { embedding: best.embedding } })
+      show(results, 'face', 'Photos of this person')
     } catch (err) {
       setNote(`Error: ${err instanceof Error ? err.message : err}`)
     } finally {
@@ -615,7 +532,6 @@ function Library() {
     navigate({ search: { photo: id } })
   }
 
-  // Close the lightbox on Escape.
   useEffect(() => {
     if (!selected) return
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setSelected(null)

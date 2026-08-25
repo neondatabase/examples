@@ -2,14 +2,16 @@ import { createClient } from '@neondatabase/neon-js'
 import { BetterAuthReactAdapter } from '@neondatabase/neon-js/auth/react/adapters'
 
 /**
- * One unified client for both Neon Auth and the Neon Data API.
+ * The Neon Auth client, the only piece of neon-js this app uses.
  *
- * `createClient` derives the auth (`neonauth`) and Data API (`apirest`) URLs from
- * the compute base URL, and, crucially, attaches the signed-in user's JWT to
- * every Data API request. So `neon.from('photos')` and `neon.rpc('match_photos')`
- * run under that user's identity, and Postgres RLS scopes the rows to them.
+ * `createClient` derives the auth (`neonauth`) URL from the compute base URL and
+ * gives back a Better Auth client for sign-up / sign-in / sessions. That's all we
+ * need it for: the app does NOT read Postgres through the Data API. Every read and
+ * write goes through a server function / API route that verifies this client's JWT
+ * and scopes the query to the user (see src/lib/server, src/routes/api).
  *
- * `neon.auth` is the Better Auth client the UI provider and `useSession` use.
+ * `authClient` (= client.auth) is what the UI provider and `useSession` use, and
+ * what src/lib/auth-token reads the session JWT from.
  */
 const NEON_URL = import.meta.env.VITE_NEON_URL as string
 
@@ -19,8 +21,8 @@ const NEON_URL = import.meta.env.VITE_NEON_URL as string
 // end to end. These narrow casts keep `tsc` green until the types catch up.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const clientOptions: any = { auth: { adapter: BetterAuthReactAdapter() }, fetchOptions: { credentials: 'include' } }
-export const neon = createClient(NEON_URL, clientOptions)
+const client = createClient(NEON_URL, clientOptions)
 
-export const authClient = neon.auth as typeof neon.auth & {
+export const authClient = client.auth as typeof client.auth & {
   useSession: () => { data: { user?: { email?: string; name?: string } } | null }
 }

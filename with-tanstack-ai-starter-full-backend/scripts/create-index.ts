@@ -5,19 +5,21 @@
  * rows to partition. `vector_cosine_ops` is what registers both `<=>` (top-k
  * ordering) and `<<=>>` (the indexed radius used for near-duplicate search).
  */
-import { sql } from '../src/lib/db'
+import { sql } from 'drizzle-orm'
+import { db } from '../src/lib/db'
 
 async function main() {
-  const [{ count }] = (await sql`select count(*)::int as count from photos`) as { count: number }[]
+  const { rows } = await db.execute(sql`select count(*)::int as count from photos`)
+  const count = Number((rows[0] as { count: number }).count)
   if (count === 0) throw new Error('no photos yet, run `npm run seed` first')
   console.log(`Building lakebase_ann over ${count} photos …`)
 
-  await sql`drop index if exists photos_embedding_ann`
-  await sql`
+  await db.execute(sql`drop index if exists photos_embedding_ann`)
+  await db.execute(sql`
     create index photos_embedding_ann on photos
     using lakebase_ann (embedding vector_cosine_ops)
     with (build_mode = 'standard')
-  `
+  `)
   console.log('Index photos_embedding_ann ready.')
 }
 

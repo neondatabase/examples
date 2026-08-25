@@ -1,6 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { and, eq } from 'drizzle-orm'
 import { captionImageBytes } from '@/lib/caption'
-import { sql } from '@/lib/db'
+import { db } from '@/lib/db'
+import { photos } from '@/lib/schema'
 import { imageUrl } from '@/lib/storage'
 import { requireUser, Unauthorized } from '@/lib/verify'
 
@@ -21,11 +23,18 @@ export const Route = createFileRoute('/api/caption')({
           const uid = await requireUser(request)
           const { id } = (await request.json()) as { id?: string }
           if (!id) return Response.json({ error: 'missing photo id' }, { status: 400 })
-          const rows = (await sql`select filename from photos where id = ${id} and owner_id = ${uid} limit 1`) as { filename: string }[]
-          if (!rows[0]) return Response.json({ error: 'photo not found' }, { status: 404 })
-          const bytes = new Uint8Array(await (await fetch(await imageUrl(rows[0].filename))).arrayBuffer())
+          const [row] = await db
+            .select({ filename: photos.filename })
+            .from(photos)
+            .where(and(eq(photos.id, id), eq(photos.ownerId, uid)))
+            .limit(1)
+          if (!row) return Response.json({ error: 'photo not found' }, { status: 404 })
+          const bytes = new Uint8Array(await (await fetch(await imageUrl(row.filename))).arrayBuffer())
           const caption = await captionImageBytes(bytes)
-          await sql`update photos set caption = ${caption} where id = ${id} and owner_id = ${uid}`
+          await db
+            .update(photos)
+            .set({ caption })
+            .where(and(eq(photos.id, id), eq(photos.ownerId, uid)))
           return Response.json({ id, caption })
         } catch (err) {
           if (err instanceof Unauthorized) return Response.json({ error: err.message }, { status: 401 })

@@ -5,7 +5,7 @@ import { authClient } from '@/lib/neon'
 import appCss from '../styles.css?url'
 
 const SITE_URL = 'https://with-tanstack-ai-starter-full-backend.vercel.app'
-const OG_IMAGE = `${SITE_URL}/og.jpg` // served from public/og.jpg — absolute URL so previews resolve it
+const OG_IMAGE = `${SITE_URL}/og.jpg` // served from public/og.jpg, absolute URL so previews resolve it
 const TITLE = 'Atlas: search your photos by meaning and by face'
 const DESCRIPTION = 'A private photo library you search by meaning and by face. Built on the Neon backend platform and hosted on Vercel.'
 

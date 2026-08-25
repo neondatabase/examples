@@ -1,5 +1,7 @@
+import { and, eq, inArray } from 'drizzle-orm'
 import { chineseWhispers, type FaceNode } from '@/lib/cluster'
-import { sql } from '@/lib/db'
+import { db } from '@/lib/db'
+import { faces, people } from '@/lib/schema'
 
 /**
  * Group one owner's faces into people and persist the result.
@@ -10,7 +12,7 @@ import { sql } from '@/lib/db'
  * "people". Singletons stay unassigned, they are almost always a stray or a
  * bystander and would only clutter the row of circles.
  *
- * The same `sql` client backs the seed script and the /api/faces route, so both
+ * The same `db` client backs the seed script and the /api/faces route, so both
  * regroup identically. Callers are responsible for scoping to a verified owner.
  */
 const MIN_FACES = 2
@@ -21,15 +23,16 @@ const MIN_FACES = 2
 // one blob. Higher and a single person starts splitting across circles.
 const THRESHOLD = Number(process.env.FACE_MATCH_THRESHOLD ?? 0.72)
 
-type FaceRow = { id: string; crop_key: string; score: number; embedding: string; created_at: string }
-
 export async function rebuildPeople(ownerId: string): Promise<number> {
-  const rows = (await sql`select id, crop_key, score, embedding, created_at from faces where owner_id = ${ownerId}`) as FaceRow[]
+  const rows = await db
+    .select({ id: faces.id, crop_key: faces.cropKey, score: faces.score, embedding: faces.embedding, created_at: faces.createdAt })
+    .from(faces)
+    .where(eq(faces.ownerId, ownerId))
 
   // Start clean: detach every face, then drop the old clusters. ON DELETE SET
   // NULL would cover the detach, doing it first just keeps the FK quiet.
-  await sql`update faces set person_id = null where owner_id = ${ownerId}`
-  await sql`delete from people where owner_id = ${ownerId}`
+  await db.update(faces).set({ personId: null }).where(eq(faces.ownerId, ownerId))
+  await db.delete(people).where(eq(people.ownerId, ownerId))
   if (rows.length === 0) return 0
   const nodes: FaceNode[] = rows.map((r) => ({ id: r.id, embedding: JSON.parse(r.embedding) as number[] }))
   const byId = new Map(rows.map((r) => [r.id, r]))
@@ -42,21 +45,21 @@ export async function rebuildPeople(ownerId: string): Promise<number> {
   }
   // Biggest groups first, so "Person 1" is the most-photographed face.
   const kept = [...clusters.values()].filter((ids) => ids.length >= MIN_FACES).sort((a, b) => b.length - a.length)
-  let people = 0
+  let peopleCount = 0
   for (const faceIds of kept) {
     const members = faceIds.map((id) => byId.get(id)!)
     // The clearest, most confident face becomes the circle for this person.
     const cover = [...members].sort((a, b) => b.score - a.score)[0]!
     // Recency of the person = its newest face, so the UI can surface freshly
-    // photographed people first. ISO timestamptz strings sort chronologically.
+    // photographed people first.
     const lastFaceAt = members.reduce((max, m) => (m.created_at > max ? m.created_at : max), members[0]!.created_at)
     const personId = crypto.randomUUID()
-    await sql`
-      insert into people (id, owner_id, cover_key, face_count, last_face_at)
-      values (${personId}, ${ownerId}, ${cover.crop_key}, ${faceIds.length}, ${lastFaceAt})
-    `
-    await sql`update faces set person_id = ${personId} where owner_id = ${ownerId} and id = any(${faceIds})`
-    people++
+    await db.insert(people).values({ id: personId, ownerId, coverKey: cover.crop_key, faceCount: faceIds.length, lastFaceAt })
+    await db
+      .update(faces)
+      .set({ personId })
+      .where(and(eq(faces.ownerId, ownerId), inArray(faces.id, faceIds)))
+    peopleCount++
   }
-  return people
+  return peopleCount
 }

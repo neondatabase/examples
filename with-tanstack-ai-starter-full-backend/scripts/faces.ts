@@ -15,8 +15,10 @@
  */
 import { resolve } from 'node:path'
 import { Human } from '@vladmandic/human'
-import { sql, toVector } from '../src/lib/db'
+import { eq, sql } from 'drizzle-orm'
+import { db, toVector } from '../src/lib/db'
 import { rebuildPeople } from '../src/lib/faces-db'
+import { faces, people, photos } from '../src/lib/schema'
 import { deleteImage, imageUrl, putImage } from '../src/lib/storage'
 
 const MODELS = `file://${resolve(process.cwd(), 'node_modules/@vladmandic/human/models')}/`
@@ -76,7 +78,7 @@ async function cropToJpeg(tf: Human['tf'], imgT: { shape: number[] }, box: [numb
 }
 
 async function clearExisting(ownerId: string) {
-  const rows = (await sql`select crop_key from faces where owner_id = ${ownerId}`) as { crop_key: string }[]
+  const rows = await db.select({ crop_key: faces.cropKey }).from(faces).where(eq(faces.ownerId, ownerId))
   for (const r of rows) {
     try {
       await deleteImage(r.crop_key)
@@ -84,14 +86,14 @@ async function clearExisting(ownerId: string) {
       /* orphaned crop is harmless */
     }
   }
-  await sql`delete from people where owner_id = ${ownerId}`
-  await sql`delete from faces where owner_id = ${ownerId}`
+  await db.delete(people).where(eq(people.ownerId, ownerId))
+  await db.delete(faces).where(eq(faces.ownerId, ownerId))
   if (rows.length) console.log(`  cleared ${rows.length} existing faces`)
 }
 
 export async function processOwnerFaces(ownerId: string): Promise<void> {
-  const photos = (await sql`select id, filename from photos where owner_id = ${ownerId} order by created_at`) as { id: string; filename: string }[]
-  console.log(`  detecting faces across ${photos.length} photos …`)
+  const ownerPhotos = await db.select({ id: photos.id, filename: photos.filename }).from(photos).where(eq(photos.ownerId, ownerId)).orderBy(photos.createdAt)
+  console.log(`  detecting faces across ${ownerPhotos.length} photos …`)
 
   await clearExisting(ownerId)
   const h = await getHuman()
@@ -99,7 +101,7 @@ export async function processOwnerFaces(ownerId: string): Promise<void> {
 
   let faceCount = 0
   let done = 0
-  for (const photo of photos) {
+  for (const photo of ownerPhotos) {
     try {
       const bytes = new Uint8Array(await (await fetch(await imageUrl(photo.filename))).arrayBuffer())
       const imgT = tf.node.decodeImage(bytes, 3)
@@ -109,30 +111,28 @@ export async function processOwnerFaces(ownerId: string): Promise<void> {
         const faceId = crypto.randomUUID()
         const cropKey = `faces/${faceId}.jpg`
         await putImage(cropKey, await cropToJpeg(tf, imgT, f.box), 'image/jpeg')
-        await sql`
-          insert into faces (id, photo_id, owner_id, bbox, crop_key, score, embedding)
-          values (${faceId}, ${photo.id}, ${ownerId}, ${JSON.stringify(f.box)}::jsonb, ${cropKey}, ${f.score}, ${toVector(normalize(f.embedding))}::vector)
-        `
+        await db.insert(faces).values({ id: faceId, photoId: photo.id, ownerId, bbox: f.box, cropKey, score: f.score, embedding: toVector(normalize(f.embedding)) })
         faceCount++
       }
       imgT.dispose()
     } catch (err) {
       console.warn(`  skip ${photo.filename}: ${err instanceof Error ? err.message : err}`)
     }
-    if (++done % 25 === 0 || done === photos.length) process.stdout.write(`  [${done}/${photos.length}] ${faceCount} faces so far\n`)
+    if (++done % 25 === 0 || done === ownerPhotos.length) process.stdout.write(`  [${done}/${ownerPhotos.length}] ${faceCount} faces so far\n`)
   }
 
   console.log('  grouping faces into people …')
-  const people = await rebuildPeople(ownerId)
-  console.log(`  ${faceCount} faces grouped into ${people} people.`)
+  const peopleCount = await rebuildPeople(ownerId)
+  console.log(`  ${faceCount} faces grouped into ${peopleCount} people.`)
 }
 
 async function resolveOwner(): Promise<string> {
   const email = process.env.SEED_OWNER_EMAIL ?? process.env.VITE_DEMO_EMAIL
-  if (!email) throw new Error('set VITE_DEMO_EMAIL in .env.local')
-  const rows = (await sql`select id from neon_auth."user" where email = ${email} limit 1`) as { id: string }[]
-  if (!rows[0]) throw new Error(`owner ${email} not found, run npm run setup first`)
-  return rows[0].id
+  if (!email) throw new Error('set VITE_DEMO_EMAIL in .env')
+  const { rows } = await db.execute(sql`select id from neon_auth."user" where email = ${email} limit 1`)
+  const row = rows[0] as { id: string } | undefined
+  if (!row) throw new Error(`owner ${email} not found, run npm run setup first`)
+  return row.id
 }
 
 // Run standalone (npm run faces). When called from setup.ts, processOwnerFaces

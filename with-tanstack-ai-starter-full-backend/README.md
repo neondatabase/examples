@@ -2,11 +2,11 @@
 
 # A private photo library you search by meaning and by face
 
-In Atlas, describe what you remember, like “people laughing together”, drop in an image, or drop in a face to search for similar images in your private photo library. It also automatically groups every face into **people** you can browse by. Each photo is scoped to its owner by Postgres **row-level security**, so one user never sees another's library.
+In Atlas, describe what you remember, like “people laughing together”, drop in an image, or drop in a face to search for similar images in your private photo library. It also automatically groups every face into **people** you can browse by. Every read and write runs through a **backend function that verifies the Neon Auth JWT** and scopes the query to that user (`owner_id = <the verified user>`), so one user never sees another's library.
 
-Built on the Neon backend platform (Postgres, Auth, the Data API, Lakebase Search, and Object Storage) in a single [TanStack Start](https://tanstack.com/start) app on [Vercel](https://vercel.com).
+Built on the Neon backend platform (Postgres, Auth, Lakebase Search, and Object Storage) with [Drizzle ORM](https://orm.drizzle.team), in a single [TanStack Start](https://tanstack.com/start) app on [Vercel](https://vercel.com).
 
-**Live demo** &rarr; https://with-tanstack-ai-starter-full-backend.vercel.app
+**Live demo** → https://with-tanstack-ai-starter-full-backend.vercel.app
 
 ![The library, with the People row and the photo grid](assets/library.png)
 
@@ -36,27 +36,28 @@ Faces are detected in the browser and turned into 1024-d descriptors, then group
 
 ```
 Browser (TanStack Start SPA)
+  │  every server call carries the Neon Auth JWT (Bearer) and the backend verifies it
+  │  against the Neon Auth JWKS and scopes each query to owner_id = the token's sub
   │
-  ├─ reads  ──►  Neon Data API (PostgREST)  ──►  Postgres + RLS + lakebase_ann
-  │              carries the Neon Auth JWT, so RLS scopes rows to the user
-  │              photos, people, and match_photos / photos_of_person all read under RLS
+  ├─ reads  ──►  server functions (createServerFn, src/lib/server/library.ts)
+  │              Drizzle over Postgres + lakebase_ann, then presign URLs inline
+  │              listPhotos · searchPhotos · neighbors · personPhotos · faceSearch · listPeople
   │
   ├─ faces  ──►  @vladmandic/human runs in the browser (WebGL), so the face
   │              models never touch the server
   │
-  └─ /api/*  (JWT verified against Neon Auth JWKS, owner taken from the token)
-       ├─ embed        CLIP text/image → 512-d vector   (runs in the Vercel Node runtime)
-       ├─ upload       embed + store bytes + insert row (owner_id from the JWT)
-       ├─ caption      ViT-GPT2 caption for one uploaded photo
-       ├─ faces        store detected faces + regroup people (Chinese Whispers)
-       ├─ face-search  rank photos by nearest face to a query face descriptor
-       └─ presign      owner-checked presigned image + face-crop URLs
+  └─ /api/*  route handlers for the multipart + model work (same JWT check)
+       ├─ embed    CLIP text/image → 512-d vector   (runs in the Vercel Node runtime)
+       ├─ upload   embed + store bytes + insert row (owner_id from the JWT)
+       ├─ caption  ViT-GPT2 caption for one uploaded photo
+       └─ faces    store detected faces + regroup people (Chinese Whispers)
 ```
+
+The reads go through JWT-checked server functions that query with Drizzle and scope every row to the verified user. The functions also presign the storage URLs before returning, so the client gets ready-to-render cards in one round trip.
 
 What the full Neon platform provides:
 
 - **Neon Auth**: sign-up / sign-in, sessions, and a JWT that carries the user's identity.
-- **Neon Data API**: the browser reads Postgres directly (`neon.from('photos')`, `neon.rpc('match_photos')`, `neon.from('people')`) with the session JWT, under RLS.
 - **Lakebase Search + pgvector**: CLIP embeddings ranked by the `lakebase_ann` index, plus a `vector(1024)` column of face descriptors for identity search.
 - **Neon Object Storage**: the image bytes and the face crops, served via short-lived presigned URLs.
 - **CLIP (`Xenova/clip-vit-base-patch32`) via transformers.js**: free and self-hosted, no embedding API keys.
@@ -74,19 +75,18 @@ After the first deploy, add your production origin to Neon Auth's **trusted orig
 
 - Node 22+
 - A Neon project (region **us-east-2**) with:
-  - Postgres with the `vector`, `lakebase_vector`, and `lakebase_text` extensions
+  - Postgres (the `vector`, `lakebase_vector`, and `lakebase_text` extensions are created for you by `npm run setup`)
   - **Neon Auth** enabled
-  - **Neon Data API** enabled
   - a **Neon Object Storage** bucket
-- `psql` for applying the schema
 
 ### Steps
 
 ```bash
-cp .env.example .env.local          # fill in from your Neon project (see below)
+cp .env.example .env                 # fill in from your Neon project (see below)
 npm install
 
-# One command: applies the schema + RLS + faces tables, then rebuilds the whole demo library in YOUR Neon database.
+# One command: creates the extensions, pushes the Drizzle schema (all four tables),
+# then rebuilds the whole demo library in YOUR Neon database.
 npm run setup
 
 npm run dev                          # http://localhost:3000
@@ -112,6 +112,8 @@ npm run faces
 - Tailwind CSS v4
 - `@neondatabase/auth-ui`
 - faces via `@vladmandic/human`
-- `@neondatabase/neon-js` (Auth + Data API)
+- `@neondatabase/neon-js` (Neon Auth)
+- Drizzle ORM over `@neondatabase/serverless`
 - CLIP and ViT-GPT2 via `@huggingface/transformers`
 - Neon Postgres 18 with `lakebase_vector` & `lakebase_text`
+- TanStack server functions for the JWT-checked backend reads

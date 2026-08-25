@@ -1,14 +1,13 @@
 import { createRemoteJWKSet, jwtVerify } from 'jose'
 
 /**
- * Server-side JWT verification for the app's own routes (upload / presign /
- * embed). The browser sends the Neon Auth JWT as a Bearer token, and we verify it
- * against the Neon Auth JWKS and return the `sub` (the user id). Everything that
- * writes or signs is gated on this, the routes never trust a client-supplied
- * owner id, only the verified `sub`.
- *
- * Reads don't come through here: those go browser -> Data API, where Postgres
- * RLS does the enforcing. This is only for the compute/signing side.
+ * Server-side JWT verification for everything the app serves. The browser sends
+ * the Neon Auth JWT as a Bearer token, and we verify it against the Neon Auth JWKS
+ * and return the `sub` (the user id). Both the read server functions (via the auth
+ * middleware, src/lib/server/auth) and the compute API routes (upload / embed /
+ * caption / faces) gate on this, and scope every query to the verified `sub`. The
+ * routes never trust a client-supplied owner id. Authz is here, in the functions,
+ * not in Postgres RLS.
  */
 const JWKS_URL = process.env.JWKS_URL
 if (!JWKS_URL) throw new Error('JWKS_URL is not set')

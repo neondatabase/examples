@@ -4,7 +4,7 @@
  * The image URLs (originals on Vercel Blob) live in demo-photos.json. For each:
  * download the JPEG, embed it with CLIP (transformers.js → 512-d), upload the
  * bytes to Neon Object Storage, and insert a row owned by the demo account so
- * RLS makes it visible once you sign in as that user.
+ * the owner-scoped read functions return it once you sign in as that user.
  *
  * The demo library is *replaced* on each run: existing photos for the owner (and
  * their storage objects) are cleared first. Sign the account up first
@@ -14,23 +14,26 @@
  */
 import { readFileSync } from 'node:fs'
 import { basename } from 'node:path'
+import { eq, sql } from 'drizzle-orm'
 import { embedImageBytes } from '../src/lib/clip'
-import { sql, toVector } from '../src/lib/db'
+import { db, toVector } from '../src/lib/db'
+import { photos } from '../src/lib/schema'
 import { deleteImage, putImage } from '../src/lib/storage'
 
 const MANIFEST = new URL('./demo-photos.json', import.meta.url)
 
-/** The demo account's user id, so seeded rows are visible to it under RLS. */
+/** The demo account's user id, so seeded rows are owned by (and returned to) it. */
 async function resolveOwnerId(): Promise<string> {
   const email = process.env.SEED_OWNER_EMAIL ?? process.env.VITE_DEMO_EMAIL
   if (!email) throw new Error('set SEED_OWNER_EMAIL (or VITE_DEMO_EMAIL) to the demo account email')
-  const rows = (await sql`select id from neon_auth."user" where email = ${email} limit 1`) as { id: string }[]
-  if (!rows[0]) throw new Error(`no user ${email}, sign that account up in the app first, then re-run seed`)
-  return rows[0].id
+  const { rows } = await db.execute(sql`select id from neon_auth."user" where email = ${email} limit 1`)
+  const row = rows[0] as { id: string } | undefined
+  if (!row) throw new Error(`no user ${email}, sign that account up in the app first, then re-run seed`)
+  return row.id
 }
 
 async function clearExisting(ownerId: string) {
-  const rows = (await sql`select filename from photos where owner_id = ${ownerId}`) as { filename: string }[]
+  const rows = await db.select({ filename: photos.filename }).from(photos).where(eq(photos.ownerId, ownerId))
   for (const r of rows) {
     try {
       await deleteImage(r.filename)
@@ -38,7 +41,7 @@ async function clearExisting(ownerId: string) {
       console.warn(`  could not delete ${r.filename}: ${err instanceof Error ? err.message : err}`)
     }
   }
-  await sql`delete from photos where owner_id = ${ownerId}`
+  await db.delete(photos).where(eq(photos.ownerId, ownerId))
   if (rows.length) console.log(`  cleared ${rows.length} existing photos`)
 }
 
@@ -63,11 +66,10 @@ async function main() {
       const bytes = await download(url)
       const { embedding, width, height } = await embedImageBytes(bytes)
       await putImage(filename, bytes)
-      await sql`
-        insert into photos (id, owner_id, filename, width, height, embedding)
-        values (${id}, ${ownerId}, ${filename}, ${width}, ${height}, ${toVector(embedding)}::vector)
-        on conflict (id) do nothing
-      `
+      await db
+        .insert(photos)
+        .values({ id, ownerId, filename, width, height, embedding: toVector(embedding) })
+        .onConflictDoNothing()
       inserted++
       if (inserted % 10 === 0 || inserted === 1) process.stdout.write(`  [${inserted}/${urls.length}] ${filename}\n`)
     } catch (err) {
@@ -75,7 +77,10 @@ async function main() {
     }
   }
 
-  const [{ count }] = (await sql`select count(*)::int as count from photos where owner_id = ${ownerId}`) as { count: number }[]
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(photos)
+    .where(eq(photos.ownerId, ownerId))
   console.log(`Done. Inserted ${inserted}; ${count} photos in the demo library.`)
 }
 
