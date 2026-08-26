@@ -23,7 +23,7 @@
     "clsx": "^2.1.1",
     "langchain": "^0.2.5",
     "lucide-react": "^0.394.0",
-    "next": "14.2.21",
+    "next": "14.2.35",
     "pdf-parse": "^1.1.1",
     "react": "^18",
     "react-dom": "^18",
