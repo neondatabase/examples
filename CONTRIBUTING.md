@@ -16,6 +16,20 @@ OPENAI_API_KEY="sk-..."
 
 There are soft spots in the code, which could use cleanup, refactoring, additional comments, and so forth. Let's try to raise the bar, and clean things up as we go. Try to leave code in a better shape than it was before.
 
+## Agent skills and plugins
+
+Do not commit Neon agent skills, `skills-lock.json`, `.agents/`, or `.claude/skills/` in an example. `neon bootstrap` copies the template as-is, and `neon init` / `neon bootstrap` install the Neon plugin or skills and MCP into the user's project. Vendoring them here would install them twice.
+
+Install tooling in a checkout with:
+
+```bash
+npx neon init
+```
+
+That offers the Neon plugin, or skills and MCP separately. Templates listed in `bootstrap.yaml` are what `neon bootstrap` copies, so they must stay free of vendored skills.
+
+Keep per-example `AGENTS.md` when it is project instructions (branch workflow, which Neon project to use). That is not a skill.
+
 ## Submitting changes
 
 1. Get at least one +1 on your PR before you push. For simple patches, it will only take a minute for someone to review it.

@@ -5,3 +5,8 @@ package-lock.json
 .DS_Store
 # Local Netlify folder
 .netlify
+
+# Agent skills are installed by neon bootstrap / neon init, not committed.
+**/.agents/
+**/.claude/skills/
+**/skills-lock.json

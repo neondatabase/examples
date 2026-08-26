@@ -130,4 +130,4 @@ neon functions get contacts
 mcporter list https://<your-branch>-contacts.compute.<region>.aws.neon.tech/mcp --schema
 ```
 
-> A Neon Function has a **public HTTPS URL — it is reachable by anyone.** This example keeps things minimal and does not authenticate callers. Before exposing a real MCP server, verify a token/API key at the top of the handler (see the `neon-functions` skill in `.agents/skills`).
+> A Neon Function has a **public HTTPS URL — it is reachable by anyone.** This example keeps things minimal and does not authenticate callers. Before exposing a real MCP server, verify a token/API key at the top of the handler (see the `neon-functions` skill after `neon init` or `neon skills`).
