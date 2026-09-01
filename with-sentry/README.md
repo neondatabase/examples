@@ -39,13 +39,13 @@ neon login
 
 ```bash
 npm install
-cp .env.example .env   # fill in SENTRY_DSN (and optionally the rest)
+cp .env.example .env   # fill every key declared in neon.ts Function env
 ```
 
 ## Deploy
 
 ```bash
-neon deploy
+neon deploy --env .env
 neon functions get withsentry   # invocation_url
 ```
 
