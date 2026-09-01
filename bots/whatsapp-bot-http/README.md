@@ -73,15 +73,16 @@ If you let your agent drive this, add `--agent` to skip interactive mode.
 
 ## Configure WhatsApp
 
-Create a Meta app with WhatsApp Cloud API enabled, then add these keys to `.env.local` and fill in:
+Create a Meta app with WhatsApp Cloud API enabled, then copy `.env.example` to `.env.local`, uncomment, and fill in the required keys:
 
 ```env
-WHATSAPP_ACCESS_TOKEN=
-WHATSAPP_PHONE_NUMBER_ID=
-WHATSAPP_VERIFY_TOKEN=
-WHATSAPP_APP_SECRET=
+# Required. Add real values before deploying; a missing key throws at deploy, an empty one uploads "".
+# WHATSAPP_ACCESS_TOKEN=
+# WHATSAPP_PHONE_NUMBER_ID=
+# WHATSAPP_VERIFY_TOKEN=
+# WHATSAPP_APP_SECRET=
 
-# Set automatically by Neon.
+# Set automatically by Neon when running `neon deploy`.
 NEON_BRANCH=
 DATABASE_URL=
 DATABASE_URL_UNPOOLED=
