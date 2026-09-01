@@ -28,7 +28,7 @@ with-realtime-chat/
 ├── drizzle.config.ts       # Drizzle Kit config
 ├── .env.example            # Function environment variables
 ├── src/
-│   ├── index.ts            # Hono `fetch` + WebSocket `upgrade` (the function)
+│   ├── index.ts            # Hono app with `upgradeWebSocket` from `@neon/functions/hono`
 │   └── db/
 │       └── schema.ts       # Drizzle schema (messages)
 └── web/                    # Next.js app (Neon Auth + chat UI), deploy on Vercel
@@ -166,7 +166,7 @@ neon neon-auth domain add https://<your-app>.vercel.app
 
 ## How it works
 
-- **WebSockets on Neon Functions.** Neon Functions are long-running Node.js handlers, so the function exports `{ fetch, upgrade }`: Hono serves HTTP via `fetch`, and the `ws` library handles the WebSocket handshake in `upgrade(req, socket, head)`. See `src/index.ts`.
+- **WebSockets on Neon Functions.** The function is a Hono app exported as `export default app`. WebSockets use `upgradeWebSocket` from `@neon/functions/hono` on the `/` route — no `ws` package and no custom `upgrade` export. See `src/index.ts`.
 - **Auth over WebSockets.** Browsers can't set headers on a WebSocket, so the client passes its Neon Auth JWT as `?token=`. The function verifies it against the Neon Auth JWKS before accepting the connection.
 - **Fan-out across isolates.** Under load the runtime may run several isolates, each with its own connected clients. Every isolate polls Postgres for new messages and broadcasts them to its own sockets, so the chat stays shared across isolates without any cross-isolate messaging. See [Real-time considerations](#real-time-considerations).
 - **Reconnect.** The client reconnects with exponential backoff (re-minting a token each attempt), since serverless isolates can be evicted when idle.

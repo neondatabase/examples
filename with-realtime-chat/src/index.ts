@@ -1,7 +1,5 @@
-import type { IncomingMessage } from 'node:http';
-import type { Duplex } from 'node:stream';
 import { Hono } from 'hono';
-import { WebSocketServer, type WebSocket } from 'ws';
+import { upgradeWebSocket } from '@neon/functions/hono';
 import { desc, gt } from 'drizzle-orm';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { parseEnv } from '@neon/env';
@@ -17,6 +15,8 @@ const jwks = createRemoteJWKSet(new URL(env.auth.jwksUrl));
 const issuer = new URL(env.auth.baseUrl).origin;
 
 type Identity = { id: string; name: string };
+
+type AppEnv = { Variables: { identity: Identity } };
 
 async function verifyToken(token: string | null): Promise<Identity | null> {
   if (!token) return null;
@@ -66,8 +66,8 @@ async function poll() {
   for (const row of rows) {
     lastId = row.id;
     const payload = JSON.stringify(row);
-    for (const ws of clients) {
-      if (ws.readyState === ws.OPEN) ws.send(payload);
+    for (const socket of clients) {
+      if (socket.readyState === socket.OPEN) socket.send(payload);
     }
   }
 }
@@ -76,35 +76,44 @@ const poller = setInterval(() => {
 }, 1000);
 poller.unref?.();
 
-const wss = new WebSocketServer({ noServer: true });
+const app = new Hono<AppEnv>();
 
-const app = new Hono();
-app.get('/', (c) => c.text('Neon realtime chat — connect over WebSocket with ?token=<jwt>'));
+app.use('/', async (c, next) => {
+  if (c.req.header('upgrade')?.toLowerCase() !== 'websocket') {
+    await next();
+    return;
+  }
+  const identity = await verifyToken(c.req.query('token') ?? null);
+  if (!identity) return c.text('Unauthorized', 401);
+  c.set('identity', identity);
+  await next();
+});
 
-export default {
-  fetch: (request: Request) => app.fetch(request),
-
-  async upgrade(req: IncomingMessage, socket: Duplex, head: Buffer) {
-    const url = new URL(req.url ?? '/', 'http://localhost');
-    const identity = await verifyToken(url.searchParams.get('token'));
-    if (!identity) {
-      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-      socket.destroy();
-      return;
-    }
-
-    wss.handleUpgrade(req, socket, head, (ws) => {
-      clients.add(ws);
-      ws.on('close', () => clients.delete(ws));
-      ws.on('message', async (data) => {
-        const body = data.toString().slice(0, 2000).trim();
+app.get(
+  '/',
+  upgradeWebSocket((c) => {
+    const identity = c.get('identity');
+    return {
+      onOpen(_event, ws) {
+        clients.add(ws.raw);
+      },
+      onClose(_event, ws) {
+        clients.delete(ws.raw);
+      },
+      onMessage(event) {
+        const body = String(event.data).slice(0, 2000).trim();
         if (!body) return;
         // Just persist it. Every isolate's poll loop (including this one) picks
         // the new row up from Postgres and fans it out to its own clients.
-        await db
-          .insert(messages)
-          .values({ userId: identity.id, userName: identity.name, body });
-      });
-    });
-  },
-};
+        void db.insert(messages).values({
+          userId: identity.id,
+          userName: identity.name,
+          body,
+        });
+      },
+    };
+  }),
+  (c) => c.text('Neon realtime chat — connect over WebSocket with ?token=<jwt>'),
+);
+
+export default app;
