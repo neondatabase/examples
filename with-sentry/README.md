@@ -39,7 +39,7 @@ neon login
 
 ```bash
 npm install
-cp .env.example .env   # fill every key declared in neon.ts Function env
+cp .env.example .env   # fill SENTRY_DSN; optional keys can stay blank
 ```
 
 ## Deploy
