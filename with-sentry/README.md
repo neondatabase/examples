@@ -39,7 +39,7 @@ neon login
 
 ```bash
 npm install
-cp .env.example .env   # fill SENTRY_DSN; optional keys can stay blank
+cp .env.example .env   # add SENTRY_DSN with a real value; optional keys can stay blank
 ```
 
 ## Deploy
@@ -48,6 +48,8 @@ cp .env.example .env   # fill SENTRY_DSN; optional keys can stay blank
 neon deploy --env .env
 neon functions get withsentry   # invocation_url
 ```
+
+A missing `SENTRY_DSN` makes `defineConfig` throw. `SENTRY_DSN=` with no value uploads `""` and deploys with Sentry disabled.
 
 ## Try it
 
