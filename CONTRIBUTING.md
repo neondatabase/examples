@@ -30,6 +30,17 @@ That offers the Neon plugin, or skills and MCP separately. Templates listed in `
 
 Keep per-example `AGENTS.md` when it is project instructions (branch workflow, which Neon project to use). That is not a skill.
 
+## Env files
+
+Templates listed in `bootstrap.yaml` use `.env.local` as the env file, not `.env`.
+
+`neon env pull` (and the pull bundled into `neon link` / `neon checkout`) writes `.env` if that file already exists, otherwise `.env.local`. After `neon bootstrap` there is no `.env`, only `.env.example`, so the pull creates `.env.local`. That is the Next.js / `vercel env pull` convention.
+
+- Commit `.env.example`. Gitignore `.env` and `.env.local`.
+- Point drizzle `loadEnv`, `neon deploy --env`, and `node --env-file` at `.env.local`.
+- After a pull, add extra keys to the existing `.env.local`. Do not `cp .env.example .env.local`; that overwrites `DATABASE_URL`.
+- If `drizzle.config.ts` imports `neon.ts`, and `neon.ts` reads Function env at module load, preload `.env.local` before that import. ESM hoists imports, and drizzle-kit auto-loads `.env` only. The bot templates do this with `load-env.ts`.
+
 ## Submitting changes
 
 1. Get at least one +1 on your PR before you push. For simple patches, it will only take a minute for someone to review it.
