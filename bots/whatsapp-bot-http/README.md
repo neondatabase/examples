@@ -73,7 +73,7 @@ If you let your agent drive this, add `--agent` to skip interactive mode.
 
 ## Configure WhatsApp
 
-Create a Meta app with WhatsApp Cloud API enabled, then copy `.env.example` to `.env` and fill in:
+Create a Meta app with WhatsApp Cloud API enabled, then add these keys to `.env.local` and fill in:
 
 ```env
 WHATSAPP_ACCESS_TOKEN=
@@ -116,7 +116,7 @@ Neon serves the configured function from `neon.ts`. To receive real WhatsApp web
 Deploy the WhatsApp webhook function with your WhatsApp secrets:
 
 ```bash
-neon deploy --env .env
+neon deploy --env .env.local
 ```
 
 ## Register the WhatsApp webhook

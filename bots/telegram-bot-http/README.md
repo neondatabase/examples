@@ -74,7 +74,7 @@ If you let your agent drive this, add `--agent` to skip interactive mode.
 
 ## Configure Telegram
 
-Create a bot with [BotFather](https://t.me/BotFather), then copy `.env.example` to `.env` and fill in:
+Create a bot with [BotFather](https://t.me/BotFather), then add these keys to `.env.local` and fill in:
 
 ```env
 TELEGRAM_BOT_TOKEN=
@@ -114,7 +114,7 @@ Neon serves the configured function from `neon.ts`. To receive real Telegram web
 Deploy the Telegram webhook function with your Telegram secrets:
 
 ```bash
-neon deploy --env .env
+neon deploy --env .env.local
 ```
 
 ## Register the Telegram bot
@@ -131,7 +131,7 @@ Grab the function invocation URL:
 neon functions get telegram
 ```
 
-Append `/api/webhook`, set `TELEGRAM_WEBHOOK_URL` in `.env`, then register the webhook with Telegram:
+Append `/api/webhook`, set `TELEGRAM_WEBHOOK_URL` in `.env.local`, then register the webhook with Telegram:
 
 ```bash
 npm run set:webhook

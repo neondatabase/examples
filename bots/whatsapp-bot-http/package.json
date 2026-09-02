@@ -6,7 +6,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "dev": "neon dev",
-    "deploy": "neon deploy --env .env",
+    "deploy": "neon deploy --env .env.local",
     "endpoint": "neon functions get whatsapp"
   },
   "type": "module",

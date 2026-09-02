@@ -34,7 +34,7 @@ The Neon function slug is `discord`. The `/api/interactions` path is handled by 
 
 ## Environment
 
-Copy `.env.example` to `.env` and fill in:
+Fill in these keys in `.env.local`:
 
 ```env
 DISCORD_PUBLIC_KEY=
@@ -107,7 +107,7 @@ DiscordBot (https://neon.tech, Neon Functions Bot 1.0.0)
 pnpm deploy
 ```
 
-This deploys the Neon Function and writes Neon-managed env vars such as `NEON_BRANCH`, `DATABASE_URL`, and `DATABASE_URL_UNPOOLED` into `.env`.
+This deploys the Neon Function and writes Neon-managed env vars such as `NEON_BRANCH`, `DATABASE_URL`, and `DATABASE_URL_UNPOOLED` into `.env.local`.
 
 Get the current hosted function URL:
 
