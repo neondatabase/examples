@@ -28,21 +28,30 @@ The Neon function slug is `discord`. The `/api/interactions` path is handled by 
 ## Requirements
 
 - Node.js 24 recommended
-- pnpm 11
-- Neon CLI authenticated and linked to the target Neon project
+- Neon CLI authenticated (`neon me`)
 - A Discord application with a bot token
 
 ## Environment
 
-Fill in these keys in `.env.local`:
+Copy `.env.example` to `.env.local`, then link so Neon merges the database variables into it (linking keeps your keys):
+
+```bash
+cp .env.example .env.local
+neon link
+```
+
+Uncomment and fill in the required keys:
 
 ```env
-DISCORD_PUBLIC_KEY=
-DISCORD_APPLICATION_ID=
-DISCORD_BOT_TOKEN=
+# Required. Add real values before deploying; a missing key throws at deploy, an empty one uploads "".
+# DISCORD_PUBLIC_KEY=
+# DISCORD_APPLICATION_ID=
+# DISCORD_BOT_TOKEN=
+
+# Optional: your test server's ID for fast guild commands; blank registers global commands.
 DISCORD_GUILD_ID=
 
-# Set automatically by Neon when running `pnpm deploy`.
+# Written by `neon link` or `neon env pull` (and refreshed on deploy).
 NEON_BRANCH=
 DATABASE_URL=
 DATABASE_URL_UNPOOLED=
@@ -54,18 +63,18 @@ DATABASE_URL_UNPOOLED=
 
 `DISCORD_GUILD_ID` is optional. If set, commands are registered to one guild and update quickly. If omitted, commands are registered globally and may take longer to appear.
 
-`NEON_BRANCH`, `DATABASE_URL`, and `DATABASE_URL_UNPOOLED` are written by Neon during `pnpm deploy`. They are shown in `.env.example` for completeness; you normally do not need to fill them in by hand. The `/name` and `/profile` commands use `DATABASE_URL` to query Drizzle-managed tables.
+`NEON_BRANCH`, `DATABASE_URL`, and `DATABASE_URL_UNPOOLED` are written by Neon on your first deploy. They are shown in `.env.example` for completeness; you normally do not need to fill them in by hand. The `/name` and `/profile` commands use `DATABASE_URL` to query Drizzle-managed tables.
 
 ## Install
 
 ```bash
-pnpm install
+npm install
 ```
 
 ## Check
 
 ```bash
-pnpm check
+npm run check
 ```
 
 ## Database
@@ -73,7 +82,7 @@ pnpm check
 The `/name` command stores each Discord user's profile in Lakebase Postgres, and every slash command increments a per-user usage counter. The schema lives in `src/db/schema.ts`.
 
 ```bash
-pnpm db:push
+npm run db:push
 ```
 
 This applies the `profiles` and `command_usage` tables to the database configured by `DATABASE_URL`.
@@ -81,7 +90,7 @@ This applies the `profiles` and `command_usage` tables to the database configure
 ## Register Commands
 
 ```bash
-pnpm register:commands
+npm run register:commands
 ```
 
 This registers:
@@ -104,7 +113,7 @@ DiscordBot (https://neon.tech, Neon Functions Bot 1.0.0)
 ## Deploy
 
 ```bash
-pnpm deploy
+npm run deploy
 ```
 
 This deploys the Neon Function and writes Neon-managed env vars such as `NEON_BRANCH`, `DATABASE_URL`, and `DATABASE_URL_UNPOOLED` into `.env.local`.
@@ -112,7 +121,7 @@ This deploys the Neon Function and writes Neon-managed env vars such as `NEON_BR
 Get the current hosted function URL:
 
 ```bash
-pnpm endpoint
+npm run endpoint
 ```
 
 Append `/api/interactions` before pasting the URL into Discord.
@@ -120,7 +129,7 @@ Append `/api/interactions` before pasting the URL into Discord.
 ## Local Development
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 Neon serves the configured function from `neon.ts`.
