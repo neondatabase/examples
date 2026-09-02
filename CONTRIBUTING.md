@@ -7,10 +7,9 @@ Howdy! Usual good software engineering practices apply. Write tests. Write comme
 3. Always have an example environment variables (if required to run the example) with comments. Following is a sample:
 
 ```bash
-# Postgres URL retrieved here: https://console.neon.tech
-POSTGRES_URL="postgresql://neondb_owner:<password>@ep-...us-east-1.aws.neon.tech/neondb?sslmode=require"
-
-# OpenAI key retrieved here: https://platform.openai.com/api-keys
+# Postgres Connection String retrieved here: https://console.neon.tech
+DATABASE_URL="postgresql://user:password@ep-xxx-xxx-pooler.region.neon.tech/neondb?sslmode=require&channel_binding=require"
+# OpenAI API Key retrieved here: https://platform.openai.com/api-keys
 OPENAI_API_KEY="sk-..."
 ```
 
