@@ -28,12 +28,19 @@ The Neon function slug is `discord`. The `/api/interactions` path is handled by 
 ## Requirements
 
 - Node.js 24 recommended
-- Neon CLI authenticated and linked to the target Neon project
+- Neon CLI authenticated (`neon me`)
 - A Discord application with a bot token
 
 ## Environment
 
-Copy `.env.example` to `.env.local`, then uncomment and fill in the required keys:
+Copy `.env.example` to `.env.local`, then link so Neon merges the database variables into it (linking keeps your keys):
+
+```bash
+cp .env.example .env.local
+neon link
+```
+
+Uncomment and fill in the required keys:
 
 ```env
 # Required. Add real values before deploying; a missing key throws at deploy, an empty one uploads "".
@@ -44,7 +51,7 @@ Copy `.env.example` to `.env.local`, then uncomment and fill in the required key
 # Optional: your test server's ID for fast guild commands; blank registers global commands.
 DISCORD_GUILD_ID=
 
-# Set automatically by Neon when running `neon deploy`.
+# Written by `neon link` or `neon env pull` (and refreshed on deploy).
 NEON_BRANCH=
 DATABASE_URL=
 DATABASE_URL_UNPOOLED=

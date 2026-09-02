@@ -64,9 +64,10 @@ npm install
 
 ## Link your Neon project
 
-Link (or create) a Neon project by running the `link` command from the workspace root:
+Copy `.env.example` to `.env.local`, then link (or create) a Neon project from the workspace root. Linking merges the Neon vars into `.env.local`, keeping your keys:
 
 ```bash
+cp .env.example .env.local
 neon link
 ```
 
@@ -74,7 +75,7 @@ If you let your agent drive this, add `--agent` to skip interactive mode.
 
 ## Configure Telegram
 
-Create a bot with [BotFather](https://t.me/BotFather), then copy `.env.example` to `.env.local`, uncomment, and fill in the required keys:
+Create a bot with [BotFather](https://t.me/BotFather), then uncomment and fill in the required keys in `.env.local`:
 
 ```env
 # Required. Add real values before deploying; a missing key throws at deploy, an empty one uploads "".
@@ -84,7 +85,7 @@ Create a bot with [BotFather](https://t.me/BotFather), then copy `.env.example` 
 # Local only, used by the set:webhook script. Set after you deploy.
 TELEGRAM_WEBHOOK_URL=
 
-# Set automatically by Neon when running `neon deploy`.
+# Written by `neon link` or `neon env pull` (and refreshed on deploy).
 NEON_BRANCH=
 DATABASE_URL=
 DATABASE_URL_UNPOOLED=
