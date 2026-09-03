@@ -65,26 +65,57 @@ What the full Neon platform provides:
 
 ## Deploy your own
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/with-tanstack-ai-starter-full-backend&env=DATABASE_URL,JWKS_URL,AWS_ENDPOINT_URL_S3,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_REGION,S3_BUCKET,VITE_NEON_URL,VITE_NEON_AUTH_URL)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/neondatabase/examples/tree/main/with-tanstack-ai-starter-full-backend&env=DATABASE_URL,NEON_AUTH_JWKS_URL,AWS_ENDPOINT_URL_S3,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_REGION,S3_BUCKET,VITE_NEON_URL,VITE_NEON_AUTH_URL)
 
-After the first deploy, add your production origin to Neon Auth's **trusted origins** so sign-in is accepted from the deployed domain, then run `npm run setup` against your `DATABASE_URL` to build the library (see below). CLIP and the caption model run in Vercel's Node runtime and download their weights to `/tmp` on the first request.
+Set the same environment variables in Vercel that `neon env pull` writes locally (see [Setting up locally](#setting-up-locally)). After the first deploy, add your production origin to Neon Auth's **trusted origins** so sign-in is accepted from the deployed domain:
+
+```bash
+neon neon-auth domain add https://your-app.vercel.app
+```
 
 ## Setting up locally
+
+The Neon services this app needs are declared in [`neon.ts`](neon.ts), Neon's infrastructure-as-code file, so the CLI provisions **Neon Auth** and the `photos` **Object Storage** bucket for you and pulls their credentials into your `.env`.
 
 ### Prerequisites
 
 - Node 22+
-- A Neon project (region **us-east-2**) with:
-  - Postgres (the `vector`, `lakebase_vector`, and `lakebase_text` extensions are created for you by `npm run setup`)
-  - **Neon Auth** enabled
-  - a **Neon Object Storage** bucket
+- The [Neon CLI](https://neon.com/docs/cli/install), authenticated:
+
+  ```bash
+  npm i -g neon
+  neon login
+  ```
+
+- A Neon project in region **us-east-2** (Object Storage and the other beta services run there). `neon link` can create a project for you.
 
 ### Steps
 
 ```bash
-cp .env.example .env                 # fill in from your Neon project (see below)
 npm install
+cp .env.example .env
 
+# Link (or create) a Neon project. Writes the ids to a git-ignored .neon file.
+neon link                            # add --agent to skip the prompts
+
+# Provision the services declared in neon.ts (Neon Auth + the `photos` bucket).
+neon deploy
+
+# Pull the branch's credentials into .env
+# (DATABASE_URL, NEON_AUTH_JWKS_URL, and the AWS_* storage vars).
+neon env pull --file .env
+```
+
+`neon deploy` and `neon link` also pull env into `.env.local` on their own, but the app and the `npm run *` scripts read `.env`, so the explicit `neon env pull --file .env` above puts everything in the file they use.
+
+Vite only exposes `VITE_`-prefixed vars to the browser, so [`vite.config.ts`](vite.config.ts) derives the two the app needs from the `NEON_AUTH_BASE_URL`:
+
+- `VITE_NEON_AUTH_URL` — same as the `NEON_AUTH_BASE_URL` value
+- `VITE_NEON_URL` — the same URL with `neonauth.` and the trailing `/auth` removed (your branch's compute base + `/neondb`).
+
+Now build the library and start the app:
+
+```bash
 # One command: creates the extensions, pushes the Drizzle schema (all four tables),
 # then rebuilds the whole demo library in YOUR Neon database.
 npm run setup

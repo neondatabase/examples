@@ -30,7 +30,9 @@ function client(): AwsClient {
 }
 
 export function bucket(): string {
-  return process.env.S3_BUCKET ?? 'storage-test'
+  // Defaults to the bucket declared in neon.ts, so nothing extra is needed
+  // after `neon deploy`. Override with S3_BUCKET only to point at another one.
+  return process.env.S3_BUCKET ?? 'photos'
 }
 const bucketUrl = () => `${requireEnv('AWS_ENDPOINT_URL_S3').replace(/\/+$/, '')}/${bucket()}`
 const objectKey = (filename: string) => (IMAGE_PREFIX ? `${IMAGE_PREFIX}/${filename}` : filename)

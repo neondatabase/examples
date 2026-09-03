@@ -9,8 +9,8 @@ import { createRemoteJWKSet, jwtVerify } from 'jose'
  * routes never trust a client-supplied owner id. Authz is here, in the functions,
  * not in Postgres RLS.
  */
-const JWKS_URL = process.env.JWKS_URL
-if (!JWKS_URL) throw new Error('JWKS_URL is not set')
+const JWKS_URL = process.env.NEON_AUTH_JWKS_URL
+if (!JWKS_URL) throw new Error('NEON_AUTH_JWKS_URL is not set')
 const jwks = createRemoteJWKSet(new URL(JWKS_URL))
 
 export class Unauthorized extends Error {}
