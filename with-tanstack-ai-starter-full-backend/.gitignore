@@ -1,0 +1,13 @@
+node_modules/
+.neon
+.env
+dist/
+.output/
+.nitro/
+.tanstack/
+**/routeTree.gen.ts
+.playwright-mcp/
+*.log
+.vercel
+.env*
+!.env.example
