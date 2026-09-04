@@ -1,5 +1,7 @@
 {
   "name": "with-authjs-next",
+  "description": "Next.js todo app that uses Neon Postgres and Auth.js for magic-link authentication.",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",

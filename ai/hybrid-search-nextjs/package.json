@@ -1,5 +1,7 @@
 {
   "name": "hybrid-search-nextjs",
+  "description": "AI-powered hybrid search app built with Next.js, Neon Postgres with pgvector, and OpenAI.",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",

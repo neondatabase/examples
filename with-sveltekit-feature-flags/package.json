@@ -1,6 +1,8 @@
 {
   "type": "module",
   "name": "with-sveltekit-feature-flags",
+  "description": "Feature flags example built with SvelteKit and Neon Postgres.",
+  "private": true,
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",

@@ -1,14 +1,8 @@
 {
   "name": "with-neon-serverless",
-  "version": "1.0.0",
+  "description": "Node.js CRUD example that connects to Neon Postgres using the Neon serverless driver.",
+  "private": true,
   "type": "module",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",
     "dotenv": "^17.2.1"

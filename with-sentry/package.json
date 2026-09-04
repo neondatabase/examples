@@ -1,5 +1,6 @@
 {
   "name": "with-sentry",
+  "description": "Streaming, tool-calling AI agent on Neon Functions instrumented with Sentry for errors, logs, and traces.",
   "private": true,
   "type": "module",
   "dependencies": {
