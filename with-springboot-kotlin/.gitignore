@@ -1,0 +1,11 @@
+# IDE
+.idea/
+*.iml
+
+# Gradle
+.gradle/
+build/
+
+# Env file
+.env
+
