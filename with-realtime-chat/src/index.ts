@@ -95,10 +95,10 @@ app.get(
     const identity = c.get('identity');
     return {
       onOpen(_event, ws) {
-        clients.add(ws.raw);
+        if (ws.raw) clients.add(ws.raw);
       },
       onClose(_event, ws) {
-        clients.delete(ws.raw);
+        if (ws.raw) clients.delete(ws.raw);
       },
       onMessage(event) {
         const body = String(event.data).slice(0, 2000).trim();

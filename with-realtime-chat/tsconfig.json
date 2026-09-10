@@ -6,5 +6,6 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "strict": true
-  }
+  },
+  "include": ["src", "neon.ts", "drizzle.config.ts"]
 }
