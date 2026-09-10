@@ -89,16 +89,16 @@ npm run db:push
 
 ## Run locally
 
-Start the function (serves on `http://localhost:8787`):
+Start the function on `http://localhost:8787`:
 
 ```bash
-neon dev
+neon dev --source src/index.ts --port 8787
 ```
 
 Allow `localhost` as a Neon Auth redirect domain so sign-in works in dev:
 
 ```bash
-neon neon-auth domain allow-localhost
+neon neon-auth domain allow-localhost enable
 ```
 
 Configure the web app — copy `web/.env.example` to `web/.env.local` and fill it in:
