@@ -9,6 +9,9 @@ export default defineConfig({
       chat: {
         name: "realtime chat",
         source: "src/index.ts",
+        dev: {
+          port: 8787,
+        },
       },
     },
   },
