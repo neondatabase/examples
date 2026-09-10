@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { waitUntil } from '@neon/functions';
 import { upgradeWebSocket } from '@neon/functions/hono';
 import { desc, gt } from 'drizzle-orm';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
@@ -102,14 +103,16 @@ app.get(
       },
       onMessage(event) {
         const body = String(event.data).slice(0, 2000).trim();
-        if (!body) return;
-        // Just persist it. Every isolate's poll loop (including this one) picks
-        // the new row up from Postgres and fans it out to its own clients.
-        void db.insert(messages).values({
-          userId: identity.id,
-          userName: identity.name,
-          body,
-        });
+        if (!body || !identity) return;
+        // Drizzle only runs on then/await. `void insert()` never writes.
+        // waitUntil keeps the isolate alive until the insert settles.
+        waitUntil(
+          db.insert(messages).values({
+            userId: identity.id,
+            userName: identity.name,
+            body,
+          }).execute(),
+        );
       },
     };
   }),
