@@ -92,7 +92,7 @@ npm run db:push
 Start the function on `http://localhost:8787`:
 
 ```bash
-neon dev --source src/index.ts --port 8787
+neon dev
 ```
 
 Allow `localhost` as a Neon Auth redirect domain so sign-in works in dev:
