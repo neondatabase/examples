@@ -134,7 +134,7 @@ preview: {
 }
 ```
 
-Change `cron` in `neon.ts` and deploy again to reschedule. List triggers with `neon triggers list`.
+Change the schedule expression in `neon.ts` and deploy again to reschedule. List triggers with `neon triggers list`.
 
 If `neon deploy` returns 404 `function triggers not available for this project`, deploy the function without applying the trigger:
 
