@@ -13,6 +13,20 @@ templates:
       repo: examples
       ref: main
       subdir: with-hono
+  - id: cron-job
+    title: "Cron Job"
+    description: "A Hono API on Neon Functions with a neon.ts cron trigger that increments a Postgres counter via Drizzle."
+    tools:
+      - Hono
+      - Drizzle
+    services:
+      - Postgres
+      - Functions
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: with-cron-job
   - id: graphql
     title: "GraphQL API"
     description: "A GraphQL Yoga API on Hono running on Neon Functions, backed by Lakebase Postgres via Drizzle."
