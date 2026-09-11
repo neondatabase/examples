@@ -1,5 +1,6 @@
 {
-  "name": "tanstack-start-neon",
+  "name": "tanstack-start-neon-server-functions",
+  "description": "Getting started example for using Neon Postgres with TanStack Start server functions.",
   "private": true,
   "type": "module",
   "scripts": {

@@ -1,5 +1,7 @@
 {
   "name": "with-mcp",
+  "description": "Model Context Protocol server that gives an AI agent CRUD access to a contacts database, built with the MCP TypeScript SDK, Hono, Neon Postgres, and Drizzle ORM.",
+  "private": true,
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",

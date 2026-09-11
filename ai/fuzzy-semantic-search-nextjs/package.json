@@ -1,5 +1,7 @@
 {
   "name": "fuzzy-semantic-search-nextjs",
+  "description": "Fuzzy and semantic search over a Netflix dataset built with Next.js and Neon Postgres, using local embeddings and no external AI APIs.",
+  "private": true,
   "scripts": {
     "help": "echo 'Run: npm run setup, then npm run dev. See README.md for details.'",
     "dev": "next dev",

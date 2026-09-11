@@ -1,5 +1,7 @@
 {
   "name": "with-ai-sdk",
+  "description": "AI agent built with the Vercel AI SDK on Neon Functions that streams chat through the Neon AI Gateway and generates images into Neon object storage.",
+  "private": true,
   "type": "module",
   "scripts": {
     "db:generate": "drizzle-kit generate",

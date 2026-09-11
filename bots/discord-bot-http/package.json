@@ -1,5 +1,7 @@
 {
   "name": "neon-discord-bot",
+  "description": "Discord interactions bot hosted on Neon Functions and backed by Neon Postgres.",
+  "private": true,
   "type": "module",
   "scripts": {
     "check": "tsc --noEmit",

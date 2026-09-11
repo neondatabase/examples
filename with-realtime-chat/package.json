@@ -1,5 +1,7 @@
 {
   "name": "with-realtime-chat",
+  "description": "Full-stack realtime chat using Next.js and Neon Auth over WebSockets to a Hono server on Neon Functions, with messages stored in Neon Postgres.",
+  "private": true,
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",

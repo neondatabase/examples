@@ -1,5 +1,7 @@
 {
   "name": "llamaindex-reverse-image-search-nextjs",
+  "description": "Reverse image search built with Next.js, Neon Postgres with pgvector, OpenAI, and LlamaIndex.",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -1,5 +1,7 @@
 {
   "name": "llamaindex-semantic-search-nextjs",
+  "description": "Semantic search app built with Next.js, Neon Postgres with pgvector, OpenAI, and LlamaIndex.",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",

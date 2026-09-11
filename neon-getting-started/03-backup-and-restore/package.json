@@ -1,6 +1,6 @@
 {
-  "name": "neon-getting-started",
-  "version": "0.1.0",
+  "name": "neon-getting-started-backup-restore",
+  "description": "Todo app for practicing backup and restore drills with Neon branches, built with Neon Postgres, Drizzle ORM, and Next.js.",
   "private": true,
   "scripts": {
     "dev": "next dev",

@@ -1,5 +1,7 @@
 {
   "name": "with-realtime-sse",
+  "description": "Realtime shared counter using a TanStack Router SPA over server-sent events to a Hono server on Neon Functions, with state stored in Neon Postgres.",
+  "private": true,
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
