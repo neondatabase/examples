@@ -106,7 +106,7 @@ curl http://localhost:8787/counter
 
 ## Deploy to Neon Functions
 
-`neon deploy` ships the function and creates the `every-minute` schedule trigger from `neon.ts`:
+`neon deploy --env .env.local` applies `neon.ts`. That deploys the function. It also creates the `every-minute` schedule trigger when Function Triggers is available on the project.
 
 ```bash
 neon deploy --env .env.local
@@ -133,6 +133,12 @@ preview: {
 
 Change `cron` in `neon.ts` and deploy again to reschedule. List triggers with `neon triggers list`.
 
+If `neon deploy` returns 404 `function triggers not available for this project`, deploy the function without applying the trigger:
+
+```bash
+neon functions deploy cron --src src/index.ts
+```
+
 ## Test your deployed function
 
 ```bash
@@ -143,6 +149,6 @@ neon functions get cron
 curl https://<your-branch>-cron.compute.<region>.aws.neon.tech/counter
 ```
 
-Wait one minute and call `/counter` again. A `POST /cron` missing `x-neon-trigger-invocation-id`, or with a body whose `invocation_id` does not match that header, returns `401`. Invalid JSON or payload returns `400`.
+Wait one minute and call `/counter` again if the schedule trigger exists (`neon triggers list`). A `POST /cron` missing `x-neon-trigger-invocation-id`, or with a body whose `invocation_id` does not match that header, returns `401`. Invalid JSON or payload returns `400`.
 
 `neon dev` forwards `x-neon-trigger-invocation-id` so you can simulate a tick locally. A public POST to the deployed function that includes that header still returns 401.
