@@ -75,7 +75,7 @@ npm run db:push
 neon dev
 ```
 
-Then in another shell (use the port `neon-dev` printed):
+Then in another shell:
 
 ```bash
 # Read the counter
@@ -118,6 +118,9 @@ preview: {
     cron: {
       name: "Cron Job",
       source: "src/index.ts",
+      dev: {
+        port: 8787,
+      },
       triggers: [
         {
           type: "schedule",

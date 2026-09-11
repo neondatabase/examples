@@ -6,6 +6,9 @@ export default defineConfig({
       cron: {
         name: "Cron Job",
         source: "src/index.ts",
+        dev: {
+          port: 8787,
+        },
         triggers: [
           {
             type: "schedule",
