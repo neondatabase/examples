@@ -8,7 +8,7 @@
 
 A [Hono](https://hono.dev) API on [Neon Functions](https://neon.com/docs/compute/functions/overview) that increments a counter in [Lakebase Postgres](https://neon.com/docs/postgres/overview) via [Drizzle ORM](https://orm.drizzle.team). A [Function Trigger](https://neon.com/docs/cli/triggers) in `neon.ts` POSTs to `/cron` every minute.
 
-`GET /counter` is public. `POST /cron` only runs when `x-neon-trigger-invocation-id` matches the JSON body's `invocation_id`. Neon sets both on each scheduled delivery.
+`GET /counter` is public. `POST /cron` calls [`parseTrigger`](https://www.npmjs.com/package/@neon/functions) from `@neon/functions/hono`, which returns 401 unless `x-neon-trigger-invocation-id` matches the JSON body's `invocation_id`, and 400 on an invalid payload.
 
 ## Project structure
 
@@ -143,6 +143,6 @@ neon functions get cron
 curl https://<your-branch>-cron.compute.<region>.aws.neon.tech/counter
 ```
 
-Wait one minute and call `/counter` again. A `POST /cron` missing `x-neon-trigger-invocation-id`, or with a body whose `invocation_id` does not match that header, returns `401`.
+Wait one minute and call `/counter` again. A `POST /cron` missing `x-neon-trigger-invocation-id`, or with a body whose `invocation_id` does not match that header, returns `401`. Invalid JSON or payload returns `400`.
 
-On a deployed function, inbound `x-neon-*` headers from public HTTP are dropped. `x-neon-trigger-invocation-id` only arrives on Function Trigger deliveries. `neon dev` forwards the header so you can simulate a tick locally.
+`neon dev` forwards `x-neon-trigger-invocation-id` so you can simulate a tick locally. A public POST to the deployed function that includes that header still returns 401.
