@@ -47,7 +47,7 @@ npm i -g neon
 neon login
 ```
 
-Use Neon CLI 4.19 or newer so `neon.ts` can declare `storage_object_created` triggers.
+Use Neon CLI 4.21 or newer so `neon.ts` can declare top-level `triggers`.
 
 ## Install dependencies
 
@@ -84,7 +84,7 @@ npm run deploy
 ```
 
 ```ts
-preview: {
+export default defineConfig({
   buckets: {
     assets: { access: "public_read" },
   },
@@ -93,18 +93,18 @@ preview: {
       name: "Object ingest",
       source: "src/index.ts",
       dev: { port: 8787 },
-      triggers: [
-        {
-          type: "storage_object_created",
-          name: "on-upload",
-          bucketName: "assets",
-          prefix: "logos/",
-          functionPath: "/object",
-        },
-      ],
     },
   },
-}
+  triggers: {
+    "on-upload": {
+      type: "storage_object_created",
+      function: "ingest",
+      bucket: "assets",
+      prefix: "logos/",
+      functionPath: "/object",
+    },
+  },
+});
 ```
 
 List triggers with `neon triggers list`.
