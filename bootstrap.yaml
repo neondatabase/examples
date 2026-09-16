@@ -60,11 +60,14 @@ templates:
       subdir: with-ai-sdk
   - id: files-sdk
     title: "Files SDK quickstart"
-    description: "A minimal script that uploads local files to a branch-scoped Neon object storage bucket using the Files SDK and its `neon` adapter, then prints presigned URLs."
+    description: "Upload local files to Neon object storage with the Files SDK. A neon.ts storage_object_created trigger indexes each object in Postgres."
     tools:
       - Files SDK
-      - TypeScript
+      - Hono
+      - Drizzle
     services:
+      - Postgres
+      - Functions
       - Object Storage
     source:
       owner: neondatabase
