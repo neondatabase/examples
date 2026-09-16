@@ -1,18 +1,33 @@
 {
   "name": "with-files-sdk",
-  "description": "Script that uploads local files to Neon object storage using the Files SDK and its Neon adapter.",
+  "description": "Upload local files to Neon object storage with the Files SDK; a neon.ts storage trigger indexes each object in Postgres.",
   "private": true,
   "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "db:push": "drizzle-kit push",
+    "dev": "neon dev",
+    "deploy": "neon deploy --env .env.local",
+    "upload": "tsx src/upload.ts",
+    "endpoint": "neon functions get ingest"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.700.0",
     "@aws-sdk/s3-presigned-post": "^3.700.0",
     "@aws-sdk/s3-request-presigner": "^3.700.0",
-    "@neon/config": "^0.8.0",
+    "@neon/config": "^1.7.0",
+    "@neon/env": "^1.4.1",
+    "@neon/functions": "^0.11.0",
     "dotenv": "^16.4.5",
-    "files-sdk": "^1.9.0"
+    "drizzle-orm": "^0.45.2",
+    "files-sdk": "^1.9.0",
+    "hono": "^4.7.8",
+    "pg": "^8.21.0"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3"
   }
