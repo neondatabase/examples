@@ -56,6 +56,8 @@ neon login
 vercel login
 ```
 
+Use Neon CLI 4.20 or newer so `neon.ts` can declare top-level `functions`.
+
 ## Install dependencies
 
 ```bash
