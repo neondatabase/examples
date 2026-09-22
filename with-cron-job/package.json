@@ -13,8 +13,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@neon/config": "^1.4.0",
-    "@neon/env": "^1.3.0",
+    "@neon/config": "^1.7.0",
+    "@neon/env": "^1.4.1",
     "@neon/functions": "^0.10.0",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.45.2",

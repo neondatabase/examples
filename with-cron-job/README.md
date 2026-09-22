@@ -41,7 +41,7 @@ npm i -g neon
 neon login
 ```
 
-Use Neon CLI 4.17 or newer so `neon.ts` can declare schedule triggers.
+Use Neon CLI 4.21 or newer so `neon.ts` can declare top-level `triggers`. If you already copied this template, replace nested `preview.functions.cron.triggers` in `neon.ts` with the `triggers` map below. Installing newer packages does not rewrite the file.
 
 ## Install dependencies
 
@@ -113,7 +113,7 @@ neon deploy --env .env.local
 ```
 
 ```ts
-preview: {
+export default defineConfig({
   functions: {
     cron: {
       name: "Cron Job",
@@ -121,17 +121,17 @@ preview: {
       dev: {
         port: 8787,
       },
-      triggers: [
-        {
-          type: "schedule",
-          name: "every-minute",
-          cron: "* * * * *",
-          functionPath: "/cron",
-        },
-      ],
     },
   },
-}
+  triggers: {
+    "every-minute": {
+      type: "schedule",
+      function: "cron",
+      cron: "* * * * *",
+      functionPath: "/cron",
+    },
+  },
+});
 ```
 
 Change the schedule expression in `neon.ts` and deploy again to reschedule. List triggers with `neon triggers list`.
