@@ -19,7 +19,6 @@ import {
   parsePut,
   parseSearch,
 } from "./input.js";
-import { embeddingProvider } from "./mock-embedding.js";
 import { searchResults } from "./search-results.js";
 import { hybridSearchSql, keywordSearchSql } from "./search-sql.js";
 import { documents } from "./schema.js";
@@ -45,7 +44,7 @@ const pool = new Pool({
 });
 attachDatabasePool(pool);
 const db = drizzle(pool);
-const embed = createEmbedder(embeddingProvider(process.env.EMBEDDING_PROVIDER));
+const embed = createEmbedder();
 const storage = new S3Client({ forcePathStyle: true });
 
 async function saveDocument(

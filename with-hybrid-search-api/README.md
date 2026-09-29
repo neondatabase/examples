@@ -1,6 +1,6 @@
 # Hybrid search API
 
-A thin HTTP API on [Neon Functions](https://neon.com/docs/compute/functions/overview) for writing documents and retrieving relevant content. Applications, scripts, and agents can call it. It stores text, flexible JSONB metadata, and a 1024-dimensional embedding in one Postgres row. By default, the [Neon AI Gateway](https://neon.com/docs/ai-gateway/embeddings) embeds text with `qwen3-embedding-0-6b`; a deterministic mock provider is available for smoke tests. [Lakebase Search](https://neon.com/docs/ai/lakebase-search-get-started) provides vector search and full-text search with BM25 ranking. The default hybrid mode combines those two ranked result sets with reciprocal rank fusion (RRF).
+A thin HTTP API on [Neon Functions](https://neon.com/docs/compute/functions/overview) for writing documents and retrieving relevant content. Applications, scripts, and agents can call it. It stores text, flexible JSONB metadata, and a 1024-dimensional embedding in one Postgres row. The [Neon AI Gateway](https://neon.com/docs/ai-gateway/embeddings) embeds text with `qwen3-embedding-0-6b`. [Lakebase Search](https://neon.com/docs/ai/lakebase-search-get-started) provides vector search and full-text search with BM25 ranking. The default hybrid mode combines those two ranked result sets with reciprocal rank fusion (RRF).
 
 This is a single-tenant starter. Client-facing endpoints require one service API key; Neon trigger routes verify the trigger delivery instead. Put authorization and tenant scoping into the service before sharing it across customers. Do not expose a database URL or gateway token to clients.
 
@@ -10,7 +10,7 @@ Neon already has a [PostgREST-compatible Data API](https://neon.com/docs/data-ap
 
 ## Setup
 
-Requires a Neon project on Postgres 16+ in a region with Functions and Object Storage, Neon CLI 4.21+, and Node.js 24. Real embeddings also require a paid plan with the AI Gateway and `qwen3-embedding-0-6b` available. The supported regions and model catalog can change; check the [Functions guide](https://neon.com/docs/compute/functions/get-started) and your branch's `/v1/models` endpoint.
+Requires a Neon project on Postgres 16+ in a region with Functions and Object Storage, Neon CLI 4.21+, Node.js 24, and AI Gateway access to `qwen3-embedding-0-6b`. Foundation model access may require a paid plan. The supported regions and model catalog can change; check the [Functions guide](https://neon.com/docs/compute/functions/get-started) and your branch's AI Gateway model access.
 
 ```bash
 npx degit neondatabase/examples/with-hybrid-search-api ./with-hybrid-search-api
@@ -19,7 +19,7 @@ npm install
 neon link --no-env-pull
 ```
 
-Create `.env.local` and add `SEARCH_API_KEY` as a random secret of at least 32 characters. Set `EMBEDDING_PROVIDER=mock` there if the workspace has no AI Gateway access. Do not copy `.env.example` over an existing `.env.local`. The first link skips env pull because the bucket and triggers have not been provisioned on a new branch yet. Deploy the Function, private Object Storage bucket, and both triggers declared in `neon.ts`, then pull the database URL and apply the schema. In the default `gateway` mode, deployment also enables AI Gateway:
+Create `.env.local` and add `SEARCH_API_KEY` as a random secret of at least 32 characters. Do not copy `.env.example` over an existing `.env.local`. The first link skips env pull because the bucket and triggers have not been provisioned on a new branch yet. Deploy the Function, AI Gateway, private Object Storage bucket, and both triggers declared in `neon.ts`, then pull the database URL and apply the schema:
 
 ```bash
 npm run deploy
@@ -28,7 +28,7 @@ npm run db:setup
 npm run dev
 ```
 
-To smoke test on a workspace without AI Gateway access, set `EMBEDDING_PROVIDER=mock` in `.env.local` before `npm run deploy` or `npm run dev`. The CLI loads that file while evaluating `neon.ts`, so it skips AI Gateway provisioning and passes the same setting to the Function. The mock generates a stable, random-looking 1024-dimensional vector from each text. It lets you test writes, vector SQL, full-text BM25, hybrid fusion, and triggers, but vector similarity has no semantic value. Use the same provider for document writes and queries; re-embed existing rows when changing providers. Remove the setting or set it to `gateway` to enable real embeddings on a paid workspace.
+Both document writes and vector or hybrid queries call the AI Gateway. Check that the branch serves `qwen3-embedding-0-6b` and returns 1024-dimensional vectors before loading a corpus. If you change the model, re-embed existing rows and update the vector dimensions and index.
 
 `npm run db:setup` applies the checked-in Drizzle migrations over `DATABASE_URL_UNPOOLED`. The first migration enables `lakebase_vector` and `lakebase_text`; the second creates `search_documents` and its vector, full-text BM25, and JSONB indexes. Drizzle's [schema](./src/schema.ts) declares both Lakebase custom index methods, including `lakebase_bm25`. CRUD, trigger reads, and vector retrieval use Drizzle's query builder. BM25 ranking and reciprocal rank fusion use bound SQL expressions through Drizzle because those operators have no query-builder helper. Do not use `drizzle-kit push` for this template; apply migrations so index creation order is explicit.
 
@@ -61,7 +61,7 @@ The result includes document IDs, text, metadata, and ISO `updatedAt` timestamps
 
 Zod validates URL IDs and JSON request bodies before database work. Malformed JSON, invalid fields, and unknown top-level fields return HTTP 400; numeric strings are not coerced into numbers. IDs are caller supplied and URL safe. `PUT` replaces the entire document, including metadata. `PATCH` merges only top-level metadata fields; use `removeMetadataKeys` to delete them. To change a nested JSON object, replace that top-level field. No endpoint accepts arbitrary SQL, table names, column names, vectors, or a caller-selected embedding model.
 
-The `keyword` mode runs full-text search with BM25 ranking and skips embedding. `vector` and `hybrid` embed the query once. The hybrid mode fuses vector and BM25 ranks. Defaults are `limit=10`, `candidates=40` per retriever, and `rrfK=60`; the API bounds the requested values. Hybrid candidate queries use `FETCH FIRST ... ROWS WITH TIES`, so all documents tied at the boundary enter RRF with the same rank. `candidates` is a soft bound: large tie groups can increase retrieval work beyond the requested count. Search uses the same embedding provider for documents and queries. Each document write commits text and vector together. In gateway mode, the external call happens before that statement, so an embedding failure does not create a half-indexed row. A successful embedding followed by a database failure still incurs one inference call; synchronous HTTP cannot make the gateway and Postgres a distributed transaction.
+The `keyword` mode runs full-text search with BM25 ranking and skips embedding. `vector` and `hybrid` embed the query once. The hybrid mode fuses vector and BM25 ranks. Defaults are `limit=10`, `candidates=40` per retriever, and `rrfK=60`; the API bounds the requested values. Hybrid candidate queries use `FETCH FIRST ... ROWS WITH TIES`, so all documents tied at the boundary enter RRF with the same rank. `candidates` is a soft bound: large tie groups can increase retrieval work beyond the requested count. Search uses the same embedding model for documents and queries. Each document write commits text and vector together. The external embedding call happens before that statement, so an embedding failure does not create a half-indexed row. A successful embedding followed by a database failure still incurs one inference call; synchronous HTTP cannot make the gateway and Postgres a distributed transaction.
 
 For example, update a flexible field without re-embedding:
 

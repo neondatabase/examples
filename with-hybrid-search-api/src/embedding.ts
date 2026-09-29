@@ -1,12 +1,7 @@
 import OpenAI from "openai";
 import { validateVector } from "./input.js";
-import { EmbeddingProvider, mockEmbedding } from "./mock-embedding.js";
 
-export function createEmbedder(provider: EmbeddingProvider) {
-  if (provider === "mock") {
-    return async (text: string) => validateVector(mockEmbedding(text));
-  }
-
+export function createEmbedder() {
   const token = process.env.NEON_AI_GATEWAY_TOKEN;
   const baseURL = process.env.NEON_AI_GATEWAY_BASE_URL;
   if (!token || !baseURL) {
