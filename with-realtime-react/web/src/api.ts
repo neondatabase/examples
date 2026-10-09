@@ -16,10 +16,9 @@ export async function createTodo(title: string) {
   return response.json();
 }
 
-export async function updateTodo(id: number, completed: boolean) {
+export async function toggleTodo(id: number) {
   const response = await api.api.todos[":id"].$patch({
     param: { id: String(id) },
-    json: { completed },
   });
   if (!response.ok) throw new Error("Could not update the todo");
   return response.json();
