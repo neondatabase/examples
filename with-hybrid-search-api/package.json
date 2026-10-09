@@ -1,0 +1,34 @@
+{
+  "name": "with-hybrid-search-api",
+  "description": "A document API that combines vector search and full-text search with BM25 ranking on Neon Functions.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "smoke:storage": "node --env-file=.env.local scripts/smoke-storage.mjs",
+    "fmt": "prettier --write '**/*' --ignore-unknown",
+    "db:setup": "drizzle-kit migrate",
+    "db:generate": "drizzle-kit generate",
+    "dev": "neon dev",
+    "deploy": "neon deploy --env .env.local",
+    "endpoint": "neon functions get search"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.700.0",
+    "@neon/config": "^1.7.0",
+    "@neon/functions": "^0.11.0",
+    "drizzle-orm": "^0.45.3",
+    "hono": "^4.7.8",
+    "openai": "^6.0.0",
+    "pg": "^8.21.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.31.11",
+    "prettier": "^3.3.2",
+    "typescript": "^5.6.3"
+  }
+}
