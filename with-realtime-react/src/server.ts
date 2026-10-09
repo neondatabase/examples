@@ -20,7 +20,7 @@ const realtime = createRealtime({
 
 const selectTodos = () =>
   db
-    .select({ id: todos.id, title: todos.title })
+    .select({ id: todos.id, title: todos.title, completed: todos.completed })
     .from(todos)
     .orderBy(asc(todos.id));
 
@@ -30,6 +30,10 @@ const createTodoInput = z.object({
 
 const todoParams = z.object({
   id: z.coerce.number().int().positive(),
+});
+
+const updateTodoInput = z.object({
+  completed: z.boolean(),
 });
 
 const app = new Hono()
@@ -52,6 +56,29 @@ const app = new Hono()
     if (!txid) throw new Error("Postgres did not return a transaction ID");
     return c.json({ txid }, 201);
   })
+  .patch(
+    "/api/todos/:id",
+    zValidator("param", todoParams),
+    zValidator("json", updateTodoInput),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const { completed } = c.req.valid("json");
+      const txid = await db.transaction(async (transaction) => {
+        const [updated] = await transaction
+          .update(todos)
+          .set({ completed })
+          .where(eq(todos.id, id))
+          .returning({ id: todos.id });
+        if (!updated) return undefined;
+        const result = await transaction.execute<{ txid: string }>(
+          sql`select pg_current_xact_id()::text as txid`,
+        );
+        return result.rows[0]?.txid;
+      });
+      if (!txid) return c.json({ error: "Todo not found" }, 404);
+      return c.json({ txid });
+    },
+  )
   .delete("/api/todos/:id", zValidator("param", todoParams), async (c) => {
     const { id } = c.req.valid("param");
     const txid = await db.transaction(async (transaction) => {

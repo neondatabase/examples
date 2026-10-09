@@ -1,9 +1,42 @@
+import type { SealedLiveQuery } from "@neon/realtime/client";
 import { useLiveQuery } from "@neon/realtime-react";
-import { type FormEvent, useCallback, useState } from "react";
+import {
+  type FormEvent,
+  useCallback,
+  useOptimistic,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 
-import { createTodo, deleteTodo, getLiveTodos } from "./api.js";
+import { createTodo, deleteTodo, getLiveTodos, updateTodo } from "./api.js";
 
 type LiveTodosQuery = Awaited<ReturnType<typeof getLiveTodos>>["query"];
+type Todo = LiveTodosQuery extends SealedLiveQuery<infer Row> ? Row : never;
+type OptimisticAction =
+  | { readonly type: "add"; readonly todo: Todo }
+  | {
+      readonly type: "complete";
+      readonly id: Todo["id"];
+      readonly value: Todo["completed"];
+    }
+  | { readonly type: "delete"; readonly id: Todo["id"] };
+
+function applyOptimisticAction(
+  todos: readonly Todo[],
+  action: OptimisticAction,
+): readonly Todo[] {
+  switch (action.type) {
+    case "add":
+      return [...todos, action.todo];
+    case "complete":
+      return todos.map((todo) =>
+        todo.id === action.id ? { ...todo, completed: action.value } : todo,
+      );
+    case "delete":
+      return todos.filter((todo) => todo.id !== action.id);
+  }
+}
 
 export function App({ query }: { readonly query: LiveTodosQuery }) {
   const refreshQuery = useCallback(
@@ -18,40 +51,58 @@ export function App({ query }: { readonly query: LiveTodosQuery }) {
   } = useLiveQuery(query, {
     refreshQuery,
   });
+  const [optimisticTodos, updateOptimistically] = useOptimistic(
+    todos ?? [],
+    applyOptimisticAction,
+  );
+  const nextOptimisticId = useRef(-1);
   const [mutationError, setMutationError] = useState<string>();
-  const [pending, setPending] = useState(false);
+  const [pending, startMutation] = useTransition();
 
-  async function addTodo(event: FormEvent<HTMLFormElement>) {
+  function addTodo(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const title = String(new FormData(form).get("title") ?? "").trim();
     if (!title) return;
     form.reset();
-    await mutate(async () => {
-      const result = await createTodo(title);
+    mutate(
+      {
+        type: "add",
+        todo: { id: nextOptimisticId.current--, title, completed: false },
+      },
+      async () => {
+        const result = await createTodo(title);
+        await utils.awaitTxId(result.txid, 10_000);
+      },
+    );
+  }
+
+  function setCompleted(id: Todo["id"], completed: Todo["completed"]) {
+    mutate({ type: "complete", id, value: completed }, async () => {
+      const result = await updateTodo(id, completed);
       await utils.awaitTxId(result.txid, 10_000);
     });
   }
 
-  async function removeTodo(id: number) {
-    await mutate(async () => {
+  function removeTodo(id: Todo["id"]) {
+    mutate({ type: "delete", id }, async () => {
       const result = await deleteTodo(id);
       if ("txid" in result) await utils.awaitTxId(result.txid, 10_000);
     });
   }
 
-  async function mutate(operation: () => Promise<void>) {
-    setPending(true);
+  function mutate(action: OptimisticAction, operation: () => Promise<void>) {
     setMutationError(undefined);
-    try {
-      await operation();
-    } catch (cause) {
-      setMutationError(
-        cause instanceof Error ? cause.message : "The mutation failed",
-      );
-    } finally {
-      setPending(false);
-    }
+    startMutation(async () => {
+      updateOptimistically(action);
+      try {
+        await operation();
+      } catch (cause) {
+        setMutationError(
+          cause instanceof Error ? cause.message : "The mutation failed",
+        );
+      }
+    });
   }
 
   return (
@@ -65,8 +116,8 @@ export function App({ query }: { readonly query: LiveTodosQuery }) {
       </header>
 
       <p className="lede">
-        Open this page in two tabs. Changes made in either tab arrive through a
-        typed live Drizzle query.
+        Open this page in two tabs. Changes appear here immediately and arrive
+        in the other tab through a typed live Drizzle query.
       </p>
 
       <form onSubmit={addTodo}>
@@ -88,14 +139,27 @@ export function App({ query }: { readonly query: LiveTodosQuery }) {
       )}
 
       <ul aria-live="polite">
-        {todos?.map((todo) => (
+        {optimisticTodos.map((todo) => (
           <li key={todo.id}>
-            <span>{todo.title}</span>
+            <label className="todo">
+              <input
+                aria-label={`Mark ${todo.title} as ${todo.completed ? "incomplete" : "complete"}`}
+                checked={todo.completed}
+                disabled={pending}
+                onChange={(event) =>
+                  setCompleted(todo.id, event.currentTarget.checked)
+                }
+                type="checkbox"
+              />
+              <span className={todo.completed ? "completed" : undefined}>
+                {todo.title}
+              </span>
+            </label>
             <button
               aria-label={`Delete ${todo.title}`}
               className="delete"
               disabled={pending}
-              onClick={() => void removeTodo(todo.id)}
+              onClick={() => removeTodo(todo.id)}
               type="button"
             >
               Delete

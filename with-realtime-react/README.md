@@ -47,8 +47,9 @@ npm run db:setup
 npm run dev
 ```
 
-Open <http://localhost:5173> in two tabs. Add or delete an item in either tab;
-the other tab updates through Neon Realtime.
+Open <http://localhost:5173> in two tabs. Add, complete, or delete an item in
+either tab; the current tab updates optimistically while the other tab updates
+through Neon Realtime.
 
 The backend keeps `NEON_REALTIME_SECRET` private. It seals the Drizzle query and
 returns only the sealed query and public WebSocket URL to the browser. This demo
