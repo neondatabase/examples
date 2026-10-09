@@ -57,7 +57,7 @@ export function App({ query }: { readonly query: LiveTodosQuery }) {
   );
   const nextOptimisticId = useRef(-1);
   const [mutationError, setMutationError] = useState<string>();
-  const [pending, startMutation] = useTransition();
+  const [, startMutation] = useTransition();
 
   function addTodo(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -123,15 +123,12 @@ export function App({ query }: { readonly query: LiveTodosQuery }) {
       <form onSubmit={addTodo}>
         <input
           aria-label="Todo title"
-          disabled={pending}
           maxLength={200}
           name="title"
           placeholder="What needs doing?"
           required
         />
-        <button disabled={pending} type="submit">
-          Add item
-        </button>
+        <button type="submit">Add item</button>
       </form>
 
       {(error || mutationError) && (
@@ -145,7 +142,7 @@ export function App({ query }: { readonly query: LiveTodosQuery }) {
               <input
                 aria-label={`Mark ${todo.title} as ${todo.completed ? "incomplete" : "complete"}`}
                 checked={todo.completed}
-                disabled={pending}
+                disabled={todo.id < 0}
                 onChange={(event) =>
                   setCompleted(todo.id, event.currentTarget.checked)
                 }
@@ -158,7 +155,7 @@ export function App({ query }: { readonly query: LiveTodosQuery }) {
             <button
               aria-label={`Delete ${todo.title}`}
               className="delete"
-              disabled={pending}
+              disabled={todo.id < 0}
               onClick={() => removeTodo(todo.id)}
               type="button"
             >
