@@ -1,0 +1,56 @@
+{
+  "name": "livebase",
+  "description": "An AI-native CRM built with Neon Realtime, TanStack Start, TanStack DB and Mastra: lead capture, AI extraction and enrichment, synced live to every open window.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build && tsc --noEmit",
+    "db:setup": "drizzle-kit push --force && tsx src/server/setup.ts",
+    "dev": "vite dev",
+    "start": "node .output/server/index.mjs",
+    "test": "node --import tsx --test \"src/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource-variable/geist-mono": "5.3.0",
+    "@fontsource-variable/inter": "5.3.0",
+    "@mastra/core": "1.68.0",
+    "@mastra/memory": "1.31.0",
+    "@mastra/observability": "1.17.9",
+    "@mastra/pg": "1.26.0",
+    "@neon/realtime": "file:../../../neon-pkgs/packages/realtime",
+    "@neon/realtime-drizzle": "file:../../../neon-pkgs/packages/realtime-drizzle",
+    "@neon/realtime-tanstack": "file:../../../neon-pkgs/packages/realtime-tanstack",
+    "@tanstack/db": "0.9.0",
+    "@tanstack/react-db": "0.3.8",
+    "@tanstack/react-router": "1.170.36",
+    "@tanstack/react-router-with-db": "0.1.0",
+    "@tanstack/react-start": "1.168.54",
+    "dotenv": "^17.2.2",
+    "drizzle-orm": "0.45.2",
+    "lucide-react": "1.47.0",
+    "node-html-parser": "9.0.4",
+    "pg": "^8.16.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "uuid": "14.0.2",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "@types/node": "^24.3.0",
+    "@types/pg": "^8.15.5",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "drizzle-kit": "0.31.11",
+    "nitro": "^3.0.260311-beta",
+    "tailwindcss": "4.3.3",
+    "tsx": "^4.23.12",
+    "typescript": "^5.9.2",
+    "vite": "^8.0.14"
+  },
+  "overrides": {
+    "@neon/realtime": "$@neon/realtime"
+  }
+}
