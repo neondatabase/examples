@@ -81,7 +81,7 @@ form {
   gap: 8px;
 }
 
-input {
+form input {
   min-width: 0;
   flex: 1;
   border: 1px solid #c8d5ce;
@@ -115,6 +115,25 @@ li {
   padding: 14px 2px;
 }
 
+.todo {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.todo input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #20bf7a;
+}
+
+.completed {
+  color: #7a8780;
+  text-decoration: line-through;
+}
+
 .delete {
   background: transparent;
   padding: 7px;
@@ -142,7 +161,7 @@ li {
     color: #9caaa2;
   }
 
-  input {
+  form input {
     border-color: #35453c;
     background: #17211b;
     color: #e8f2ec;
