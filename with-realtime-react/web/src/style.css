@@ -1,0 +1,173 @@
+:root {
+  color: #15231c;
+  background: #f3f8f5;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+main {
+  width: min(640px, calc(100% - 32px));
+  margin: 72px auto;
+}
+
+header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #0b7a50;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 4px 0 12px;
+  font-size: clamp(36px, 8vw, 52px);
+  letter-spacing: -0.04em;
+}
+
+.lede {
+  max-width: 560px;
+  margin: 0 0 28px;
+  color: #5d6c64;
+  line-height: 1.6;
+}
+
+.status {
+  margin-bottom: 18px;
+  color: #68756e;
+  font-size: 13px;
+}
+
+.status.live {
+  color: #08794f;
+}
+
+.status.error {
+  color: #a23939;
+}
+
+form {
+  display: flex;
+  gap: 8px;
+}
+
+form input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid #c8d5ce;
+  border-radius: 10px;
+  background: #fff;
+  padding: 13px 14px;
+  color: #15231c;
+}
+
+button {
+  border: 0;
+  border-radius: 10px;
+  background: #20bf7a;
+  padding: 11px 16px;
+  color: #0a2b1c;
+  font-weight: 700;
+}
+
+ul {
+  margin: 20px 0;
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid #dce6e0;
+  padding: 14px 2px;
+}
+
+.todo {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.todo input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #20bf7a;
+}
+
+.completed {
+  color: #7a8780;
+  text-decoration: line-through;
+}
+
+.delete {
+  background: transparent;
+  padding: 7px;
+  color: #68756e;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.error {
+  border-radius: 10px;
+  background: #fff0f0;
+  padding: 12px;
+  color: #a23939;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #e8f2ec;
+    background: #101713;
+  }
+
+  .lede,
+  .status,
+  .delete {
+    color: #9caaa2;
+  }
+
+  form input {
+    border-color: #35453c;
+    background: #17211b;
+    color: #e8f2ec;
+  }
+
+  li {
+    border-color: #29372f;
+  }
+}
