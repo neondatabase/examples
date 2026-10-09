@@ -293,7 +293,7 @@ app.post("/search", async (c) => {
     );
     return c.json({ mode: input.mode, results: searchResults(rows) });
   }
-  const queryVector = await embed(input.query);
+  const queryVector = await embed(input.query, "query");
   if (input.mode === "vector") {
     const distance = cosineDistance(documents.embedding, queryVector);
     const rows = await db

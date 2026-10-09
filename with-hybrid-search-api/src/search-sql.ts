@@ -13,7 +13,6 @@ export const keywordSearchSql = (
              'search_documents_text_bm25'::regclass) AS "bm25Score"
     FROM search_documents
     WHERE metadata @> ${JSON.stringify(filter)}::jsonb
-      AND search_tsv @@ plainto_tsquery('english', ${query})
     ORDER BY "bm25Score", id
     LIMIT ${limit}`;
 
@@ -42,7 +41,6 @@ export const hybridSearchSql = (
       'search_documents_text_bm25'::regclass) AS score
     FROM search_documents
     WHERE metadata @> ${JSON.stringify(filter)}::jsonb
-      AND search_tsv @@ plainto_tsquery('english', ${query})
     ORDER BY score
     FETCH FIRST ${candidates} ROWS WITH TIES
   ),
