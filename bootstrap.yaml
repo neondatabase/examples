@@ -133,6 +133,24 @@ templates:
       repo: examples
       ref: main
       subdir: with-realtime-sse
+  - id: realtime-react
+    title: "Realtime React app"
+    description: "A fully typed React todo app using Neon Realtime, Hono RPC, and Drizzle."
+    tools:
+      - React
+      - Hono
+      - Drizzle
+    services:
+      - Postgres
+      - Realtime
+    requires:
+      - database
+      - realtime
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: with-realtime-react
   - id: discord-bot-http
     title: "Discord bot"
     description: "A Discord interactions bot hosted on Neon Functions, with slash commands, embeds, Components v2 buttons, user profiles, and command usage tracking in Lakebase Postgres."
