@@ -105,6 +105,17 @@ function conciseText(text: string, max: number): string {
   return truncate(text.replace(/\s+/g, " ").trim(), max);
 }
 
+// `PostgresStore`'s observability store keeps spans only: its metric and log
+// writes throw `_NOT_IMPLEMENTED`. The exporter then warns once per process
+// ("This storage provider does not support batch creating metrics") and drops
+// that signal. Every span end emits duration and token metrics, so the
+// warning always appeared on the first run. This exporter doesn't buffer
+// metrics or logs at all.
+class SpanStorageExporter extends MastraStorageExporter {
+  override async onMetricEvent(): Promise<void> {}
+  override async onLogEvent(): Promise<void> {}
+}
+
 function createObservability(): Observability {
   return new Observability({
     configs: {
@@ -115,7 +126,7 @@ function createObservability(): Observability {
           // updates it when it ends, so the timeline shows running steps.
           // The default 5 s batch wait would make it lag; 250 ms keeps
           // each step within about a second of the UI.
-          new MastraStorageExporter({ strategy: "batch-with-updates", maxBatchWaitMs: 250 }),
+          new SpanStorageExporter({ strategy: "batch-with-updates", maxBatchWaitMs: 250 }),
         ],
         // TEMPORARY: 2048 rather than 8192 keeps a span row small enough to
         // stay inline under the STORAGE MAIN workaround for a Neon Realtime bug

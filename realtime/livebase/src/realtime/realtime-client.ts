@@ -25,8 +25,10 @@ export function createLivebaseClient(onEntry?: (entry: RealtimeLogEntry) => void
     parsers: drizzleParsers,
     // Warnings and errors in production: `connection_failed`,
     // `query_expired`, `subscription_renewal_failed`. Info adds connection
-    // lifecycle in development. `debug` is too noisy for either.
-    logLevel: import.meta.env.DEV ? "info" : "warn",
+    // lifecycle in the browser in development. The server's clients never
+    // connect, so their only info entry is `client_closed` when the SSR loader
+    // closes one, once per page load. `debug` is too noisy for either.
+    logLevel: import.meta.env.DEV && !import.meta.env.SSR ? "info" : "warn",
     // A custom logger replaces the SDK's console output, so print here.
     logger: (entry) => {
       console[entry.level](entry);
