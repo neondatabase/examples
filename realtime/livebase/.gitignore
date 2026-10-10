@@ -1,0 +1,6 @@
+.env
+.env.local
+.output
+.tanstack
+node_modules
+docs

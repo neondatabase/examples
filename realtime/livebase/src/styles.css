@@ -1,0 +1,256 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/geist-mono";
+
+/*
+ * Design tokens: the Neon website's dark palette as
+ * Tailwind v4 theme variables. Components use the semantic names
+ * (`bg-surface`, `border-line`, `text-fg-muted`, `bg-accent/10`); the raw
+ * scales are here for rare one-offs. Each token is also a CSS variable, so
+ * arbitrary values can write `color-mix(in oklab, var(--color-accent) 10%, transparent)`.
+ */
+@theme {
+  /* Semantic colours. */
+  --color-bg: #0c0d0d;
+  --color-surface: #131415;
+  --color-surface-2: #18191b;
+  --color-surface-3: #242628;
+  --color-line: #242628;
+  --color-line-strong: #303236;
+  --color-fg: #e4e5e7;
+  --color-fg-muted: #94979e;
+  --color-fg-subtle: #61646b;
+  --color-accent: #00e599;
+  --color-accent-strong: #00cc88;
+  --color-info: #648dff;
+  --color-warn: #f0f075;
+  --color-orange: #ffa64c;
+  --color-danger: #ff4c79;
+  --color-violet: #b8adeb;
+
+  /* Raw Neon website scales. */
+  --color-gray-new-8: #131415;
+  --color-gray-new-10: #18191b;
+  --color-gray-new-15: #242628;
+  --color-gray-new-20: #303236;
+  --color-gray-new-30: #494b50;
+  --color-gray-new-40: #61646b;
+  --color-gray-new-45: #71717a;
+  --color-gray-new-50: #797d86;
+  --color-gray-new-60: #94979e;
+  --color-gray-new-70: #afb1b6;
+  --color-gray-new-80: #c9cbcf;
+  --color-gray-new-85: #d7d8db;
+  --color-gray-new-90: #e4e5e7;
+  --color-gray-new-94: #efeff0;
+  --color-gray-new-95: #f2f2f3;
+  --color-gray-new-98: #fafafa;
+  --color-primary-1: #00e599;
+  --color-primary-2: #00cc88;
+  --color-secondary-1: #ff4c79;
+  --color-secondary-2: #f0f075;
+  --color-secondary-3: #ffa64c;
+  --color-secondary-5: #aa99ff;
+  --color-secondary-7: #259df4;
+  --color-secondary-8: #0055ff;
+
+  /* Inter for UI and headings, Geist Mono for IDs and code. */
+  --font-sans:
+    "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono:
+    "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+@layer base {
+  :root {
+    /* Dark only: native scrollbars, pickers and form controls follow. */
+    color-scheme: dark;
+    accent-color: var(--color-accent);
+    background-color: var(--color-bg);
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    /* On body rather than html, so rem-based spacing keeps Tailwind's 16 px scale. */
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  :focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--color-accent) 70%, transparent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-accent) 25%, transparent);
+  }
+
+  ::placeholder {
+    color: var(--color-fg-subtle);
+    opacity: 1;
+  }
+
+  /* Native <select> popups ignore the page background unless options are coloured explicitly. */
+  select option,
+  select optgroup {
+    background-color: var(--color-surface-2);
+    color: var(--color-fg);
+  }
+
+  /* Keep autofilled inputs dark instead of the browser's pale yellow. */
+  input:-webkit-autofill,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-text-fill-color: var(--color-fg);
+    caret-color: var(--color-fg);
+    box-shadow: 0 0 0 1000px var(--color-surface-2) inset;
+    transition: background-color 9999s ease-out 0s;
+  }
+}
+
+/*
+ * Global effect classes. They live in the components layer, so
+ * utilities on the same element (`rounded-xl`, `absolute`) still win. Each of
+ * `.shimmer`, `.animate-enter` and `.flash-*` sets `animation`; nest them on
+ * separate elements when combining.
+ */
+@layer components {
+  /* A brief highlight that tells agent writes (green) from user writes (blue). */
+  .flash-agent,
+  .flash-user {
+    animation: flash-fade 1.2s ease-out;
+  }
+
+  .flash-agent {
+    --flash-color: var(--color-accent);
+  }
+
+  .flash-user {
+    --flash-color: var(--color-info);
+  }
+
+  /* New rows, chips and timeline steps. */
+  .animate-enter {
+    animation: enter-up 200ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /*
+   * Skeleton and "working" sweep. It only paints `background-image`, so it
+   * layers over a `bg-*` colour, sits behind text, and under `mix-blend-screen`
+   * brightens what's below without hiding it.
+   */
+  .shimmer {
+    background-image: linear-gradient(
+      90deg,
+      transparent 40%,
+      rgb(255 255 255 / 0.07) 50%,
+      transparent 60%
+    );
+    background-size: 300% 100%;
+    background-repeat: no-repeat;
+    animation: shimmer-sweep 1.6s linear infinite;
+  }
+
+  /*
+   * Live and running indicators. Put it on the coloured dot itself: the halo
+   * is a pseudo-element that inherits the dot's background colour and radius.
+   */
+  .pulse-dot {
+    position: relative;
+  }
+
+  .pulse-dot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: inherit;
+    pointer-events: none;
+    animation: pulse-halo 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+
+  /* Safari still styles scrollbars through the WebKit pseudo-elements. */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background-color: var(--color-line-strong);
+    background-clip: content-box;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-gray-new-30);
+  }
+
+  /*
+   * Movement goes; meaning stays. The flash is a colour fade with no motion and
+   * carries the agent/user signal, so it is kept.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-enter,
+    .shimmer {
+      animation: none;
+    }
+
+    .pulse-dot::after {
+      animation: none;
+      opacity: 0;
+    }
+  }
+}
+
+/* No `to` frame: the fade ends on the element's own background and shadow, so nothing snaps. */
+@keyframes flash-fade {
+  0%,
+  20% {
+    background-color: color-mix(in oklab, var(--flash-color) 16%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--flash-color) 45%, transparent);
+  }
+}
+
+@keyframes enter-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* Moves the highlight from just off the left edge to just off the right edge. */
+@keyframes shimmer-sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
+}
+
+@keyframes pulse-halo {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  80%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
