@@ -11,6 +11,10 @@ import { useRealtime } from "~/realtime/RealtimeProvider";
 // collections. Neon Realtime has no atomicity across queries, so a lead can
 // arrive before its person or company and the reverse: every join is a left
 // join, and either side may be missing for a moment.
+//
+// These hooks use `useLiveQuery`, which never calls `preload()`, so no sync
+// starts during SSR. Don't switch to `useLiveSuspenseQuery` with realtime
+// descriptors without re-checking SSR: it calls `preload()` during render.
 
 interface LeadRecords {
   readonly lead: Lead;

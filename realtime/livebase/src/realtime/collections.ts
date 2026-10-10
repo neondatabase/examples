@@ -167,7 +167,8 @@ function createThreadsCollection(
   }));
 }
 
-// Typed with the tool call ID that `spansQuery` projects.
+// Rows are `SyncedSpan`, which adds the tool call ID that `spansQuery` projects.
+// The key is the composite span key.
 function createSpansCollection(
   client: RealtimeClient,
   query: SealedLiveQuery<SyncedSpan>,
