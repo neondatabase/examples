@@ -84,7 +84,7 @@ export const loadWorkspaceData = createServerFn({ method: "GET" })
     // The live client never connects: its WebSocket opens lazily, and nothing
     // subscribes before cleanup.
     const realtimeClient = createLivebaseClient();
-    const dbClient = new DbClient({ runtime: "server" });
+    const dbClient = new DbClient();
     try {
       const descriptors = createCollectionDescriptors(realtimeClient, sealedQueries);
       dbClient.collection(descriptors.leads, { initialData: [...leadRows] });
@@ -96,7 +96,8 @@ export const loadWorkspaceData = createServerFn({ method: "GET" })
       dbClient.collection(descriptors.spans, { initialData: [...spanRows] });
       // The seeded collections hold only these row shapes. Narrowing
       // TanStack's generic `unknown` metadata lets Start prove the loader
-      // result is serializable.
+      // result is serializable. The `unknown` hop is needed because the
+      // readonly arrays don't overlap with the SDK's mutable ones.
       const dbState = dbClient.dehydrate() as unknown as LivebaseDbState;
       return { workspaceId, workspaceName, sealedQueries, dbState };
     } finally {

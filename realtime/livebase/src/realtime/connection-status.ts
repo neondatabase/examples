@@ -2,24 +2,27 @@ import type { LiveQueryState } from "@neon/realtime/client";
 
 import type { ConnectionStatus } from "~/lib/types";
 
-// The client retries socket loss and retryable server errors itself, staying
-// `stale` or `connecting` meanwhile. It reports `error` once it has stopped.
-// A non-retryable error (one connection error fails every subscription on the
-// shared socket) can't be renewed away, so only a reload helps. A retryable
-// one waits for the next query refresh, so it is still recovering.
+// The SDK reports every subscription `error` as final: a failed subscription
+// never recovers by itself, so only a reload helps. Socket loss and retryable
+// server errors stay `stale` or `connecting` while the client renews.
 export function hasFailed(state: LiveQueryState): boolean {
-  return state.status === "error" && !state.error.retryable;
+  return state.status === "error";
 }
 
+// `connectionFailed` is connection-wide (see `connection-store.ts`). A failed
+// probe alone is `stopped`: this one subscription ended, so other collections
+// may still stream.
 export function toConnectionStatus(
   state: LiveQueryState,
   hasBeenLive: boolean,
   online: boolean,
+  connectionFailed: boolean,
 ): ConnectionStatus {
   if (!online) return "offline";
-  if (hasFailed(state)) return "failed";
+  if (connectionFailed) return "failed";
+  if (hasFailed(state)) return "stopped";
   if (state.status === "closed") return "offline";
   if (state.status === "live") return "live";
-  // `stale`, `connecting` again, or a retryable `error`: still recovering.
+  // `stale` or `connecting` again: still recovering.
   return hasBeenLive ? "reconnecting" : "connecting";
 }

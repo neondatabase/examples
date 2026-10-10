@@ -60,9 +60,14 @@ function RootDocument({ children }: { readonly children: ReactNode }) {
 
 function RootComponent() {
   const data = Route.useLoaderData();
-  const { dbClient } = Route.useRouteContext();
+  const { dbClient, realtimeClient, connection } = Route.useRouteContext();
   return (
-    <RealtimeProvider data={data} dbClient={dbClient}>
+    <RealtimeProvider
+      data={data}
+      dbClient={dbClient}
+      realtimeClient={realtimeClient}
+      connection={connection}
+    >
       <AppShell>
         <Outlet />
       </AppShell>

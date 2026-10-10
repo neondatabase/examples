@@ -14,21 +14,20 @@ import { parseMessageContent, type ParsedMessage } from "~/realtime/message-cont
 interface MessagesSnapshot {
   readonly leadId: string;
   readonly messages: readonly ParsedMessage[];
-  readonly isReady: boolean;
 }
 
 const NO_MESSAGES: readonly ParsedMessage[] = [];
 
-export function useLeadMessages(
-  leadId: string,
-  enabled: boolean,
-): { messages: readonly ParsedMessage[]; isReady: boolean } {
+// Empty until the messages are loaded or when they can't be. The timeline
+// works without them, so it never waits on them.
+export function useLeadMessages(leadId: string, enabled: boolean): readonly ParsedMessage[] {
   const { descriptors, realtimeClient } = useRealtime();
   // Mastra creates a lead's thread, whose ID is the lead ID, on the agent's
   // first run. Until then the lead has no messages, so there is nothing to
-  // seal or sync. Collections sync only while something reads them, and
-  // this is the threads collection's reader.
-  const { data: thread, isReady: threadsReady } = useLiveQuery({
+  // seal or sync. The threads are seeded at load, so a lead that already has
+  // one is ready at once. This read also keeps the collection syncing, since
+  // collections sync only while something reads them.
+  const { data: thread } = useLiveQuery({
     query: (q) => q.from({ thread: descriptors.threads }).where(({ thread }) => eq(thread.id, leadId)).findOne(),
   });
   const hasThread = thread !== undefined;
@@ -51,10 +50,10 @@ export function useLeadMessages(
           getKey: (message) => message.id,
         }));
         const publish = () => {
-          setSnapshot({ leadId, messages: toParsedMessages(collection.toArray), isReady: collection.isReady() });
+          setSnapshot({ leadId, messages: toParsedMessages(collection.toArray) });
         };
         // Subscribing starts the sync. An empty result emits no changes, so
-        // readiness is published separately.
+        // the first publish also runs on readiness.
         const subscription = collection.subscribeChanges(publish, { includeInitialState: true });
         const stopReady = collection.onFirstReady(publish);
         publish();
@@ -67,7 +66,7 @@ export function useLeadMessages(
       .catch((error: unknown) => {
         // Messages only add tool summaries; the timeline works without them.
         console.warn(`Could not load messages for lead ${leadId}`, error);
-        if (active) setSnapshot({ leadId, messages: NO_MESSAGES, isReady: true });
+        if (active) setSnapshot({ leadId, messages: NO_MESSAGES });
       });
 
     return () => {
@@ -78,11 +77,10 @@ export function useLeadMessages(
     };
   }, [enabled, hasThread, leadId, realtimeClient]);
 
-  if (!enabled) return { messages: NO_MESSAGES, isReady: false };
-  if (!hasThread) return { messages: NO_MESSAGES, isReady: threadsReady };
+  if (!enabled || !hasThread) return NO_MESSAGES;
   // The lead changed and the effect hasn't cleared the old snapshot yet.
-  if (!snapshot || snapshot.leadId !== leadId) return { messages: NO_MESSAGES, isReady: false };
-  return { messages: snapshot.messages, isReady: snapshot.isReady };
+  if (!snapshot || snapshot.leadId !== leadId) return NO_MESSAGES;
+  return snapshot.messages;
 }
 
 function toParsedMessages(rows: readonly MastraMessage[]): ParsedMessage[] {

@@ -35,7 +35,8 @@ cp .env.example .env
 In `.env`, set the required vars:
 
 - `DATABASE_URL` your Neon Postgres connection string
-- `NEON_REALTIME_SECRET` and `NEON_REALTIME_URL` your Neon Realtime config
+- `NEON_REALTIME_SECRET` your Neon Realtime secret, which stays on the server
+- `VITE_NEON_REALTIME_URL` your Neon Realtime WebSocket URL. Vite inlines it into both the browser and the server bundles at `vite build`, so each Neon branch needs its own build. Restart `npm run dev` after changing it.
 - `NEON_AI_GATEWAY_BASE_URL` and `NEON_AI_GATEWAY_TOKEN` your Neon AI Gateway config
 
 And the optional enrichment keys:

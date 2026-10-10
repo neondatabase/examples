@@ -28,8 +28,27 @@ export interface LeadActions {
 
 export function useLeadActions(): LeadActions {
   const { collections, workspaceId } = useRealtime();
-  return useMemo(() => createLeadActions(collections, workspaceId), [collections, workspaceId]);
+  return useMemo(
+    () => (collections ? createLeadActions(collections, workspaceId) : serverLeadActions),
+    [collections, workspaceId],
+  );
 }
+
+// The server doesn't resolve collections, so SSR renders get these. No event
+// handler runs during render, so a call here is a bug: fail loudly.
+function browserOnly(): never {
+  throw new Error("Lead actions run in the browser only");
+}
+
+const serverLeadActions: LeadActions = {
+  createLead: browserOnly,
+  setStage: browserOnly,
+  updateLeadFields: browserOnly,
+  setArchived: browserOnly,
+  deleteLead: browserOnly,
+  updatePerson: browserOnly,
+  updateCompany: browserOnly,
+};
 
 type LastWriter = Pick<Lead, "updatedAt" | "updatedBy" | "updatedByTraceId">;
 

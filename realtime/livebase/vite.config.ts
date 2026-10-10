@@ -11,10 +11,10 @@ export default defineConfig({
     react(),
     nitro(),
   ],
-  // The browser connects to the Realtime URL from the Neon Console, so expose
-  // that one variable alongside the usual `VITE_*` ones. Every other variable,
-  // including `NEON_REALTIME_SECRET`, stays on the server.
-  envPrefix: ["VITE_", "NEON_REALTIME_URL"],
+  // Only `VITE_*` variables are inlined into the bundles, so the browser sees
+  // `VITE_NEON_REALTIME_URL` and nothing else. `NEON_REALTIME_SECRET` and
+  // `DATABASE_URL` stay on the server.
+  envPrefix: ["VITE_"],
   resolve: {
     tsconfigPaths: true,
   },

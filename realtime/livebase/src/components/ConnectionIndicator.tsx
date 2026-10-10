@@ -10,11 +10,12 @@ interface Presentation {
   readonly pulse: boolean;
   readonly title: string;
   readonly className: string;
+  readonly reloadable: boolean;
 }
 
 // Collections keep their last rows while the socket reconnects, so the non-live
-// states say the data may be behind rather than gone. Only `failed` won't
-// recover by itself, so only it offers a reload.
+// states say the data may be behind rather than gone. `failed` and `stopped`
+// won't recover by themselves, so only they offer a reload.
 const PRESENTATION: Record<ConnectionStatus, Presentation> = {
   live: {
     label: "Live",
@@ -22,6 +23,7 @@ const PRESENTATION: Record<ConnectionStatus, Presentation> = {
     pulse: true,
     title: "Connected to Neon Realtime. Changes stream in from Postgres as they commit.",
     className: "border-accent/25 bg-accent/10 text-accent",
+    reloadable: false,
   },
   connecting: {
     label: "Connecting…",
@@ -29,6 +31,7 @@ const PRESENTATION: Record<ConnectionStatus, Presentation> = {
     pulse: false,
     title: "Opening a connection to Neon Realtime.",
     className: "border-line bg-surface text-fg-muted",
+    reloadable: false,
   },
   reconnecting: {
     label: "Reconnecting…",
@@ -36,6 +39,7 @@ const PRESENTATION: Record<ConnectionStatus, Presentation> = {
     pulse: true,
     title: "Connection lost. Showing the last synced data while Neon Realtime reconnects.",
     className: "border-warn/25 bg-warn/10 text-warn",
+    reloadable: false,
   },
   offline: {
     label: "Offline",
@@ -43,6 +47,15 @@ const PRESENTATION: Record<ConnectionStatus, Presentation> = {
     pulse: false,
     title: "You're offline. The data shown may be out of date until the connection returns.",
     className: "border-danger/25 bg-danger/10 text-danger",
+    reloadable: false,
+  },
+  stopped: {
+    label: "Sync stopped",
+    tone: "neutral",
+    pulse: false,
+    title: "Live updates stopped for part of the workspace. Reload the page to resume them.",
+    className: "border-line bg-surface text-fg-muted",
+    reloadable: true,
   },
   failed: {
     label: "Disconnected",
@@ -50,12 +63,13 @@ const PRESENTATION: Record<ConnectionStatus, Presentation> = {
     pulse: false,
     title: "Live sync stopped and won't resume on its own. Reload the page to reconnect.",
     className: "border-danger/25 bg-danger/10 text-danger",
+    reloadable: true,
   },
 };
 
 export function ConnectionIndicator() {
   const status = useConnectionStatus();
-  const { label, tone, pulse, title, className } = PRESENTATION[status];
+  const { label, tone, pulse, title, className, reloadable } = PRESENTATION[status];
   const pill = (
     <span
       role="status"
@@ -69,7 +83,7 @@ export function ConnectionIndicator() {
       {label}
     </span>
   );
-  if (status !== "failed") return pill;
+  if (!reloadable) return pill;
   return (
     <span className="inline-flex items-center gap-2">
       {pill}

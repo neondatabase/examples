@@ -13,9 +13,10 @@ import type { MastraSpan, MastraThread } from "~/db/mastra-schema";
 
 export type Tone = "neutral" | "green" | "blue" | "yellow" | "orange" | "red" | "purple";
 
-// `failed` is terminal: the client has stopped reconnecting, so only a page
-// reload brings live sync back.
-export type ConnectionStatus = "connecting" | "live" | "reconnecting" | "offline" | "failed";
+// `failed` is terminal: the connection has stopped reconnecting, so only a page
+// reload brings live sync back. `stopped` is one subscription (the workspace
+// probe) that the SDK ended; the other collections may still stream.
+export type ConnectionStatus = "connecting" | "live" | "reconnecting" | "offline" | "stopped" | "failed";
 
 export interface LeadRef {
   readonly leadId: string;

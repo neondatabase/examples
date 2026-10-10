@@ -41,7 +41,7 @@ export function useLeadActivity(
   const { data: spans, isReady: spansReady } = useLiveQuery({
     query: (q) => q.from({ span: descriptors.spans }).where(({ span }) => eq(span.threadId, leadId)),
   });
-  const { messages } = useLeadMessages(leadId, withMessages);
+  const messages = useLeadMessages(leadId, withMessages);
 
   // A run that hasn't ended turns from running to interrupted with time, so
   // the clock ticks, but only while something is running.
