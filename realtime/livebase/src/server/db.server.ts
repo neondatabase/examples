@@ -1,10 +1,13 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) {
+// Reads `DATABASE_URL` once. The pool and the Realtime SDK's database name both
+// derive from it. Importing this module throws without it.
+const url = process.env.DATABASE_URL;
+if (!url) {
   throw new Error("Missing DATABASE_URL. Copy .env.example to .env, or export it before starting Livebase.");
 }
+export const databaseUrl = url;
 
 // Vite re-evaluates server modules on every edit in development. Caching the
 // pool on globalThis keeps one set of connections instead of leaking a new

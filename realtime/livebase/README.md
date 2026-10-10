@@ -1,8 +1,10 @@
 # Livebase
 
-Livebase is a small, AI-native CRM and sales pipeline built with Neon Realtime and Mastra.
+Livebase is an agentic CRM and sales pipeline demo built with Neon Realtime and Mastra. It demonstrates a modern, AI-enabled app on the Neon platform, with users and agents working on the same data in realtime.
 
-It demonstrates how to build a modern AI-enabled app on the Neon platform, with users and agents working on the same data in realtime. You paste whatever you have about a lead, such as an email address, a LinkedIn URL, or a paragraph of notes. Agents turn it into structured records that appear in realtime as they're written.
+You paste whatever you have about a lead, such as an email address, a LinkedIn URL, or a paragraph of notes. Agents are spawned in the background to enrich the data. They write back to the database, with the enriched data appearing in realtime.
+
+Open the app in two windows and paste a lead. The new row appears in both windows at once and fills in as the extraction agent works. The enrichment agent then researches the company and the person, and the logo, company details, avatar, and colleagues appear one by one. The lead's activity panel shows each agent run as it happens. Change the lead's stage in one window and the other follows.
 
 The example shows:
 
@@ -12,14 +14,12 @@ The example shows:
 - optimistic user edits that Neon Realtime confirms by transaction ID
 - model calls through the Neon AI Gateway
 
-Open the app in two windows and paste a lead. The new row appears in both windows at once and fills in as the extraction agent works. The enrichment agent then researches the company and the person, and the logo, company details, avatar, and colleagues appear one by one. The lead's activity panel shows each agent run as it happens. Change the lead's stage in one window and the other follows.
-
-As well as Neon Realtime and Mastra, the stack uses the Neon AI Gateway, TanStack (Start + DB), Drizzle and an (optional) set of data enrichment services.
+As well as Neon Realtime and Mastra, the stack uses the Neon AI Gateway, TanStack (Start + DB), Drizzle and a set of data enrichment services.
 
 ## Pre-requisites
 
 - Node.js 24 or newer
-- Neon project with [Neon Realtime]() and [Neon AI Gateway]() enabled
+- Neon project with [Neon Realtime](https://neon.com/docs/realtime/overview) and [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview) enabled
 - the project's AI Gateway base URL and token.
 - optionally, keys for the enrichment services (see [Enrichment keys](#enrichment-keys)); enrichment runs without them, just with
   fewer tools and thus less success
@@ -34,7 +34,7 @@ cp .env.example .env
 
 In `.env`, set the required vars:
 
-- `DATABASE_URL` your Neon Postgres connection string
+- `DATABASE_URL` your Neon Postgres connection string, with `sslmode=verify-full`. `sslmode=require` still connects, but `pg-connection-string` prints a SECURITY WARNING for it.
 - `NEON_REALTIME_SECRET` your Neon Realtime secret, which stays on the server
 - `VITE_NEON_REALTIME_URL` your Neon Realtime WebSocket URL. Vite inlines it into both the browser and the server bundles at `vite build`, so each Neon branch needs its own build. Restart `npm run dev` after changing it.
 - `NEON_AI_GATEWAY_BASE_URL` and `NEON_AI_GATEWAY_TOKEN` your Neon AI Gateway config
@@ -45,6 +45,13 @@ And the optional enrichment keys:
 - `X_BEARER_TOKEN`
 - `GRAVATAR_API_KEY`
 - `VITE_BRANDFETCH_CLIENT_ID`
+
+Optional model and price overrides, read on the server:
+
+- `LIVEBASE_EXTRACTION_MODEL` (default `neon/claude-haiku-4-5`) and `LIVEBASE_ENRICHMENT_MODEL` (default `neon/claude-sonnet-5`) choose the models.
+- `LIVEBASE_ENRICHMENT_PRICE_INPUT`, `LIVEBASE_ENRICHMENT_PRICE_OUTPUT`, `LIVEBASE_ENRICHMENT_PRICE_CACHE_READ` and `LIVEBASE_ENRICHMENT_PRICE_CACHE_WRITE` set the enrichment model's prices in USD per million tokens, for the run's cost cap. The defaults are Sonnet 5's, so set them when you change the enrichment model.
+
+Every server module reads `DATABASE_URL` when it loads, so importing one without it throws. `npm run db:setup` and `npm run dev` both need it set.
 
 ## Run the app
 
@@ -66,7 +73,7 @@ Run the app:
 npm run dev
 ```
 
-Open http://localhost:5173 one or more browser tabs.
+Open http://localhost:3000 in one or more browser tabs. The dev server uses port 3000 and fails rather than picking another port.
 
 ## Enrichment
 
