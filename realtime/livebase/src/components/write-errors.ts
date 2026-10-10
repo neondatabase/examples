@@ -4,7 +4,6 @@
 // sees it empty.
 
 export const WRITE_FAILED = "Couldn't save your change";
-export const WRITE_NOT_CONFIRMED = "Your change was saved, but hasn't synced back yet";
 
 // Longer text, or text over several lines, is a response body rather than a
 // message written for the UI.
@@ -21,9 +20,9 @@ export function writeErrorMessage(error: unknown): string | null {
   if (error === undefined || error === null) return null;
   if (!(error instanceof Error) || error.name !== "Error") return WRITE_FAILED;
   const message = error.message.trim();
-  // `awaitTxId` only runs once the server has committed the write, so its
-  // errors mean the sync hasn't confirmed it yet; the row catches up later.
-  if (/^(Timed out waiting for )?Neon Realtime /.test(message)) return WRITE_NOT_CONFIRMED;
+  // `confirmWrite` rethrows sync timeouts as `WRITE_NOT_CONFIRMED` (in
+  // `lib/write-confirmation.ts`), which passes through here like any other
+  // message.
   if (message === "" || message.length > MAX_MESSAGE_LENGTH || message.includes("\n")) return WRITE_FAILED;
   return message;
 }

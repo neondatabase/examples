@@ -15,6 +15,7 @@ import {
 } from "~/functions/seal";
 import { deleteLead, updateLead } from "~/functions/leads";
 import type { LeadPatch, SyncedSpan, SealedWorkspaceQueries } from "~/lib/types";
+import { isNotConfirmedError, WRITE_NOT_CONFIRMED } from "~/lib/write-confirmation";
 
 // Stable IDs let the browser's collections adopt the rows that the server
 // seeded into its request-scoped DbClient.
@@ -39,9 +40,29 @@ const LEAD_PATCH_KEYS = [
   "archived",
 ] as const satisfies readonly (keyof LeadPatch)[];
 
-// Joined collections need an index on the join key, or TanStack DB scans
-// them and warns on every query, including each SSR render.
+// Joined collections need an index on the join key. TanStack DB auto-creates one
+// with `autoIndex: "eager"`; without it each join scans the collection, and dev
+// builds warn when that gets slow.
 const JOIN_INDEXES = { autoIndex: "eager", defaultIndexType: BasicIndex } as const;
+
+// Without a timeout, a stalled sync never settles `awaitTxId`, so the optimistic
+// row stays on screen and never rolls back. At 10 s the row rolls back, and it
+// comes back when the sync delivers the committed row.
+const CONFIRM_TIMEOUT_MS = 10_000;
+
+// Waits until the sync delivers a committed write. A sync that doesn't confirm
+// in time rejects with `WRITE_NOT_CONFIRMED`, which says the write was saved.
+export async function confirmWrite(
+  collection: { utils: { awaitTxId(txid: string, timeout?: number): Promise<boolean> } },
+  txid: string,
+): Promise<void> {
+  try {
+    await collection.utils.awaitTxId(txid, CONFIRM_TIMEOUT_MS);
+  } catch (error) {
+    if (isNotConfirmedError(error)) throw new Error(WRITE_NOT_CONFIRMED, { cause: error });
+    throw error;
+  }
+}
 
 // Mastra spans have a composite primary key.
 export function spanKey(span: Pick<MastraSpan, "traceId" | "spanId">): string {
@@ -66,11 +87,11 @@ function createLeadsCollection(
       const patch = pick(changes, LEAD_PATCH_KEYS);
       if (Object.keys(patch).length === 0) return;
       const result = await updateLead({ data: { id: original.id, changes: patch } });
-      await collection.utils.awaitTxId(result.txid);
+      await confirmWrite(collection, result.txid);
     },
     onDelete: async ({ transaction, collection }) => {
       const result = await deleteLead({ data: { id: transaction.mutations[0].original.id } });
-      await collection.utils.awaitTxId(result.txid);
+      await confirmWrite(collection, result.txid);
     },
   }));
 }

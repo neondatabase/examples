@@ -3,13 +3,13 @@ import { describe, it } from "node:test";
 
 import {
   WRITE_FAILED,
-  WRITE_NOT_CONFIRMED,
   currentWriteError,
   dismissWriteError,
   showWriteError,
   subscribeToWriteErrors,
   writeErrorMessage,
 } from "~/components/write-errors";
+import { WRITE_NOT_CONFIRMED } from "~/lib/write-confirmation";
 
 describe("writeErrorMessage", () => {
   it("shows a server function's message as it is", () => {
@@ -44,12 +44,9 @@ describe("writeErrorMessage", () => {
     assert.equal(writeErrorMessage(new Error("x".repeat(201))), WRITE_FAILED);
   });
 
-  it("says a write was saved when only the sync confirmation failed", () => {
-    assert.equal(
-      writeErrorMessage(new Error("Timed out waiting for Neon Realtime transaction 4821")),
-      WRITE_NOT_CONFIRMED,
-    );
-    assert.equal(writeErrorMessage(new Error("Neon Realtime collection was cleaned up")), WRITE_NOT_CONFIRMED);
+  it("says a write was saved when the sync confirmation failed", () => {
+    // `confirmWrite` rethrows these as the saved message.
+    assert.equal(writeErrorMessage(new Error(WRITE_NOT_CONFIRMED)), WRITE_NOT_CONFIRMED);
   });
 });
 

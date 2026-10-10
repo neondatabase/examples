@@ -153,7 +153,7 @@ flowchart LR
 
 UI components change data only through the mutations in `src/realtime/actions.ts`. Each mutation applies the change to the local TanStack DB collections, so the UI updates at once, then calls a server function in `src/functions/`: `createLead`, `updateLead`, `deleteLead`, `updatePerson`, or `updateCompany`. The server function validates the input, writes in one Postgres transaction, and returns the transaction's ID from `pg_current_xact_id()`.
 
-The client waits for that ID with `awaitTxId()`. When the transaction arrives through Neon Realtime, TanStack DB replaces the optimistic rows with the confirmed ones. If the server function fails, TanStack DB rolls the optimistic change back, and a toast shows the server's reason, such as "Another person already has this email".
+The client waits for that ID with `awaitTxId()`. When the transaction arrives through Neon Realtime, TanStack DB replaces the optimistic rows with the confirmed ones. If the server function fails, TanStack DB rolls the optimistic change back, and a toast shows the server's reason, such as "Another person already has this email". If the transaction doesn't arrive within 10 seconds, the change rolls back too, and the toast says it was saved but hasn't synced back yet. The row reappears when the sync delivers the committed transaction.
 
 ### Agent path
 

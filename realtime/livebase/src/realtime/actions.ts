@@ -11,6 +11,7 @@ import {
 } from "~/functions/records";
 import { newId } from "~/lib/ids";
 import type { CompanyPatch, LeadPatch, PersonPatch } from "~/lib/types";
+import { confirmWrite } from "~/realtime/collections";
 import { useRealtime, type LivebaseCollections } from "~/realtime/RealtimeProvider";
 
 // The only way UI code mutates data. Every write is optimistic and confirmed
@@ -64,8 +65,8 @@ function createLeadActions(collections: LivebaseCollections, workspaceId: string
     mutationFn: async (variables) => {
       const { txid } = await createLeadOnServer({ data: variables });
       await Promise.all([
-        collections.leads.utils.awaitTxId(txid),
-        collections.leadInputs.utils.awaitTxId(txid),
+        confirmWrite(collections.leads, txid),
+        confirmWrite(collections.leadInputs, txid),
       ]);
     },
   });
@@ -80,7 +81,7 @@ function createLeadActions(collections: LivebaseCollections, workspaceId: string
     },
     mutationFn: async (variables) => {
       const { txid } = await updatePersonOnServer({ data: variables });
-      await collections.people.utils.awaitTxId(txid);
+      await confirmWrite(collections.people, txid);
     },
   });
 
@@ -93,24 +94,22 @@ function createLeadActions(collections: LivebaseCollections, workspaceId: string
     },
     mutationFn: async (variables) => {
       const { txid } = await updateCompanyOnServer({ data: variables });
-      await collections.companies.utils.awaitTxId(txid);
+      await confirmWrite(collections.companies, txid);
     },
   });
 
   // Runs the leads collection's `onUpdate`, which sends only the patch fields.
   const patchLead = (leadId: string, changes: LeadPatch) => {
-    const transaction = collections.leads.update(leadId, (draft) => {
+    reportFailure("update the lead", () => collections.leads.update(leadId, (draft) => {
       Object.assign(draft, changes);
       markUserWrite(draft);
-    });
-    reportFailure(transaction, "update the lead");
+    }));
   };
 
   return {
     createLead(rawText) {
       const leadId = newId();
-      const transaction = insertLead({ leadId, inputId: newId(), rawText: rawText.trim() });
-      reportFailure(transaction, "create the lead");
+      reportFailure("create the lead", () => insertLead({ leadId, inputId: newId(), rawText: rawText.trim() }));
       return leadId;
     },
     setStage(leadId, stage) {
@@ -123,13 +122,13 @@ function createLeadActions(collections: LivebaseCollections, workspaceId: string
       patchLead(leadId, { archived });
     },
     deleteLead(leadId) {
-      reportFailure(collections.leads.delete(leadId), "delete the lead");
+      reportFailure("delete the lead", () => collections.leads.delete(leadId));
     },
     updatePerson(leadId, personId, changes) {
-      reportFailure(patchPerson({ leadId, personId, changes }), "update the person");
+      reportFailure("update the person", () => patchPerson({ leadId, personId, changes }));
     },
     updateCompany(leadId, companyId, changes) {
-      reportFailure(patchCompany({ leadId, companyId, changes }), "update the company");
+      reportFailure("update the company", () => patchCompany({ leadId, companyId, changes }));
     },
   };
 }
@@ -149,9 +148,23 @@ function markUserWrite(draft: LastWriter): void {
 // why the edit snapped back (a clash the client can't check, for example). A
 // write rolled back because an earlier write to the same row failed rejects
 // with no error.
-function reportFailure<T extends object>(transaction: Transaction<T>, action: string): void {
-  transaction.isPersisted.promise.catch((error: unknown) => {
-    console.error(`Could not ${action}`, error ?? "an earlier write to the same row failed");
-    showWriteError(error);
-  });
+//
+// `write` runs the optimistic action. Its `onMutate` runs synchronously, so an
+// update to a row that isn't loaded throws before there's a transaction to
+// watch. That throw is reported here too, or the click handler would throw with
+// no toast.
+function reportFailure<T extends object>(action: string, write: () => Transaction<T>): void {
+  let transaction: Transaction<T>;
+  try {
+    transaction = write();
+  } catch (error) {
+    reportError(action, error);
+    return;
+  }
+  transaction.isPersisted.promise.catch((error: unknown) => reportError(action, error));
+}
+
+function reportError(action: string, error: unknown): void {
+  console.error(`Could not ${action}`, error ?? "an earlier write to the same row failed");
+  showWriteError(error);
 }
