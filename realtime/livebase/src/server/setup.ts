@@ -33,6 +33,17 @@ const MASTRA_TABLES: Record<MastraTableName, Table> = {
   mastra_messages: mastraMessages,
 };
 
+// Columns that live queries read through raw SQL, which the Drizzle declarations
+// don't cover. `spansQuery` reads `attributes` for its `->>` expression. Declaring
+// the column on `mastraAiSpans` would sync all of `attributes`, so it's listed here.
+const SQL_COLUMNS: Partial<Record<MastraTableName, readonly string[]>> = {
+  mastra_ai_spans: ["attributes"],
+};
+
+// Mastra and the app create their tables here. Each check names the schema, so
+// it inspects the tables the app uses whatever `search_path` is.
+const SCHEMA = "public";
+
 // `users` never leaves the server, so it isn't synced.
 const SYNCED_DOMAIN_TABLE_NAMES = DOMAIN_TABLE_NAMES.filter((name) => name !== "users");
 
@@ -47,7 +58,7 @@ async function initMastraStorage(): Promise<void> {
   // The app turns off Mastra's lazy initialization, so this is where Mastra
   // creates and migrates its own tables. The store borrows the setup pool,
   // which `pool.end()` closes at the end of the script.
-  await new PostgresStore({ id: "livebase-setup", pool }).init();
+  await new PostgresStore({ id: "livebase-setup", pool, schemaName: SCHEMA }).init();
 }
 
 async function setReplicaIdentityFull(): Promise<number> {
@@ -57,7 +68,7 @@ async function setReplicaIdentityFull(): Promise<number> {
   for (const name of names) {
     // IF EXISTS so that a table a Mastra upgrade renamed is reported by
     // `checkSyncedTables` along with every other problem.
-    await pool.query(`ALTER TABLE IF EXISTS "${name}" REPLICA IDENTITY FULL`);
+    await pool.query(`ALTER TABLE IF EXISTS "${SCHEMA}"."${name}" REPLICA IDENTITY FULL`);
   }
   return names.length;
 }
@@ -74,16 +85,22 @@ async function setReplicaIdentityFull(): Promise<number> {
 // restore `maxStringLength` in `mastra.server.ts`, once Neon Realtime handles
 // out-of-line values.
 async function keepSyncedValuesInline(): Promise<number> {
+  // This sets the storage of columns for rows written from now on. Postgres
+  // doesn't rewrite existing rows, so a row that already holds an out-of-line
+  // value keeps it. A compressed value that stays inline still triggers the reset,
+  // so this narrows the problem; it doesn't fix it.
   const names = [...SYNCED_DOMAIN_TABLE_NAMES, ...SYNCED_MASTRA_TABLE_NAMES];
   // Only columns that may still go out of line, so a second run changes nothing.
   const result = await pool.query<{ statement: string }>(
-    `SELECT format('ALTER TABLE %I %s', c.relname,
+    `SELECT format('ALTER TABLE %I.%I %s', n.nspname, c.relname,
               string_agg(format('ALTER COLUMN %I SET STORAGE MAIN', a.attname), ', ')) AS statement
-       FROM pg_attribute a JOIN pg_class c ON c.oid = a.attrelid
-      WHERE c.relnamespace = current_schema()::regnamespace AND c.relname = ANY($1)
+       FROM pg_attribute a
+       JOIN pg_class c ON c.oid = a.attrelid
+       JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE n.nspname = $2 AND c.relname = ANY($1)
         AND a.attnum > 0 AND NOT a.attisdropped AND a.attstorage IN ('x', 'e')
-      GROUP BY c.relname`,
-    [names],
+      GROUP BY n.nspname, c.relname`,
+    [names, SCHEMA],
   );
   for (const { statement } of result.rows) await pool.query(statement);
   return names.length;
@@ -95,9 +112,10 @@ function columnNames(table: Table): string[] {
 
 // Returns what stops Neon Realtime from syncing the table.
 async function tableProblems(name: string, selectedColumns: readonly string[]): Promise<string[]> {
+  const relation = `${SCHEMA}.${name}`;
   const found = await pool.query<{ exists: boolean }>(
     "SELECT to_regclass($1) IS NOT NULL AS exists",
-    [name],
+    [relation],
   );
   if (!found.rows[0]?.exists) return [`${name}: the table doesn't exist`];
 
@@ -105,7 +123,7 @@ async function tableProblems(name: string, selectedColumns: readonly string[]): 
 
   const primaryKey = await pool.query<{ condeferrable: boolean }>(
     "SELECT condeferrable FROM pg_constraint WHERE conrelid = $1::regclass AND contype = 'p'",
-    [name],
+    [relation],
   );
   const key = primaryKey.rows[0];
   if (!key) problems.push(`${name}: there is no primary key`);
@@ -113,7 +131,7 @@ async function tableProblems(name: string, selectedColumns: readonly string[]): 
 
   const identity = await pool.query<{ relreplident: string }>(
     "SELECT relreplident FROM pg_class WHERE oid = $1::regclass",
-    [name],
+    [relation],
   );
   const replicaIdentity = identity.rows[0]?.relreplident ?? "";
   if (replicaIdentity !== "f") {
@@ -123,7 +141,7 @@ async function tableProblems(name: string, selectedColumns: readonly string[]): 
 
   const generated = await pool.query<{ attname: string }>(
     "SELECT attname FROM pg_attribute WHERE attrelid = $1::regclass AND attnum > 0 AND NOT attisdropped AND attgenerated <> ''",
-    [name],
+    [relation],
   );
   if (generated.rows.length > 0) {
     const list = generated.rows.map((row) => row.attname).join(", ");
@@ -132,8 +150,8 @@ async function tableProblems(name: string, selectedColumns: readonly string[]): 
 
   if (selectedColumns.length > 0) {
     const columns = await pool.query<{ column_name: string }>(
-      "SELECT column_name FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = $1",
-      [name],
+      "SELECT column_name FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2",
+      [SCHEMA, name],
     );
     const existing = new Set(columns.rows.map((row) => row.column_name));
     const missing = selectedColumns.filter((column) => !existing.has(column));
@@ -153,7 +171,8 @@ async function checkSyncedTables(): Promise<number> {
     problems.push(...(await tableProblems(name, [])));
   }
   for (const name of SYNCED_MASTRA_TABLE_NAMES) {
-    problems.push(...(await tableProblems(name, columnNames(MASTRA_TABLES[name]))));
+    const selected = [...columnNames(MASTRA_TABLES[name]), ...(SQL_COLUMNS[name] ?? [])];
+    problems.push(...(await tableProblems(name, selected)));
   }
 
   if (problems.length > 0) {
@@ -192,7 +211,7 @@ try {
   console.log(`Replica identity is FULL on ${identityCount} tables.`);
 
   const inlineCount = await keepSyncedValuesInline();
-  console.log(`Values stay inline on ${inlineCount} synced tables (a temporary Neon Realtime workaround).`);
+  console.log(`New values stay inline on ${inlineCount} synced tables (a temporary Neon Realtime workaround).`);
 
   const checkedCount = await checkSyncedTables();
   console.log(`All ${checkedCount} synced tables meet Neon Realtime's requirements.`);

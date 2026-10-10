@@ -8,8 +8,11 @@ import {
 import { Mastra } from "@mastra/core/mastra";
 import { SpanType } from "@mastra/core/observability";
 import { MastraStorageExporter, Observability } from "@mastra/observability";
+import { eq } from "drizzle-orm";
 
+import { mastraAiSpans } from "~/db/mastra-schema";
 import { truncate } from "~/lib/format";
+import { db } from "~/server/db.server";
 import { logDetail } from "~/server/runner";
 
 import { enrichmentAgent } from "./enrichment.server";
@@ -114,8 +117,6 @@ function createObservability(): Observability {
           // each step within about a second of the UI.
           new MastraStorageExporter({ strategy: "batch-with-updates", maxBatchWaitMs: 250 }),
         ],
-        // Span rows replicate through Neon Realtime, which caps message size,
-        // so prompts and results are clipped well below the 128 KB default.
         // TEMPORARY: 2048 rather than 8192 keeps a span row small enough to
         // stay inline under the STORAGE MAIN workaround for a Neon Realtime bug
         // (see `keepSyncedValuesInline` in `setup.ts`). At 8192 a
@@ -157,10 +158,19 @@ export function getMastra(): LivebaseMastra {
   return mastra;
 }
 
-// Deletes the lead's thread and its messages. Deleting a thread that
-// doesn't exist is a no-op, so a lead that never reached the agent is fine.
+// Deletes the lead's trace spans, and its thread and messages. Mastra's
+// `deleteThread` leaves spans alone, so without this they would stay in the
+// table and keep syncing to every browser. The two deletes are independent: a
+// failure is logged, and the other delete still runs. Deleting a thread that
+// doesn't exist is a no-op, so a lead that never reached the agent is fine. A
+// span that a batch exporter writes after this is left for retention to delete.
 export async function deleteLeadThread(leadId: string): Promise<void> {
-  await getMemory().deleteThread(leadId);
+  const [spans, thread] = await Promise.allSettled([
+    db.delete(mastraAiSpans).where(eq(mastraAiSpans.threadId, leadId)),
+    getMemory().deleteThread(leadId),
+  ]);
+  if (spans.status === "rejected") console.error(`Failed to delete the trace spans for lead ${leadId}`, spans.reason);
+  if (thread.status === "rejected") console.error(`Failed to delete the Mastra thread for lead ${leadId}`, thread.reason);
 }
 
 // Records why an aborted agent run stopped, on its root span. Mastra ends an

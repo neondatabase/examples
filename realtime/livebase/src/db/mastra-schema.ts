@@ -1,7 +1,9 @@
 import { jsonb, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
 
-// Read-only views of the Mastra tables that Livebase syncs. Mastra creates and
-// migrates these tables itself; `drizzle.config.ts` never loads this file. Only
+// Declarations of the Mastra tables that Livebase syncs. Mastra creates and
+// migrates these tables itself, and `drizzle.config.ts` never loads this file.
+// Livebase only reads them, except that `deleteLeadThread` deletes a lead's
+// spans. Only
 // the selected columns are declared, so `getTableColumns()` yields the narrow
 // live-query projection. Camel-case columns are quoted in SQL, and the `*Z`
 // columns are Mastra's timestamptz twins.

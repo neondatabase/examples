@@ -172,20 +172,14 @@ export const deleteLead = createServerFn({ method: "POST" })
     });
 
     // The lead is gone either way, so a leftover thread is logged, not
-    // reported as a failed delete.
-    const removeThread = async () => {
-      try {
-        await deleteLeadThread(id);
-      } catch (error) {
-        console.error(`Failed to delete the Mastra thread for lead ${id}`, error);
-      }
-    };
+    // reported as a failed delete. `deleteLeadThread` logs its own failures.
     // An aborted agent call still saves its last step once its in-flight tools
-    // settle, and that save recreates the thread with the raw input. So the
-    // thread goes only after the run has settled. A run that outlasts the wait
-    // has its thread deleted again once it settles.
+    // settle. A per-step save that runs after the delete fails with "Thread not
+    // found", but the run's end-of-run save recreates the thread when the run
+    // began without one. So the thread goes only after the run has settled. A
+    // run that outlasts the wait has its thread deleted again once it settles.
     const settled = await settleWithin(stopped, CANCEL_SETTLE_MS);
-    await removeThread();
-    if (!settled) void stopped.then(removeThread);
+    await deleteLeadThread(id);
+    if (!settled) void stopped.then(() => deleteLeadThread(id));
     return result;
   });
