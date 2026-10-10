@@ -31,7 +31,8 @@ export interface MastraSpanError {
   readonly id?: string;
   readonly domain?: string;
   readonly category?: string;
-  // These sync to every browser too: a column projection can't drop JSON keys.
+  // `spansQuery` drops `stack` before the row syncs, since it holds server file
+  // paths. The other fields sync to every browser.
   readonly stack?: string;
   readonly details?: Record<string, string | number | boolean | null>;
 }

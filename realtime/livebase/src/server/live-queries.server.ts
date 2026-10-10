@@ -1,14 +1,16 @@
 import { and, eq, getTableColumns, sql, type InferSelectModel, type SQL, type Table } from "drizzle-orm";
 
-import { mastraAiSpans, mastraMessages, mastraThreads } from "~/db/mastra-schema";
+import { mastraAiSpans, mastraMessages, mastraThreads, type MastraSpanError } from "~/db/mastra-schema";
 import { companies, findings, leadInputs, leads, people, workspaces } from "~/db/schema";
 
 import { db } from "./db.server";
 
 // Every live query in Livebase. They are plain equality filters on base
 // tables, which Neon Realtime maintains incrementally. Sorting, joining, and
-// aggregation happen in the browser, in TanStack DB, so there is no ORDER BY
-// or LIMIT here: either would push Neon Realtime onto its slow path.
+// aggregation happen in the browser, in TanStack DB. There is no ORDER BY or
+// LIMIT here, and `live-queries.server.test.ts` checks that. Neon Realtime
+// supports both, but each write to a source table resets the subscription and
+// re-baselines it, so the sort and the limit go in TanStack DB instead.
 //
 // Each builder returns an un-awaited Drizzle select. Await it for SSR rows,
 // or pass it to `realtime.seal({ query })` to seal it for a subscription.
@@ -67,10 +69,14 @@ export const threadsQuery = (workspaceId: string) => db
 // requires of a computed column; it means the spans subscription evaluates an
 // expression on each change. The key is a literal, not a bind parameter, so the
 // query keeps its one parameter, the workspace ID.
+//
+// `error` is projected without its `stack`, which holds server file paths. `-`
+// drops the key and is immutable too.
 export const spansQuery = (workspaceId: string) => db
   .select({
     ...allColumns(mastraAiSpans),
     toolCallId: sql<string | null>`${mastraAiSpans}."attributes" ->> 'toolCallId'`.as("toolCallId"),
+    error: sql<MastraSpanError | null>`${mastraAiSpans}."error" - 'stack'`.mapWith(mastraAiSpans.error).as("error"),
   })
   .from(mastraAiSpans)
   .where(eq(mastraAiSpans.resourceId, workspaceId));
