@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Neon Realtime Todos — Vanilla TypeScript</title>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">Vanilla TypeScript</p>
+          <h1>Neon Realtime Todos</h1>
+        </div>
+        <output id="status" class="status">connecting</output>
+      </header>
+
+      <form id="new-todo">
+        <input
+          id="title"
+          name="title"
+          placeholder="What needs doing?"
+          required
+        />
+        <button type="submit">Add todo</button>
+      </form>
+
+      <p id="error" class="error" hidden></p>
+      <ul id="todos" aria-live="polite"></ul>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

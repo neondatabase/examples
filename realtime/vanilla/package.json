@@ -1,0 +1,41 @@
+{
+  "name": "with-realtime-todos-vanilla",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm run typecheck && vite build && tsc -p tsconfig.build.json",
+    "db:setup": "node --env-file-if-exists=.env.local --import tsx src/setup.ts",
+    "dev": "concurrently --kill-others --names server,web \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "node --env-file-if-exists=.env.local --import tsx --watch src/server.ts",
+    "dev:web": "vite",
+    "typecheck": "tsc -p tsconfig.client.json --noEmit && tsc -p tsconfig.server.json --noEmit",
+    "sdk:local": "node scripts/local-sdk.mjs",
+    "realtime:env": "neon env pull --service postgres --service realtime --file .env.local && node scripts/realtime-env.mjs",
+    "fmt": "prettier --write .",
+    "start": "NODE_ENV=production node --env-file-if-exists=.env.local dist-server/server.js"
+  },
+  "dependencies": {
+    "@neon/realtime": "0.0.1",
+    "@neon/realtime-drizzle": "0.0.1",
+    "drizzle-orm": "0.45.2",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "@types/pg": "^8.15.5",
+    "concurrently": "^9.2.1",
+    "prettier": "^3.6.2",
+    "tsx": "^4.23.12",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.4",
+    "@neon/config": "file:.sdk/neon-config.tgz",
+    "@neon/sdk": "file:.sdk/neon-sdk.tgz"
+  },
+  "description": "Neon Realtime todo example with vanilla TypeScript.",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "overrides": {
+    "shell-quote": "^1.12.0"
+  }
+}
