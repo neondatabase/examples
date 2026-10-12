@@ -9,4 +9,8 @@ export const pool = new Pool({
   min: 1,
 });
 
+pool.on("error", (error) => {
+  console.error("Unexpected error on idle PostgreSQL client", error);
+});
+
 export const db = drizzle(pool);
