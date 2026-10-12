@@ -168,6 +168,24 @@ templates:
       repo: examples
       ref: main
       subdir: realtime/with-react
+  - id: realtime-nextjs
+    title: "Realtime Next.js app"
+    description: "An SSR todo app using Next.js, Neon Realtime, React optimistic state, and Drizzle."
+    tools:
+      - Next.js
+      - React
+      - Drizzle
+    services:
+      - Postgres
+      - Realtime
+    requires:
+      - database
+      - realtime
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: with-realtime-nextjs
   - id: discord-bot-http
     title: "Discord bot"
     description: "A Discord interactions bot hosted on Neon Functions, with slash commands, embeds, Components v2 buttons, user profiles, and command usage tracking in Lakebase Postgres."

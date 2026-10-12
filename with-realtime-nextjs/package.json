@@ -1,0 +1,41 @@
+{
+  "name": "with-realtime-nextjs",
+  "description": "SSR Next.js app using Neon Realtime, React optimistic state, and Drizzle ORM.",
+  "private": true,
+  "scripts": {
+    "build": "npm run typecheck && next build",
+    "db:push": "drizzle-kit push",
+    "db:setup": "npm run db:push && tsx src/setup.ts",
+    "dev": "next dev",
+    "fmt": "prettier --write .",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@neon/env": "^1.5.3",
+    "@neon/realtime": "0.0.1",
+    "@neon/realtime-drizzle": "0.0.1",
+    "@neon/realtime-react": "0.0.1",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.45.2",
+    "next": "16.2.7",
+    "pg": "^8.21.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^24.10.1",
+    "@types/pg": "^8.15.6",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "drizzle-kit": "^0.31.6",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
