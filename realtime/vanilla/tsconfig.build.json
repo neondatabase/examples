@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.server.json",
-  "compilerOptions": {
-    "noEmit": false,
-    "outDir": "dist-server",
-    "rootDir": "src"
-  },
-  "include": ["src/server.ts", "src/schema.ts", "src/api-types.ts"]
-}

@@ -1,14 +1,13 @@
 # Neon Realtime examples
 
-Six independent todo apps demonstrate the managed Neon Realtime service.
+Five independent todo apps demonstrate the managed Neon Realtime service.
 Each app seals a SQL query on its backend; the browser sends the resulting
-short-lived query capability to the managed WebSocket endpoint. Vanilla and
-React use raw SQL, while the other examples build queries with Drizzle or
-Kysely. Neon provisions the database and Realtime service.
+short-lived query capability to the managed WebSocket endpoint. React uses raw
+SQL, while the other examples build queries with Drizzle or Kysely. Neon
+provisions the database and Realtime service.
 
 | Example                                 | Integration                                                   | Development URL       |
 | --------------------------------------- | ------------------------------------------------------------- | --------------------- |
-| [Vanilla TypeScript](./vanilla)         | Raw SQL, low-level subscriptions and explicit query renewal   | http://localhost:5173 |
 | [React](./react)                        | Raw SQL with `RealtimeProvider` and `useLiveQuery()`          | http://localhost:5173 |
 | [React + Drizzle](./drizzle)            | Drizzle schema, queries and mutations with React live queries | http://localhost:5173 |
 | [React + Kysely](./kysely)              | Typed Kysely queries and mutations with React live queries    | http://localhost:5173 |
@@ -39,11 +38,10 @@ The returned HTTPS invocation URL becomes the WebSocket URL by changing
 `https://` to `wss://`; no `/v1` suffix is added. The SDK negotiates
 `neon.realtime.v1`.
 
-Sealed queries expire after 60 seconds. Vanilla schedules renewal using the
-SDK's millisecond expiry timestamp; React and TanStack DB use `refreshQuery`.
-The TanStack mutation handlers capture `pg_current_xact_id()` inside the same
-transaction as the write, then wait for its committed changes in the live
-collection.
+Sealed queries expire after 60 seconds. React and TanStack DB use
+`refreshQuery`. The TanStack mutation handlers capture `pg_current_xact_id()`
+inside the same transaction as the write, then wait for its committed changes
+in the live collection.
 
 ## Browser checks
 
