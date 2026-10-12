@@ -6,7 +6,6 @@ if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 
 export default defineConfig({
   aiGateway: true,
-  buckets: { searchfiles: {} },
   functions: {
     search: {
       name: "Hybrid search API",
@@ -15,21 +14,6 @@ export default defineConfig({
         SEARCH_API_KEY: process.env.SEARCH_API_KEY!,
       },
       dev: { port: 8787 },
-    },
-  },
-  triggers: {
-    "search-file-uploaded": {
-      type: "storage_object_created",
-      function: "search",
-      bucket: "searchfiles",
-      prefix: "documents/",
-      functionPath: "/triggers/object-created",
-    },
-    "search-file-reconcile": {
-      type: "schedule",
-      function: "search",
-      cron: "0 * * * *",
-      functionPath: "/triggers/reconcile",
     },
   },
 });

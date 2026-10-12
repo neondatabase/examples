@@ -199,10 +199,10 @@ templates:
     tools:
       - Lakebase Search
       - Hono
+      - Drizzle
     services:
       - Postgres
       - Functions
-      - Object Storage
       - AI Gateway
     source:
       owner: neondatabase

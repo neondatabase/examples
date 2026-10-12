@@ -18,11 +18,11 @@ const documentIdSchema = z
 
 function searchableText(name: string) {
   const message = name + " must be 1–20000 characters";
-  return z
+  const schema = z
     .string({ error: message })
     .max(20_000, { error: message })
-    .trim()
-    .min(1, { error: message });
+    .refine((value) => value.trim().length > 0, { error: message });
+  return name === "query" ? schema.transform((value) => value.trim()) : schema;
 }
 
 function jsonFields(name: string) {

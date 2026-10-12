@@ -51,3 +51,56 @@ test("only query embeddings receive the Qwen retrieval instruction", async (t) =
     else process.env.NEON_AI_GATEWAY_BASE_URL = previousBaseUrl;
   }
 });
+
+test("document embedding batches retain input order and reject incomplete responses", async (t) => {
+  const oldToken = process.env.NEON_AI_GATEWAY_TOKEN;
+  const oldBase = process.env.NEON_AI_GATEWAY_BASE_URL;
+  process.env.NEON_AI_GATEWAY_TOKEN = "test-placeholder";
+  process.env.NEON_AI_GATEWAY_BASE_URL = "https://example.test";
+  const first = Array(1024).fill(0);
+  first[0] = 1;
+  const second = Array(1024).fill(0);
+  second[1] = 1;
+  let data = [
+    { index: 1, embedding: second },
+    { index: 0, embedding: first },
+  ];
+  t.mock.method(
+    globalThis,
+    "fetch",
+    async (_url: unknown, init: RequestInit) => {
+      assert.deepEqual(JSON.parse(init.body as string).input, [
+        "first section",
+        "second section",
+      ]);
+      return new Response(JSON.stringify({ data }), {
+        headers: { "content-type": "application/json" },
+      });
+    },
+  );
+  try {
+    const embed = createEmbedder();
+    assert.deepEqual(await embed(["first section", "second section"]), [
+      first,
+      second,
+    ]);
+    data = [{ index: 0, embedding: first }];
+    await assert.rejects(
+      embed(["first section", "second section"]),
+      /no embedding/,
+    );
+    data = [
+      { index: 0, embedding: first },
+      { index: 0, embedding: second },
+    ];
+    await assert.rejects(
+      embed(["first section", "second section"]),
+      /invalid embedding indexes/,
+    );
+  } finally {
+    if (oldToken === undefined) delete process.env.NEON_AI_GATEWAY_TOKEN;
+    else process.env.NEON_AI_GATEWAY_TOKEN = oldToken;
+    if (oldBase === undefined) delete process.env.NEON_AI_GATEWAY_BASE_URL;
+    else process.env.NEON_AI_GATEWAY_BASE_URL = oldBase;
+  }
+});

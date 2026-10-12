@@ -15,7 +15,7 @@ test("document writes validate searchable content and flexible metadata", () => 
       metadata: { source: "docs", priority: 2 },
     }),
     {
-      content: "hello",
+      content: "  hello  ",
       metadata: { source: "docs", priority: 2 },
     },
   );
@@ -88,4 +88,11 @@ test("reject unexpected gateway vector shapes before writing", () => {
     /invalid/,
   );
   assert.equal(validateVector(Array(1024).fill(0)).length, 1024);
+});
+
+test("document whitespace preserves indented Markdown code; queries still trim", () => {
+  const code = "    SELECT 1;\n    SELECT 2;\n";
+  assert.equal(parsePut({ content: code }).content, code);
+  assert.equal(parsePatch({ content: code }).content, code);
+  assert.equal(parseSearch({ query: "  branching  " }).query, "branching");
 });
