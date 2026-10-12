@@ -1,11 +1,23 @@
 # Neon Realtime todos with Vanilla TypeScript
 
-A framework-free browser client subscribes to a sealed Drizzle query. A small Node.js API seals queries and creates, completes, and deletes todos. The browser renews its query before it expires.
+A framework-free browser client subscribes to a sealed SQL query. A small Node.js API seals queries and creates, completes, and deletes todos. The browser renews its query before it expires.
 
 Open two tabs and add, complete, or delete a todo. Both tabs update through the
 managed Neon Realtime WebSocket endpoint. This demo uses public query-sealing
 and mutation endpoints; it has no login flow. Authenticate those endpoints
 before adapting it for private data.
+
+The backend uses `pg` to execute parameterized SQL and `rawSql<Todo>()` from
+`@neon/realtime/server` to define the live select. The shared `Todo` interface
+is declared in `src/schema.ts`; the table is created by `src/setup.ts`.
+
+```ts
+const query = rawSql<Todo>("SELECT id, title, status FROM realtime_todos");
+const sealedQuery = await realtime.seal({ query });
+```
+
+Mutation values are passed separately from SQL using PostgreSQL placeholders
+(`$1`, `$2`). See `src/server.ts` for the select, inserts, updates and deletes.
 
 ## Prerequisites
 

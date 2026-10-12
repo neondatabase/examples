@@ -7,6 +7,21 @@ managed Neon Realtime WebSocket endpoint. This demo uses public query-sealing
 and mutation endpoints; it has no login flow. Authenticate those endpoints
 before adapting it for private data.
 
+The backend uses `pg` to execute parameterized SQL and `rawSql<Todo>()` from
+`@neon/realtime/server` to define the live select. The shared `Todo` interface
+is declared in `src/schema.ts`; the table is created by `src/setup.ts`.
+
+```ts
+const query = rawSql<Todo>("SELECT id, title, status FROM realtime_todos");
+const sealedQuery = await realtime.seal({ query });
+```
+
+Mutation values are passed separately from SQL using PostgreSQL placeholders
+(`$1`, `$2`). See `src/server.ts` for the select, inserts, updates and deletes.
+
+For the same React UI backed by a query builder, see the [Drizzle](../drizzle)
+and [Kysely](../kysely) examples.
+
 ## Prerequisites
 
 - Node.js 22.18 or newer and npm.

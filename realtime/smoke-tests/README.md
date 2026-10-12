@@ -4,7 +4,8 @@ Run a configured example against its Neon project, then run this suite in a
 second terminal. It creates temporary todos, checks both tabs for create,
 complete, uncomplete, and delete events, waits beyond the sealed query's
 60-second lifetime, and disconnects one tab to check recovery. Test rows are
-removed afterward.
+removed afterward. Titles include quotes to check that mutation values round-trip
+through each SQL or query-builder integration.
 
 ```sh
 npm install
@@ -18,7 +19,8 @@ Use `DEMO_URL=http://localhost:5173` for the Vite development servers and
 `SMOKE_QUICK=1` checks mutations and optional SSR without the renewal and
 reconnect checks, which is useful for a second check of development mode.
 Optionally set `DEMO_FRAMEWORK` to the app's label (`Vanilla TypeScript`,
-`React`, `Next.js SSR`, or `TanStack Start + DB`) to verify the target app.
+`React`, `React + Drizzle`, `React + Kysely`, `Next.js SSR`, or
+`TanStack Start + DB`) to verify the target app.
 
 An existing Chromium binary can be selected with
 `PLAYWRIGHT_EXECUTABLE_PATH=/absolute/path/to/chromium`.

@@ -1,20 +1,24 @@
 # Neon Realtime examples
 
-Four independent todo apps demonstrate the managed Neon Realtime service.
-Each app seals a Drizzle select on its backend; the browser sends the resulting
-short-lived query capability to the managed WebSocket endpoint. Mutations use
-ordinary Postgres queries. Neon provisions the database and Realtime service.
+Six independent todo apps demonstrate the managed Neon Realtime service.
+Each app seals a SQL query on its backend; the browser sends the resulting
+short-lived query capability to the managed WebSocket endpoint. Vanilla and
+React use raw SQL, while the other examples build queries with Drizzle or
+Kysely. Neon provisions the database and Realtime service.
 
-| Example                                 | Integration                                                      | Development URL       |
-| --------------------------------------- | ---------------------------------------------------------------- | --------------------- |
-| [Vanilla TypeScript](./vanilla)         | Low-level subscriptions and explicit query renewal               | http://localhost:5173 |
-| [React](./react)                        | `RealtimeProvider` and `useLiveQuery()`                          | http://localhost:5173 |
-| [Next.js](./nextjs)                     | Server-rendered initial data and React live queries              | http://localhost:3000 |
-| [TanStack Start + DB](./tanstack-start) | SSR collection hydration and optimistic transaction confirmation | http://localhost:3000 |
+| Example                                 | Integration                                                   | Development URL       |
+| --------------------------------------- | ------------------------------------------------------------- | --------------------- |
+| [Vanilla TypeScript](./vanilla)         | Raw SQL, low-level subscriptions and explicit query renewal   | http://localhost:5173 |
+| [React](./react)                        | Raw SQL with `RealtimeProvider` and `useLiveQuery()`          | http://localhost:5173 |
+| [React + Drizzle](./drizzle)            | Drizzle schema, queries and mutations with React live queries | http://localhost:5173 |
+| [React + Kysely](./kysely)              | Typed Kysely queries and mutations with React live queries    | http://localhost:5173 |
+| [Next.js](./nextjs)                     | Drizzle, server-rendered initial data and React live queries  | http://localhost:3000 |
+| [TanStack Start + DB](./tanstack-start) | Drizzle, SSR collection hydration and optimistic mutations    | http://localhost:3000 |
 
 Run one example at a time to avoid overlapping development ports. Each has its
 own `package.json`, setup scripts, and documented `.env.local` configuration.
-Use a separate Neon project for each example.
+Use a separate Neon project for each example. The three React apps use the
+same schema and UI so their database integrations are easy to compare.
 
 ## Setup
 

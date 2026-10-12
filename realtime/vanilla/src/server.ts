@@ -7,29 +7,22 @@ import {
 import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import { connectionString } from "./connection-string.js";
-import { createRealtime } from "@neon/realtime/server";
-import { drizzleAdapter } from "@neon/realtime-drizzle";
+import { createRealtime, rawSql } from "@neon/realtime/server";
 
 import type { CreateTodoRequest, UpdateTodoRequest } from "./api-types.js";
-import { todos } from "./schema.js";
+import type { Todo } from "./schema.js";
 
 const databaseUrl = required("DATABASE_URL");
 const pool = new Pool({ connectionString: connectionString(databaseUrl) });
-const db = drizzle(pool);
 const realtime = createRealtime({
   secret: required("NEON_REALTIME_SECRET"),
   db: decodeURIComponent(new URL(databaseUrl).pathname.slice(1)),
-  adapter: drizzleAdapter(),
 });
 
 const allTodos = () =>
-  db
-    .select({ id: todos.id, title: todos.title, status: todos.status })
-    .from(todos);
+  rawSql<Todo>("SELECT id, title, status FROM realtime_todos");
 
 const server = createServer(async (request, response) => {
   try {
@@ -46,10 +39,12 @@ const server = createServer(async (request, response) => {
       const normalizedTitle = typeof title === "string" ? title.trim() : "";
       if (!normalizedTitle)
         return json(response, 400, { error: "Title is required" });
-      const [todo] = await db
-        .insert(todos)
-        .values({ title: normalizedTitle, status: "active" })
-        .returning();
+      const {
+        rows: [todo],
+      } = await pool.query<Todo>(
+        "INSERT INTO realtime_todos (title, status) VALUES ($1, $2) RETURNING id, title, status",
+        [normalizedTitle, "active"],
+      );
       return json(response, 201, todo);
     }
 
@@ -60,12 +55,17 @@ const server = createServer(async (request, response) => {
       if (status !== "active" && status !== "completed") {
         return json(response, 400, { error: "Invalid status" });
       }
-      await db.update(todos).set({ status }).where(eq(todos.id, id));
+      await pool.query("UPDATE realtime_todos SET status = $1 WHERE id = $2", [
+        status,
+        id,
+      ]);
       return empty(response, 204);
     }
 
     if (match && request.method === "DELETE") {
-      await db.delete(todos).where(eq(todos.id, Number(match[1])));
+      await pool.query("DELETE FROM realtime_todos WHERE id = $1", [
+        Number(match[1]),
+      ]);
       return empty(response, 204);
     }
 

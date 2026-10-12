@@ -54,7 +54,7 @@ test("two tabs receive mutations, renew queries, and recover after reconnect", a
       }
     });
   }
-  const title = `Realtime smoke ${randomUUID()}`;
+  const title = `Realtime smoke ${randomUUID()} — Sam's "notes"`;
   const reconnectTitle = `${title} reconnect`;
   const row = (page, text = title) =>
     page.locator("li").filter({ has: page.getByText(text, { exact: true }) });
