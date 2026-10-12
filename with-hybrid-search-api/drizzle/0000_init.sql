@@ -1,3 +1,7 @@
+CREATE EXTENSION IF NOT EXISTS lakebase_vector CASCADE;
+--> statement-breakpoint
+CREATE EXTENSION IF NOT EXISTS lakebase_text;
+--> statement-breakpoint
 CREATE TABLE "search_documents" (
   "id" text PRIMARY KEY NOT NULL,
   "content" text NOT NULL,
