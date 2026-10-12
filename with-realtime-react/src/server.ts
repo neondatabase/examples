@@ -74,6 +74,8 @@ const app = new Hono()
 
 export type AppType = typeof app;
 
+await pool.query("select 1");
+
 const server = serve({
   fetch: app.fetch,
   hostname: "127.0.0.1",

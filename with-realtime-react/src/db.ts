@@ -6,6 +6,7 @@ import { requiredEnv } from "./env.js";
 export const pool = new Pool({
   connectionString: requiredEnv("DATABASE_URL"),
   max: 5,
+  min: 1,
 });
 
 export const db = drizzle(pool);
