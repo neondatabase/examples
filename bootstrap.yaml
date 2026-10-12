@@ -184,6 +184,24 @@ templates:
       repo: examples
       ref: main
       subdir: realtime/with-nextjs
+  - id: realtime-tanstack
+    title: "Realtime TanStack DB app"
+    description: "An SSR todo app using TanStack Start, TanStack DB, Neon Realtime, and Drizzle."
+    tools:
+      - TanStack Start
+      - TanStack DB
+      - Drizzle
+    services:
+      - Postgres
+      - Realtime
+    requires:
+      - database
+      - realtime
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: with-realtime-tanstack
   - id: discord-bot-http
     title: "Discord bot"
     description: "A Discord interactions bot hosted on Neon Functions, with slash commands, embeds, Components v2 buttons, user profiles, and command usage tracking in Lakebase Postgres."
