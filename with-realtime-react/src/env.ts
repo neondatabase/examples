@@ -1,7 +1,10 @@
-export function requiredEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing ${name}. Run \`neon env pull\` first.`);
-  }
-  return value;
-}
+import { parseEnv } from "@neon/env";
+
+import neonConfig from "../neon.js";
+
+export const env = parseEnv(neonConfig, [
+  "DATABASE_URL",
+  "NEON_REALTIME_URL",
+  "NEON_REALTIME_SECRET",
+  "NEON_REALTIME_DATABASE_NAME",
+]);

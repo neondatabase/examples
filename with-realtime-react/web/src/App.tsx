@@ -119,61 +119,94 @@ export function App({ query }: { readonly query: LiveTodosQuery }) {
     });
   }
 
+  const statusColor =
+    status === "live"
+      ? "text-emerald-700 dark:text-emerald-400"
+      : status === "error"
+        ? "text-red-700 dark:text-red-400"
+        : "text-zinc-500 dark:text-zinc-400";
+
   return (
-    <main>
-      <header>
-        <div>
-          <p className="eyebrow">Neon Realtime</p>
-          <h1>Shared todos</h1>
-        </div>
-        <output className={`status ${status}`}>{status}</output>
-      </header>
+    <main className="min-h-screen bg-emerald-50 px-4 py-18 text-emerald-950 dark:bg-zinc-950 dark:text-zinc-100">
+      <div className="mx-auto w-full max-w-2xl">
+        <header className="flex items-end justify-between gap-6">
+          <div>
+            <p className="m-0 text-xs font-extrabold tracking-[0.08em] text-emerald-700 uppercase dark:text-emerald-400">
+              Neon Realtime
+            </p>
+            <h1 className="mt-1 mb-3 text-4xl font-bold tracking-[-0.04em] sm:text-5xl">
+              Shared todos
+            </h1>
+          </div>
+          <output className={`mb-4.5 text-[13px] ${statusColor}`}>
+            {status}
+          </output>
+        </header>
 
-      <p className="lede">
-        Open this page in two tabs. Changes appear here immediately and arrive
-        in the other tab through a typed live Drizzle query.
-      </p>
+        <p className="mb-7 max-w-xl leading-relaxed text-zinc-600 dark:text-zinc-400">
+          Open this page in two tabs. Changes appear here immediately and arrive
+          in the other tab through a typed live Drizzle query.
+        </p>
 
-      <form onSubmit={addTodo}>
-        <input
-          aria-label="Todo title"
-          maxLength={200}
-          name="title"
-          placeholder="What needs doing?"
-          required
-        />
-        <button type="submit">Add item</button>
-      </form>
+        <form className="flex gap-2" onSubmit={addTodo}>
+          <input
+            aria-label="Todo title"
+            className="min-w-0 flex-1 rounded-xl border border-emerald-950/20 bg-white px-3.5 py-3 text-emerald-950 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            maxLength={200}
+            name="title"
+            placeholder="What needs doing?"
+            required
+          />
+          <button
+            className="cursor-pointer rounded-xl bg-emerald-500 px-4 py-3 font-bold text-emerald-950 hover:bg-emerald-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+            type="submit"
+          >
+            Add item
+          </button>
+        </form>
 
-      {(error || mutationError) && (
-        <p className="error">{error?.message ?? mutationError}</p>
-      )}
+        {(error || mutationError) && (
+          <p className="mt-4 rounded-xl bg-red-50 p-3 text-red-700 dark:bg-red-950 dark:text-red-300">
+            {error?.message ?? mutationError}
+          </p>
+        )}
 
-      <ul aria-live="polite">
-        {optimisticTodos.map((todo) => (
-          <li key={todo.id}>
-            <label className="todo">
-              <input
-                aria-label={`Mark ${todo.title} as ${todo.completed ? "incomplete" : "complete"}`}
-                checked={todo.completed}
-                onChange={() => toggleCompleted(todo.id)}
-                type="checkbox"
-              />
-              <span className={todo.completed ? "completed" : undefined}>
-                {todo.title}
-              </span>
-            </label>
-            <button
-              aria-label={`Delete ${todo.title}`}
-              className="delete"
-              onClick={() => removeTodo(todo.id)}
-              type="button"
+        <ul aria-live="polite" className="my-5 list-none p-0">
+          {optimisticTodos.map((todo) => (
+            <li
+              className="grid grid-cols-[1fr_auto] items-center gap-4 border-b border-emerald-950/10 px-0.5 py-3.5 dark:border-zinc-800"
+              key={todo.id}
             >
-              Delete
-            </button>
-          </li>
-        ))}
-      </ul>
+              <label className="flex min-w-0 items-center gap-3">
+                <input
+                  aria-label={`Mark ${todo.title} as ${todo.completed ? "incomplete" : "complete"}`}
+                  checked={todo.completed}
+                  className="m-0 size-4.5 accent-emerald-500"
+                  onChange={() => toggleCompleted(todo.id)}
+                  type="checkbox"
+                />
+                <span
+                  className={
+                    todo.completed
+                      ? "text-zinc-500 line-through dark:text-zinc-500"
+                      : undefined
+                  }
+                >
+                  {todo.title}
+                </span>
+              </label>
+              <button
+                aria-label={`Delete ${todo.title}`}
+                className="cursor-pointer bg-transparent p-2 text-xs font-medium text-zinc-500 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:text-zinc-400 dark:hover:text-red-400"
+                onClick={() => removeTodo(todo.id)}
+                type="button"
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
     </main>
   );
 }

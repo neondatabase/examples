@@ -15,6 +15,7 @@
   "dependencies": {
     "@hono/node-server": "^1.19.7",
     "@hono/zod-validator": "^0.7.6",
+    "@neon/env": "^1.5.3",
     "@neon/realtime": "0.0.0",
     "@neon/realtime-drizzle": "0.0.0",
     "@neon/realtime-react": "0.0.0",
@@ -27,6 +28,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.10.1",
     "@types/pg": "^8.15.6",
     "@types/react": "^19.2.2",
@@ -34,6 +36,7 @@
     "@vitejs/plugin-react": "^5.1.0",
     "drizzle-kit": "^0.31.6",
     "prettier": "^3.6.2",
+    "tailwindcss": "^4.3.3",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vite": "^7.1.12"

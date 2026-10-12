@@ -9,12 +9,12 @@ import { Hono } from "hono";
 import { z } from "zod";
 
 import { db, pool } from "./db.js";
-import { requiredEnv } from "./env.js";
+import { env } from "./env.js";
 import { todos } from "./schema.js";
 
 const realtime = createRealtime({
-  secret: requiredEnv("NEON_REALTIME_SECRET"),
-  db: requiredEnv("NEON_DATABASE_NAME"),
+  secret: env.realtime.secret,
+  db: env.realtime.databaseName,
   adapter: drizzleAdapter(),
 });
 
@@ -37,7 +37,7 @@ const app = new Hono()
     const query = await realtime.seal({ query: selectTodos() });
     return c.json({
       query,
-      websocketUrl: requiredEnv("NEON_REALTIME_URL"),
+      websocketUrl: env.realtime.url,
     });
   })
   .post("/api/todos", zValidator("json", createTodoInput), async (c) => {
