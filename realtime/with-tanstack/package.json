@@ -26,6 +26,7 @@
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.2",
     "pg": "^8.21.0",
+    "pg-connection-string": "^2.14.1",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },

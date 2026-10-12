@@ -1,10 +1,10 @@
 import { createRealtime } from "@neon/realtime/server";
 import { drizzleAdapter } from "@neon/realtime-drizzle";
 
-import { env } from "./env.server";
+import { env, postgresDatabaseName } from "./env.server";
 
 export const realtime = createRealtime({
   secret: env.realtime.secret,
-  db: env.realtime.databaseName,
+  db: postgresDatabaseName,
   adapter: drizzleAdapter(),
 });

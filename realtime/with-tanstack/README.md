@@ -22,7 +22,8 @@ neon link
 ```
 
 Deploy the `neon.ts` policy to enable Realtime. The deploy waits for Realtime to
-be ready and writes its URL, secret, and database name to `.env.local`:
+be ready and refreshes `.env.local` with the database connection string and
+Realtime credentials:
 
 ```bash
 neon deploy
@@ -34,6 +35,9 @@ pull once Realtime is ready:
 ```bash
 neon env pull
 ```
+
+The app parses and validates the database name from `DATABASE_URL`, keeping
+Realtime tied to the same database connection.
 
 Create and seed the todo table:
 
