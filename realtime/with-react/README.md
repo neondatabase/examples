@@ -35,7 +35,7 @@ pull once Realtime is ready:
 neon env pull
 ```
 
-Create the todo table and configure it for Realtime updates:
+Create and seed the todo table:
 
 ```bash
 npm run db:setup
