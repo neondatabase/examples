@@ -170,7 +170,7 @@ templates:
       owner: neondatabase
       repo: examples
       ref: main
-      subdir: with-realtime-react
+      subdir: realtime/with-react
   - id: discord-bot-http
     title: "Discord bot"
     description: "A Discord interactions bot hosted on Neon Functions, with slash commands, embeds, Components v2 buttons, user profiles, and command usage tracking in Lakebase Postgres."
