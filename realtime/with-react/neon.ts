@@ -1,5 +1,7 @@
 export default {
-  realtime: {
-    allowedOrigins: ["http://localhost:5173"],
+  preview: {
+    realtime: {
+      allowedOrigins: ["http://localhost:5173"],
+    },
   },
 };
