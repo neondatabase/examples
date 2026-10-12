@@ -1,0 +1,14 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/registry.schema.json",
+	"name": "neon-functions",
+	"homepage": "https://github.com/neondatabase/examples/tree/main/registry",
+	"templates": [
+		{
+			"id": "basic",
+			"provider": "Neon",
+			"title": "Basic function",
+			"description": "A minimal Neon Function with a JSON response.",
+			"path": "basic/template.json"
+		}
+	]
+}
