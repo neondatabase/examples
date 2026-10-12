@@ -42,53 +42,34 @@ const app = new Hono()
   })
   .post("/api/todos", zValidator("json", createTodoInput), async (c) => {
     const { title } = c.req.valid("json");
-    const result = await db.transaction(async (transaction) => {
-      const [todo] = await transaction
-        .insert(todos)
-        .values({ title })
-        .returning({ id: todos.id });
-      if (!todo) throw new Error("Postgres did not return the new todo");
-      const result = await transaction.execute<{ txid: string }>(
-        sql`select pg_current_xact_id()::text as txid`,
-      );
-      const txid = result.rows[0]?.txid;
-      if (!txid) throw new Error("Postgres did not return a transaction ID");
-      return { id: todo.id, txid };
-    });
-    return c.json(result, 201);
+    const [todo] = await db
+      .insert(todos)
+      .values({ title })
+      .returning({
+        id: todos.id,
+        txid: sql<string>`pg_current_xact_id()::text`,
+      });
+    if (!todo) throw new Error("Postgres did not return the new todo");
+    return c.json(todo, 201);
   })
   .patch("/api/todos/:id", zValidator("param", todoParams), async (c) => {
     const { id } = c.req.valid("param");
-    const txid = await db.transaction(async (transaction) => {
-      const [updated] = await transaction
-        .update(todos)
-        .set({ completed: sql`not ${todos.completed}` })
-        .where(eq(todos.id, id))
-        .returning({ id: todos.id });
-      if (!updated) return undefined;
-      const result = await transaction.execute<{ txid: string }>(
-        sql`select pg_current_xact_id()::text as txid`,
-      );
-      return result.rows[0]?.txid;
-    });
-    if (!txid) return c.json({ error: "Todo not found" }, 404);
-    return c.json({ txid });
+    const [updated] = await db
+      .update(todos)
+      .set({ completed: sql`not ${todos.completed}` })
+      .where(eq(todos.id, id))
+      .returning({ txid: sql<string>`pg_current_xact_id()::text` });
+    if (!updated) return c.json({ error: "Todo not found" }, 404);
+    return c.json(updated);
   })
   .delete("/api/todos/:id", zValidator("param", todoParams), async (c) => {
     const { id } = c.req.valid("param");
-    const txid = await db.transaction(async (transaction) => {
-      const [deleted] = await transaction
-        .delete(todos)
-        .where(eq(todos.id, id))
-        .returning({ id: todos.id });
-      if (!deleted) return undefined;
-      const result = await transaction.execute<{ txid: string }>(
-        sql`select pg_current_xact_id()::text as txid`,
-      );
-      return result.rows[0]?.txid;
-    });
-    if (!txid) return c.json({ error: "Todo not found" }, 404);
-    return c.json({ txid });
+    const [deleted] = await db
+      .delete(todos)
+      .where(eq(todos.id, id))
+      .returning({ txid: sql<string>`pg_current_xact_id()::text` });
+    if (!deleted) return c.json({ error: "Todo not found" }, 404);
+    return c.json(deleted);
   });
 
 export type AppType = typeof app;
