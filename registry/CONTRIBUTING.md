@@ -15,17 +15,15 @@ schemas/
   template.schema.json       # shape of each template.json
 <template-id>/
   template.json              # metadata, no inline source
-  template.tar.gz            # generated archive of the modules, at the same paths
   functions/
     <operation>.ts           # one module per operation
-scripts/
-  pack.mjs                   # builds every template.tar.gz
 ```
 
-The CLI fetches `registry.json`, then the `template.json` its entry points at, then the
-`template.tar.gz` next to it. The archive holds exactly the modules that `template.json`
-references, so a template installs from one download. Every path is relative and must stay inside
-the registry. Absolute paths, `..`, backslashes, and symlinks that lead outside it are not allowed.
+Listing fetches `registry.json` from neon.com, the same way `neon bootstrap` fetches
+`bootstrap.yaml`. Installing downloads the `neondatabase/examples` tarball from GitHub and extracts
+only `registry/<id>/`, including `template.json` and the modules it names. Every path is relative
+and must stay inside the registry. Absolute paths, `..`, backslashes, and symlinks that lead
+outside it are not allowed.
 
 ## Adding a template
 
@@ -124,18 +122,8 @@ Append to `templates` in `registry.json`:
 an absolute `https://` URL that the CLI never fetches or writes.
 
 An entry that fails validation is dropped from the listing without an error, so check that your
-template shows up (see below).
-
-### 4. Build the archive
-
-```bash
-node registry/scripts/pack.mjs
-```
-
-Commit the `template.tar.gz` it writes next to your `template.json`. Rerun it whenever you change
-a module or the `operations` list. CI runs `node registry/scripts/pack.mjs --check` and fails the
-PR when an archive is missing or does not match its modules. The script needs only Node, and it
-writes the same bytes on every run, so an unchanged template produces no diff.
+template shows up (see below). Do not add generated archives. The CLI builds what it needs from
+this folder's source files.
 
 ## Limits
 
@@ -170,7 +158,6 @@ actually decides. A template that passes the schema but fails the commands above
 ## Review checklist
 
 - [ ] The template is listed, and `functions new <id> -y` succeeds against a local checkout.
-- [ ] `node registry/scripts/pack.mjs --check` passes.
 - [ ] Every operation was run once with `neon dev`.
 - [ ] Dependencies are pinned and come from the provider's official SDK.
 - [ ] Every `process.env` read is declared in `environment`, and no secret or default key is

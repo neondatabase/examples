@@ -1,8 +1,8 @@
 # Neon Function Registry
 
-Templates for `neon functions new`. Each folder here is one template: a `template.json`, the
-function modules it ships, and `template.tar.gz`, an archive of those modules that
-`scripts/pack.mjs` generates.
+Templates for `neon functions new`. Each folder here is one template: a `template.json` and the
+function modules it ships. Those files are the source of truth. The repo does not contain generated
+archives.
 
 ```bash
 neon functions templates list   # what's available
@@ -11,28 +11,29 @@ neon functions new basic        # scaffold one into the current project
 
 ## Where the CLI reads it from
 
-The CLI does not read this folder from GitHub. neon.com serves five kinds of file from `main`
-through a cache that refreshes about once an hour, and nothing else in the folder:
+Listing works like `neon bootstrap`. neon.com serves the catalog from `main` through a cache that
+refreshes about once an hour:
 
 | URL | File here |
 | --- | --- |
 | `https://neon.com/functions/registry/registry.json` | `registry.json` |
 | `https://neon.com/functions/registry/schemas/registry.schema.json` | `schemas/registry.schema.json` |
 | `https://neon.com/functions/registry/schemas/template.schema.json` | `schemas/template.schema.json` |
-| `https://neon.com/functions/registry/<id>/template.json` | `<id>/template.json` |
-| `https://neon.com/functions/registry/<id>/template.tar.gz` | `<id>/template.tar.gz` |
 
-Listing templates costs one request for `registry.json`. Installing one costs two more: its
-`template.json` and its `template.tar.gz`. The loose `.ts` files are the source the archive is
-built from, so neon.com does not serve them.
-
-A merge to `main` reaches users within about an hour, without a CLI release or a website deploy.
 When neon.com is unreachable, the CLI falls back to
 `raw.githubusercontent.com/neondatabase/examples/main/registry/registry.json`.
 
+Installing a template does not fetch modules from neon.com. The CLI downloads the
+`neondatabase/examples` tarball from GitHub (`codeload.github.com`) and extracts only
+`registry/<id>/`, the same way `neon bootstrap` extracts a template subdirectory.
+
+A merge to `main` updates the cached catalog within about an hour, without a CLI release or a
+website deploy. The next `functions new` then sees the new files in the tarball.
+
 ## Trying a change
 
-Point the CLI at your checkout:
+Point the CLI at your checkout. Local mode reads the loose files in this folder and does not
+download the GitHub tarball:
 
 ```bash
 NEON_FUNCTION_REGISTRY_DIR=./registry neon functions templates list
