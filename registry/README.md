@@ -10,7 +10,7 @@ neon functions new basic        # scaffold one into the current project
 
 ## Where the CLI reads it from
 
-The CLI never reads this folder from GitHub directly. neon.com serves it, from `main`, through a
+The CLI does not read this folder from GitHub. neon.com serves the files from `main` through a
 cache that refreshes about once an hour:
 
 | URL | File here |
@@ -20,13 +20,13 @@ cache that refreshes about once an hour:
 | `https://neon.com/functions/registry/schemas/template.schema.json` | `schemas/template.schema.json` |
 | `https://neon.com/functions/registry/<id>/…` | `<id>/…` |
 
-A merge to `main` therefore reaches users within about an hour, with no CLI release and no
-website deploy. When neon.com is unreachable, the CLI falls back to
+A merge to `main` reaches users within about an hour, without a CLI release or a website deploy.
+When neon.com is unreachable, the CLI falls back to
 `raw.githubusercontent.com/neondatabase/examples/main/registry/registry.json`.
 
 ## Trying a change
 
-Point the CLI at your checkout instead:
+Point the CLI at your checkout:
 
 ```bash
 NEON_FUNCTION_REGISTRY_DIR=./registry neon functions templates list

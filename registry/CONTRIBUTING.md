@@ -1,10 +1,10 @@
 # Contributing to the Neon Function Registry
 
-The registry is a folder of templates that `neon functions new` scaffolds from. Contributing is a
-pull request to `neondatabase/examples`: add one template folder and one index entry, and Neon
-reviews it. There is nothing to publish yourself. Once merged to `main`, neon.com picks the change
-up within about an hour (see [README.md](README.md)). Review of this registry is the trust boundary, since the CLI writes
-whatever is merged here into people's projects.
+The registry is a folder of templates that `neon functions new` scaffolds from. To contribute, open
+a pull request on `neondatabase/examples` that adds one template folder and one index entry. Neon
+reviews the change, and you do not publish anything yourself. After the PR merges to `main`,
+neon.com picks it up within about an hour (see [README.md](README.md)). The CLI copies merged files
+into people's projects, so only reviewed content should land on `main`.
 
 ## Layout
 
@@ -20,8 +20,8 @@ schemas/
 ```
 
 The CLI fetches `registry.json`, then the `template.json` its entry points at, then every module
-that `template.json` references. Every path is relative and must stay inside the registry:
-no absolute paths, no `..`, no backslashes, and no symlinks that lead outside it.
+that `template.json` references. Every path is relative and must stay inside the registry. Absolute
+paths, `..`, backslashes, and symlinks that lead outside it are not allowed.
 
 ## Adding a template
 
@@ -37,9 +37,9 @@ export default {
 };
 ```
 
-Read configuration from `process.env` and declare every variable you read in `environment`.
-Don't do network work at import time. Keep each module self-contained: the CLI copies a module
-on its own, so a module must not import a sibling from the template folder.
+Read configuration from `process.env`, declare every variable you read in `environment`, and do not
+do network work at import time. The CLI copies each module on its own, so a module must not import
+a sibling from the template folder.
 
 ### 2. Write `template.json`
 
@@ -91,13 +91,15 @@ Each operation needs:
 
 ### Layouts
 
-- **`router`** scaffolds one Neon function. The CLI copies the selected modules and generates an
-  `index.ts` that dispatches on the URL path to each operation's `route`. Any other path returns
-  404 and lists the valid routes.
-- **`separate`** scaffolds one Neon function per selected operation, each under its own `slug`.
-  Use it when operations scale, fail, or get secrets independently.
-- **No `operations`**: the template ships exactly one module at `functions/index.ts`, scaffolded
-  as `index.ts`. Set `layout` to `router`.
+A `router` template scaffolds one Neon function. The CLI copies the selected modules and generates
+an `index.ts` that dispatches on the URL path to each operation's `route`. Any other path returns
+404 and lists the valid routes.
+
+A `separate` template scaffolds one Neon function per selected operation, each under its own
+`slug`. Use it when operations should scale, fail, or receive secrets independently.
+
+If you omit `operations`, the template ships exactly one module at `functions/index.ts`, which the
+CLI scaffolds as `index.ts`. Set `layout` to `router`.
 
 ### 3. Add the index entry
 
@@ -114,7 +116,7 @@ Append to `templates` in `registry.json`:
 }
 ```
 
-`id`, `title` and `description` should match `template.json`. `logo` is optional display metadata:
+`id`, `title`, and `description` should match `template.json`. `logo` is optional display metadata:
 an absolute `https://` URL that the CLI never fetches or writes.
 
 An entry that fails validation is dropped from the listing without an error, so check that your
@@ -144,12 +146,11 @@ neon functions templates list
 neon functions new <id> -y --dir /tmp/<id> --no-add-to-config --no-install
 ```
 
-It prints a `neon dev --source …` command for each function it created. Run them and call each
-route or function once.
+The command prints a `neon dev --source …` line for each function it created. Run those commands
+and call each route or function once.
 
-The JSON Schemas give editor completion through the `$schema` field. The CLI's parser is what
-actually decides, though, so a template that passes the schema but not the commands above is not
-ready.
+The `$schema` field gives editor completion from the JSON Schemas, but the CLI's parser is what
+actually decides. A template that passes the schema but fails the commands above is not ready.
 
 ## Review checklist
 
@@ -169,6 +170,6 @@ The format is enforced in two places that must agree: the Neon CLI's parser
 canonical schemas live next to that parser, in `packages/cli/src/functions/schemas/`, where a test
 checks them against it. `schemas/` here is the published copy that neon.com serves.
 
-Change the CLI first, then copy its schemas here unchanged. A field the published CLI doesn't know
-about is either ignored or makes the template invalid for every user on that version, so don't
+Change the CLI first, then copy its schemas here unchanged. A field the published CLI does not know
+about is either ignored or makes the template invalid for every user on that version, so do not
 use a new field in a template until a CLI release that understands it is out.
