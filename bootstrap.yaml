@@ -201,7 +201,7 @@ templates:
       owner: neondatabase
       repo: examples
       ref: main
-      subdir: with-realtime-tanstack
+      subdir: realtime/with-tanstack
   - id: discord-bot-http
     title: "Discord bot"
     description: "A Discord interactions bot hosted on Neon Functions, with slash commands, embeds, Components v2 buttons, user profiles, and command usage tracking in Lakebase Postgres."
