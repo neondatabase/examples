@@ -2,6 +2,9 @@
 
 A TanStack Start loader seeds a request-scoped `DbClient` and dehydrates it for the browser. The Realtime collection adapter synchronizes the hydrated collection. Optimistic inserts, updates, and deletes remain pending until `awaitTxId()` confirms the committed Postgres transaction.
 
+The "ready" badge indicates that the collection has data available. Failed
+mutations show an error, and the form clears after the insert is persisted.
+
 Open two tabs and add, complete, or delete a todo. Both tabs update through the
 managed Neon Realtime WebSocket endpoint. This demo uses public query-sealing
 and mutation endpoints; it has no login flow. Authenticate those endpoints

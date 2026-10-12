@@ -30,11 +30,11 @@ export function TodoApp({
     const formData = new FormData(form);
     const title = String(formData.get("title") ?? "").trim();
     if (!title) return;
-    form.reset();
-    await request("/api/todos", {
+    const saved = await request("/api/todos", {
       method: "POST",
       body: JSON.stringify({ title } satisfies CreateTodoRequest),
     });
+    if (saved) form.reset();
   }
 
   async function toggle(todo: Todo) {
@@ -47,11 +47,19 @@ export function TodoApp({
 
   async function request(path: string, init: RequestInit) {
     setMutationError(undefined);
-    const response = await fetch(path, {
-      ...init,
-      headers: { "content-type": "application/json", ...init.headers },
-    });
-    if (!response.ok) setMutationError(`Request failed (${response.status})`);
+    try {
+      const response = await fetch(path, {
+        ...init,
+        headers: { "content-type": "application/json", ...init.headers },
+      });
+      if (!response.ok) throw new Error(`Request failed (${response.status})`);
+      return true;
+    } catch (cause) {
+      setMutationError(
+        cause instanceof Error ? cause.message : "Request failed",
+      );
+      return false;
+    }
   }
 
   return (

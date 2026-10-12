@@ -3,7 +3,7 @@ import { DbClient, useLiveQuery } from "@tanstack/react-db";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { createRealtimeClient } from "@neon/realtime/client";
-import type { Collection, DehydratedDbState } from "@tanstack/db";
+import type { Collection, DehydratedDbState, Transaction } from "@tanstack/db";
 import type { RealtimeCollectionUtils } from "@neon/realtime-tanstack";
 
 import { createTodoCollection } from "../todo-collection";
@@ -73,13 +73,30 @@ function TodoList({
   readonly isReady: boolean;
   readonly todos: readonly Todo[];
 }) {
-  function addTodo(event: FormEvent<HTMLFormElement>) {
+  const [mutationError, setMutationError] = useState<string>();
+
+  async function addTodo(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const title = String(new FormData(form).get("title") ?? "").trim();
     if (!title) return;
-    form.reset();
-    collection.insert({ id: randomId(), title, status: "active" });
+    const saved = await persist(() =>
+      collection.insert({ id: randomId(), title, status: "active" }),
+    );
+    if (saved) form.reset();
+  }
+
+  async function persist(mutate: () => Transaction): Promise<boolean> {
+    setMutationError(undefined);
+    try {
+      await mutate().isPersisted.promise;
+      return true;
+    } catch (cause) {
+      setMutationError(
+        cause instanceof Error ? cause.message : "Request failed",
+      );
+      return false;
+    }
   }
 
   return (
@@ -89,8 +106,8 @@ function TodoList({
           <p className="eyebrow">TanStack Start + DB</p>
           <h1>Neon Realtime Todos</h1>
         </div>
-        <output className={`status ${isReady ? "live" : "loading"}`}>
-          {isReady ? "live" : "loading"}
+        <output className={`status ${isReady ? "ready" : "loading"}`}>
+          {isReady ? "ready" : "loading"}
         </output>
       </header>
 
@@ -99,6 +116,8 @@ function TodoList({
         <button type="submit">Add todo</button>
       </form>
 
+      {mutationError && <p className="error">{mutationError}</p>}
+
       <ul aria-live="polite">
         {todos.map((todo) => (
           <li className={todo.status} key={todo.id}>
@@ -106,10 +125,12 @@ function TodoList({
               aria-label={`Mark ${todo.title} ${todo.status === "completed" ? "active" : "completed"}`}
               className="toggle"
               onClick={() =>
-                collection.update(todo.id, (draft) => {
-                  draft.status =
-                    todo.status === "completed" ? "active" : "completed";
-                })
+                void persist(() =>
+                  collection.update(todo.id, (draft) => {
+                    draft.status =
+                      todo.status === "completed" ? "active" : "completed";
+                  }),
+                )
               }
             >
               {todo.status === "completed" ? "✓" : "○"}
@@ -117,7 +138,7 @@ function TodoList({
             <span>{todo.title}</span>
             <button
               className="delete"
-              onClick={() => collection.delete(todo.id)}
+              onClick={() => void persist(() => collection.delete(todo.id))}
             >
               Delete
             </button>

@@ -42,8 +42,11 @@ h1 {
   color: #68736c;
   font-size: 13px;
 }
-.status.live {
+.status.ready {
   color: #08794f;
+}
+.error {
+  color: #b43d3d;
 }
 form {
   display: flex;

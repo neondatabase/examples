@@ -22,22 +22,24 @@ const status = element<HTMLOutputElement>("status");
 const error = element<HTMLParagraphElement>("error");
 
 const client = createRealtimeClient({ url: websocketUrl });
-let query = await sealTodos();
-const subscription = client.subscribe(query);
-let refreshTimer: ReturnType<typeof setTimeout>;
-
-subscription.onChange(render);
-scheduleQueryRefresh();
+try {
+  await subscribeToTodos();
+} catch {
+  client.close();
+  status.textContent = "error";
+  showError("Could not load todos. Reload to retry.");
+  form.remove();
+}
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const value = title.value.trim();
   if (!value) return;
-  title.value = "";
-  await request("/api/todos", {
+  const saved = await request("/api/todos", {
     method: "POST",
     body: JSON.stringify({ title: value } satisfies CreateTodoRequest),
   });
+  if (saved) title.value = "";
 });
 
 list.addEventListener("click", async (event) => {
@@ -56,12 +58,6 @@ list.addEventListener("click", async (event) => {
     method: "PATCH",
     body: JSON.stringify({ status: nextStatus } satisfies UpdateTodoRequest),
   });
-});
-
-window.addEventListener("beforeunload", () => {
-  clearTimeout(refreshTimer);
-  subscription.unsubscribe();
-  client.close();
 });
 
 function render(snapshot: LiveQuerySnapshot<Todo>): void {
@@ -105,30 +101,53 @@ async function sealTodos(): Promise<SealedTodosQuery> {
   return response.json() as Promise<SealedTodosQuery>;
 }
 
-function scheduleQueryRefresh(): void {
-  clearTimeout(refreshTimer);
-  const delay = Math.max(0, query.expiresAt - Date.now() - 10_000);
-  refreshTimer = setTimeout(async () => {
-    try {
-      query = await sealTodos();
-      await subscription.renew(query);
-      scheduleQueryRefresh();
-    } catch (cause) {
-      showError(
-        cause instanceof Error ? cause.message : "Authorization refresh failed",
-      );
-      refreshTimer = setTimeout(scheduleQueryRefresh, 1_000);
-    }
-  }, delay);
+async function subscribeToTodos(): Promise<void> {
+  let query = await sealTodos();
+  const subscription = client.subscribe(query);
+  let refreshTimer: ReturnType<typeof setTimeout>;
+
+  subscription.onChange(render);
+  scheduleQueryRefresh();
+
+  window.addEventListener("beforeunload", () => {
+    clearTimeout(refreshTimer);
+    subscription.unsubscribe();
+    client.close();
+  });
+
+  function scheduleQueryRefresh(): void {
+    clearTimeout(refreshTimer);
+    const delay = Math.max(0, query.expiresAt - Date.now() - 10_000);
+    refreshTimer = setTimeout(async () => {
+      try {
+        query = await sealTodos();
+        await subscription.renew(query);
+        scheduleQueryRefresh();
+      } catch (cause) {
+        showError(
+          cause instanceof Error
+            ? cause.message
+            : "Authorization refresh failed",
+        );
+        refreshTimer = setTimeout(scheduleQueryRefresh, 1_000);
+      }
+    }, delay);
+  }
 }
 
-async function request(path: string, init: RequestInit): Promise<void> {
+async function request(path: string, init: RequestInit): Promise<boolean> {
   showError();
-  const response = await fetch(path, {
-    ...init,
-    headers: { "content-type": "application/json", ...init.headers },
-  });
-  if (!response.ok) showError(`Request failed (${response.status})`);
+  try {
+    const response = await fetch(path, {
+      ...init,
+      headers: { "content-type": "application/json", ...init.headers },
+    });
+    if (!response.ok) throw new Error(`Request failed (${response.status})`);
+    return true;
+  } catch (cause) {
+    showError(cause instanceof Error ? cause.message : "Request failed");
+    return false;
+  }
 }
 
 function showError(message?: string): void {

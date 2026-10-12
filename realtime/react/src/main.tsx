@@ -11,15 +11,25 @@ const websocketUrl = import.meta.env.VITE_NEON_REALTIME_URL;
 if (!websocketUrl) throw new Error("Missing VITE_NEON_REALTIME_URL");
 
 const client = createRealtimeClient({ url: websocketUrl });
-const query = await sealTodos();
-const root = document.getElementById("root");
-if (!root) throw new Error("Missing #root");
+const element = document.getElementById("root");
+if (!element) throw new Error("Missing #root");
+const root = createRoot(element);
 
-createRoot(root).render(
-  <RealtimeProvider client={client}>
-    <TodoApp query={query} refreshQuery={sealTodos} />
-  </RealtimeProvider>,
-);
+try {
+  const query = await sealTodos();
+  root.render(
+    <RealtimeProvider client={client}>
+      <TodoApp query={query} refreshQuery={sealTodos} />
+    </RealtimeProvider>,
+  );
+} catch {
+  client.close();
+  root.render(
+    <main>
+      <p className="error">Could not load todos. Reload to retry.</p>
+    </main>,
+  );
+}
 
 window.addEventListener("beforeunload", () => client.close());
 

@@ -62,17 +62,22 @@ test("two tabs receive mutations, renew queries, and recover after reconnect", a
     await a.locator('input[name="title"], input#title').fill(text);
     await a.getByRole("button", { name: "Add todo", exact: true }).click();
     await expect(row(a, text)).toBeVisible();
+    await expect(a.locator('input[name="title"]')).toHaveValue("");
   };
 
   try {
     await Promise.all([a.goto(baseURL), b.goto(baseURL)]);
+    const readyStatus =
+      (await a.locator(".eyebrow").textContent()) === "TanStack Start + DB"
+        ? "ready"
+        : "live";
     for (const page of [a, b]) {
       if (process.env.DEMO_FRAMEWORK) {
         await expect(page.locator(".eyebrow")).toHaveText(
           process.env.DEMO_FRAMEWORK,
         );
       }
-      await expect(page.locator("output")).toHaveText("live");
+      await expect(page.locator("output")).toHaveText(readyStatus);
     }
     const liveSince = Date.now();
 
@@ -106,7 +111,7 @@ test("two tabs receive mutations, renew queries, and recover after reconnect", a
         await expect
           .poll(() => page.evaluate(() => window.__realtimeSmoke.renewals))
           .toBeGreaterThan(0);
-        await expect(page.locator("output")).toHaveText("live");
+        await expect(page.locator("output")).toHaveText(readyStatus);
       }
       await row(a).locator(".toggle").click();
       await expect(row(b)).toHaveClass("completed");
@@ -125,7 +130,7 @@ test("two tabs receive mutations, renew queries, and recover after reconnect", a
         .poll(() => b.evaluate(() => window.__realtimeSmoke.connections))
         .toBeGreaterThan(connections);
       await expect(row(b, reconnectTitle)).toBeVisible();
-      await expect(b.locator("output")).toHaveText("live");
+      await expect(b.locator("output")).toHaveText(readyStatus);
       await row(a, reconnectTitle)
         .getByRole("button", { name: "Delete", exact: true })
         .click();

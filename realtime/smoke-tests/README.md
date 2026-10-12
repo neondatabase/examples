@@ -7,6 +7,10 @@ complete, uncomplete, and delete events, waits beyond the sealed query's
 removed afterward. Titles include quotes to check that mutation values round-trip
 through each SQL or query-builder integration.
 
+The suite also checks that failed mutations preserve the form input and show
+an error. For the browser-rendered examples, it checks the startup error message
+and recovery after reloading. TanStack Start's status badge reads "ready".
+
 ```sh
 npm install
 npx playwright install chromium
