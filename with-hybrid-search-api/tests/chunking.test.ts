@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { chunkMarkdown, TARGET_CHUNK_CHARS } from "../src/chunking.ts";
+import { InputError } from "../src/input.ts";
 
 test("Markdown headings create sections with parent context; code fences do not", () => {
   const text =
@@ -108,7 +109,10 @@ test("YAML and TOML front matter never become chunks or heading context", () => 
       chunkMarkdown(prefix + "# Guide\n\n## Branches\n\nCreate a branch."),
       [{ content: "Create a branch.", heading: "Guide > Branches" }],
     );
-    assert.deepEqual(chunkMarkdown(prefix), []);
+    assert.throws(() => chunkMarkdown(prefix), {
+      name: "Error",
+      message: "content must produce at least one searchable chunk",
+    });
     assert.deepEqual(chunkMarkdown(prefix + "# Guide"), [
       { content: "# Guide", heading: "Guide" },
     ]);
@@ -133,7 +137,7 @@ test("a leading BOM keeps parser offsets aligned for YAML and TOML front matter"
     assert.deepEqual(chunkMarkdown("\uFEFF" + prefix + "# Guide\n\nBody."), [
       { content: "Body.", heading: "Guide" },
     ]);
-    assert.deepEqual(chunkMarkdown("\uFEFF" + prefix.trimEnd()), []);
+    assert.throws(() => chunkMarkdown("\uFEFF" + prefix.trimEnd()), InputError);
     assert.deepEqual(chunkMarkdown("\uFEFF" + prefix + "# Guide"), [
       { content: "# Guide", heading: "Guide" },
     ]);
@@ -152,4 +156,27 @@ test("a leading BOM also preserves ordinary Markdown and indented code", () => {
   assert.deepEqual(chunkMarkdown("\uFEFF" + code), [
     { content: code, heading: "" },
   ]);
+});
+
+test("documents with no searchable chunks fail as input errors", () => {
+  for (const content of [
+    "",
+    " \n\t",
+    "---\ntitle: Metadata\n---",
+    '+++\ntitle = "Metadata"\n+++',
+  ]) {
+    for (const prefix of ["", "\uFEFF"]) {
+      assert.throws(
+        () => chunkMarkdown(prefix + content),
+        (error: unknown) => {
+          assert.ok(error instanceof InputError);
+          assert.equal(
+            error.message,
+            "content must produce at least one searchable chunk",
+          );
+          return true;
+        },
+      );
+    }
+  }
 });

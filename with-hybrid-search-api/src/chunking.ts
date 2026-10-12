@@ -93,6 +93,9 @@ export function chunkMarkdown(markdown: string): MarkdownChunk[] {
   if (chunks.length === 0 && body.trim()) {
     for (const content of splitBlock(body)) chunks.push({ content, heading });
   }
+  if (chunks.length === 0) {
+    throw new InputError("content must produce at least one searchable chunk");
+  }
   if (chunks.length > MAX_DOCUMENT_CHUNKS) {
     throw new InputError(
       `content produces more than ${MAX_DOCUMENT_CHUNKS} markdown chunks`,
