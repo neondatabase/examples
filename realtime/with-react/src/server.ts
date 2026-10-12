@@ -9,12 +9,12 @@ import { Hono } from "hono";
 import { z } from "zod";
 
 import { db, pool } from "./db.js";
-import { env } from "./env.js";
+import { env, postgresDatabaseName } from "./env.js";
 import { todos } from "./schema.js";
 
 const realtime = createRealtime({
   secret: env.realtime.secret,
-  db: env.realtime.databaseName,
+  db: postgresDatabaseName,
   adapter: drizzleAdapter(),
 });
 

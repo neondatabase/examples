@@ -23,6 +23,7 @@
     "drizzle-orm": "^0.45.2",
     "hono": "^4.9.12",
     "pg": "^8.16.3",
+    "pg-connection-string": "^2.14.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "zod": "^4.1.12"
