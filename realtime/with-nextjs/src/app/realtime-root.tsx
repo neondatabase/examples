@@ -15,7 +15,9 @@ export function RealtimeRoot({
 }) {
   // Creating the client opens no socket, so this is safe during the server render. The socket opens on the
   // first subscribe and closes after the last one ends, so there is no close() effect (under StrictMode, one
-  // would close the client for good).
+  // would close the client for good). StrictMode's dev double mount closes the first socket while it is still
+  // connecting, so the dev console logs "WebSocket is closed before the connection is established" (a package
+  // gap, harmless).
   const [client] = useState(() =>
     createRealtimeClient({ url, parsers: { ...drizzleParsers } }),
   );

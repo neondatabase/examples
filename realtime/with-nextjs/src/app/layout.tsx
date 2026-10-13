@@ -14,8 +14,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
-    // NeonAuthUIProvider's theme script sets class and color-scheme on <html> before hydration.
-    // suppressHydrationWarning covers this element's attributes only, not its children.
+    // NeonAuthUIProvider wraps next-themes, whose pre-hydration script sets class and color-scheme on <html>
+    // from the saved or system theme, which the server can't know. This suppresses <html>'s own attributes only.
     <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>{children}</Providers>
