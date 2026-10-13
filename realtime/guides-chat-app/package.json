@@ -1,0 +1,54 @@
+{
+  "name": "with-realtime-guides-chat-react",
+  "description": "The chat app from the Neon Realtime guides: React, Neon Auth, live queries, a TanStack DB inbox, Hono and Drizzle.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm run typecheck && vite build",
+    "db:push": "drizzle-kit push",
+    "db:setup": "npm run db:push && tsx backend/setup.ts",
+    "dev": "tsx watch --clear-screen=false --include .env.local backend/dev.ts",
+    "fmt": "prettier --write .",
+    "start": "tsx backend/server.ts",
+    "typecheck": "tsc -p tsconfig.client.json --noEmit && tsc -p tsconfig.server.json --noEmit",
+    "worker": "tsx backend/worker.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.7",
+    "@neon/config": "^1.9.1",
+    "@neon/env": "^1.6.1",
+    "@neon/realtime": "0.0.1",
+    "@neon/realtime-drizzle": "0.0.1",
+    "@neon/realtime-react": "0.0.1",
+    "@neon/realtime-tanstack": "0.0.1",
+    "@neondatabase/auth": "0.6.0-beta",
+    "@neondatabase/auth-ui": "0.4.0-beta",
+    "@neondatabase/serverless": "^1.2.0",
+    "@tanstack/react-db": "0.4.1",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.9.12",
+    "jose": "^6.2.12",
+    "pg-connection-string": "^2.14.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "ws": "^8.21.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@types/ws": "^8.18.1",
+    "@vitejs/plugin-react": "^5.1.0",
+    "drizzle-kit": "^0.31.6",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.12"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
