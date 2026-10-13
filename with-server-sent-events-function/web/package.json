@@ -1,6 +1,6 @@
 {
-  "name": "with-realtime-sse-web",
-  "description": "TanStack Router frontend for the Neon realtime SSE example.",
+  "name": "with-server-sent-events-function-web",
+  "description": "TanStack Router frontend for the Neon SSE counter example.",
   "private": true,
   "type": "module",
   "scripts": {

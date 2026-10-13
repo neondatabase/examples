@@ -5,7 +5,7 @@ export default defineConfig({
   // the SSE server and reads/writes the counter through the injected DATABASE_URL.
   functions: {
     counter: {
-      name: "realtime counter",
+      name: "sse counter",
       source: "src/index.ts",
     },
   },

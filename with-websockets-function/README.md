@@ -4,9 +4,9 @@
   <img width="250px" alt="Neon Logo fallback" src="https://neon.com/brand/neon-logo-dark-color.svg">
 </picture>
 
-# Getting started with Neon realtime chat
+# Getting started with WebSockets on Neon Functions
 
-A minimal full-stack realtime chat: a [Next.js](https://nextjs.org) app with [Neon Auth](https://neon.com/docs/neon-auth/overview), talking over **WebSockets** to a [Hono](https://hono.dev) server running on [Neon Functions](https://neon.com/docs/compute/functions/overview), with messages stored in [Neon](https://neon.com) Postgres via [Drizzle ORM](https://orm.drizzle.team).
+A minimal full-stack chat: a [Next.js](https://nextjs.org) app with [Neon Auth](https://neon.com/docs/neon-auth/overview), talking over **WebSockets** to a [Hono](https://hono.dev) server running on [Neon Functions](https://neon.com/docs/compute/functions/overview), with messages stored in [Neon](https://neon.com) Postgres via [Drizzle ORM](https://orm.drizzle.team).
 
 There is one shared chat for all signed-in users:
 
@@ -23,7 +23,7 @@ Browser ──(wss?token=JWT)──▶ Neon Function ──▶ Postgres
 ## Project structure
 
 ```
-with-realtime-chat/
+with-websockets-function/
 ├── neon.ts                 # Neon policy: Neon Auth + the `chat` function
 ├── drizzle.config.ts       # Drizzle Kit config
 ├── .env.example            # Function environment variables
@@ -42,8 +42,8 @@ with-realtime-chat/
 ## Clone the repository
 
 ```bash
-npx degit neondatabase/examples/with-realtime-chat ./with-realtime-chat
-cd with-realtime-chat
+npx degit neondatabase/examples/with-websockets-function ./with-websockets-function
+cd with-websockets-function
 ```
 
 ## Install and authenticate the CLIs

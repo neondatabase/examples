@@ -6,7 +6,7 @@ export default defineConfig({
   auth: true,
   functions: {
     chat: {
-      name: "realtime chat",
+      name: "websocket chat",
       source: "src/index.ts",
       dev: {
         port: 8787,

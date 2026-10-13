@@ -116,7 +116,7 @@ app.get(
       },
     };
   }),
-  (c) => c.text('Neon realtime chat — connect over WebSocket with ?token=<jwt>'),
+  (c) => c.text('Neon WebSocket chat — connect over WebSocket with ?token=<jwt>'),
 );
 
 export default app;

@@ -104,7 +104,7 @@ templates:
       ref: main
       subdir: with-mcp
   - id: realtime-chat
-    title: "Realtime chat"
+    title: "WebSocket chat"
     description: "A Next.js + Neon Auth chat over WebSockets to a Hono server, with messages stored in Lakebase Postgres via Drizzle."
     tools:
       - Next.js
@@ -118,9 +118,9 @@ templates:
       owner: neondatabase
       repo: examples
       ref: main
-      subdir: with-realtime-chat
+      subdir: with-websockets-function
   - id: realtime-sse
-    title: "Realtime counter"
+    title: "SSE counter"
     description: "A TanStack Router SPA with a shared counter over server-sent events (SSE) from a Hono server on Neon Functions, stored in Lakebase Postgres via Drizzle."
     tools:
       - TanStack Router
@@ -132,7 +132,7 @@ templates:
       owner: neondatabase
       repo: examples
       ref: main
-      subdir: with-realtime-sse
+      subdir: with-server-sent-events-function
   - id: discord-bot-http
     title: "Discord bot"
     description: "A Discord interactions bot hosted on Neon Functions, with slash commands, embeds, Components v2 buttons, user profiles, and command usage tracking in Lakebase Postgres."
