@@ -1,0 +1,17 @@
+# deps
+node_modules/
+package-lock.json
+
+# build
+dist/
+
+# env
+.env*
+!.env.example
+
+# logs
+*.log
+
+# misc
+.DS_Store
+.vercel
