@@ -11,6 +11,9 @@ The row type starts at the Drizzle query in the Hono backend, crosses the HTTP
 boundary through Hono RPC, and is inferred by `useLiveQuery` in React. There is
 no handwritten todo or API response type.
 
+You can start your own copy of this example with
+`neon bootstrap my-app --template realtime-react`.
+
 ## Set up Neon
 
 Install dependencies, authenticate, and link a Neon project:
