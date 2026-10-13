@@ -22,6 +22,3 @@ export const todos = pgTable(
   },
   (t) => [index("realtime_todos_user_id_idx").on(t.userId)],
 );
-
-// The row shape the browser sees: the same columns `selectTodos` selects.
-export type Todo = Omit<typeof todos.$inferSelect, "userId">;

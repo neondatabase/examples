@@ -2,13 +2,13 @@ import type { RealtimeClient, SealedLiveQuery } from "@neon/realtime/client";
 import { realtimeCollectionOptions } from "@neon/realtime-tanstack";
 import { collectionOptions } from "@tanstack/react-db";
 
-import type { Todo } from "./schema";
 import {
   createTodos,
   deleteTodos,
   refreshTodosQuery,
   updateTodos,
 } from "./todos.functions";
+import type { Todo } from "./todos.server";
 
 // How long a write waits for its own change to come back over Realtime. Keep it
 // short: while a handler waits, TanStack DB holds back the collection's synced

@@ -22,12 +22,12 @@ my-app/
 ├── .env.example               # Every variable, and where it comes from
 └── src/
     ├── router.tsx             # Realtime client + DbClient per router, routerWithDbClient
-    ├── schema.ts              # realtime_todos table and the Todo type
+    ├── schema.ts              # realtime_todos table
     ├── env.server.ts          # Server env, validated at startup
     ├── env.d.ts               # Type for import.meta.env.VITE_NEON_REALTIME_URL
     ├── db.server.ts           # node-postgres pool + Drizzle
     ├── realtime.server.ts     # Seals queries with NEON_REALTIME_SECRET
-    ├── todos.server.ts        # selectTodos(userId), writeTodos() → { txid }
+    ├── todos.server.ts        # selectTodos(userId) and its Todo row type, writeTodos() → { txid }
     ├── todos.schemas.ts       # zod input schemas for writes
     ├── todos.functions.ts     # Server functions: load, refresh, create, update, delete
     ├── todos.collection.ts    # todosCollection(userId, query)
@@ -117,7 +117,7 @@ Notes:
 6. **Writes.** Each optimistic transaction becomes one call to a POST server function (`createTodos`, `updateTodos` or `deleteTodos`). The function checks the session, validates the batch with zod, and writes it in one Postgres transaction limited to the user's rows. It returns the transaction id, and the collection waits up to 10 seconds for that transaction to arrive over Realtime (`awaitTxId`). A failed write rolls back and shows the error. A write that committed but didn't arrive in time also rolls back, with a notice that it was saved, and shows again once live updates reconnect. A row's checkbox and Delete button stay disabled until its last change is confirmed. A write that changes nothing returns `{ txid: null }` and isn't rolled back.
 7. **Sign-in and sign-out** are full page loads, which drop the `DbClient`, the socket and any cached rows. If the session is gone when the page refreshes its query or writes, it goes to `/auth/sign-in`. So does a query refresh or a write after another user signs in.
 
-The `Todo` type comes from the Drizzle schema. The sealed query carries it into the collection and `useLiveQuery`.
+The `Todo` type is inferred from the `selectTodos` Drizzle query. The sealed query carries it into the collection and `useLiveQuery`.
 
 ## The Neon Auth adapter
 

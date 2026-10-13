@@ -23,6 +23,9 @@ export const selectTodos = (userId: string) =>
     .from(todos)
     .where(eq(todos.userId, userId));
 
+// The row shape the browser sees, inferred from the query.
+export type Todo = Awaited<ReturnType<typeof selectTodos>>[number];
+
 // Runs `write` in a transaction and returns its transaction id, which the
 // browser waits to see come back over Realtime. A write that changes no rows
 // returns `{ txid: null }`: there's nothing to wait for and nothing to roll back.
