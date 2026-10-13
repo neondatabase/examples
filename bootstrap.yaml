@@ -186,7 +186,7 @@ templates:
       subdir: realtime/with-nextjs
   - id: realtime-tanstack
     title: "Realtime TanStack DB app"
-    description: "An SSR todo app using TanStack Start, TanStack DB, Neon Realtime, and Drizzle."
+    description: "A per-user SSR todo app using TanStack Start, TanStack DB, Neon Realtime, Neon Auth, and Drizzle, with optimistic writes synced live across tabs."
     tools:
       - TanStack Start
       - TanStack DB
@@ -194,9 +194,11 @@ templates:
     services:
       - Postgres
       - Realtime
+      - Neon Auth
     requires:
       - database
       - realtime
+      - auth
     source:
       owner: neondatabase
       repo: examples

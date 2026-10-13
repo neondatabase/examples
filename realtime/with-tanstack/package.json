@@ -1,22 +1,24 @@
 {
   "name": "with-realtime-tanstack",
-  "description": "SSR TanStack Start and TanStack DB app using Neon Realtime and Drizzle ORM.",
+  "description": "Per-user SSR TanStack Start and TanStack DB app using Neon Realtime, Neon Auth and Drizzle ORM.",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "vite build && tsc --noEmit",
     "db:push": "drizzle-kit push",
-    "db:setup": "npm run db:push && tsx src/setup.ts",
     "dev": "vite dev",
     "fmt": "prettier --write .",
     "start": "node --env-file-if-exists=.env.local .output/server/index.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@neon/config": "^1.9.1",
     "@neon/env": "^1.5.3",
     "@neon/realtime": "^0.1.0",
     "@neon/realtime-drizzle": "^0.1.0",
     "@neon/realtime-tanstack": "^0.1.0",
+    "@neondatabase/auth": "0.6.0-beta",
+    "@neondatabase/auth-ui": "0.4.0-beta",
     "@standard-schema/spec": "^1.1.0",
     "@tanstack/db": "0.9.0",
     "@tanstack/react-db": "0.3.8",
@@ -29,7 +31,8 @@
     "pg": "^8.21.0",
     "pg-connection-string": "^2.14.1",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -42,7 +45,6 @@
     "nitro": "^3.0.260311-beta",
     "prettier": "^3.6.2",
     "tailwindcss": "^4.3.3",
-    "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vite": "8.0.14"
   },

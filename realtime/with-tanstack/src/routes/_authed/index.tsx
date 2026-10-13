@@ -1,85 +1,71 @@
-import { createRealtimeClient } from "@neon/realtime/client";
-import type { RealtimeCollectionUtils } from "@neon/realtime-tanstack";
-import type { Collection, DehydratedDbState } from "@tanstack/db";
-import { DbClient, useLiveQuery } from "@tanstack/react-db";
+import {
+  useDbClient,
+  useLiveQuery,
+  type Transaction,
+} from "@tanstack/react-db";
 import { createFileRoute } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/react-start";
-import { useMemo, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 
-import type { Todo } from "../schema";
-import { createTodoCollection } from "../todo-collection";
+import { todosCollection } from "../../todos.collection";
+import { loadTodos } from "../../todos.functions";
 
-const loadTodosPage = createServerFn({ method: "GET" }).handler(async () => {
-  const { env } = await import("../env.server");
-  const { realtime } = await import("../realtime.server");
-  const { selectTodos } = await import("../todos.server");
-  const [initialTodos, query] = await Promise.all([
-    selectTodos(),
-    realtime.seal({ query: selectTodos() }),
-  ]);
-
-  const realtimeClient = createRealtimeClient({ url: env.realtime.url });
-  const dbClient = new DbClient({ runtime: "server" });
-  dbClient.collection(createTodoCollection(realtimeClient, query), {
-    initialData: [...initialTodos],
-  });
-  const dbState = dbClient.dehydrate() as unknown as TodoDbState;
-  await dbClient.cleanup();
-  realtimeClient.close();
-
-  return { dbState, query, websocketUrl: env.realtime.url };
+export const Route = createFileRoute("/_authed/")({
+  // Don't refetch on a navigation back here while the collection is live.
+  // No visible effect until the app has a second page.
+  staleTime: Infinity,
+  // Fills the router's DbClient. On the server, routerWithDbClient snapshots
+  // these rows into the HTML and restores them in the browser before render.
+  loader: async ({ context }) => {
+    const { rows, query } = await loadTodos();
+    // A no-op if this user's collection already exists.
+    context.dbClient.collection(todosCollection(context.user.id, query), {
+      initialData: rows,
+    });
+    return { query };
+  },
+  component: TodosPage,
 });
 
-export const Route = createFileRoute("/")({
-  loader: () => loadTodosPage(),
-  component: TodosRoute,
-});
-
-function TodosRoute() {
-  const { dbState, query, websocketUrl } = Route.useLoaderData();
-  const { dbClient } = Route.useRouteContext();
-  const [hydratedDbClient] = useState(() => {
-    dbClient.hydrate(dbState as unknown as DehydratedDbState);
-    return dbClient;
-  });
-  const [realtimeClient] = useState(() =>
-    createRealtimeClient({ url: websocketUrl }),
-  );
-  const descriptor = useMemo(
-    () => createTodoCollection(realtimeClient, query),
-    [query, realtimeClient],
-  );
-  const collection = hydratedDbClient.collection(descriptor);
+function TodosPage() {
+  const { query } = Route.useLoaderData();
+  const { user } = Route.useRouteContext();
+  // Same id as the loader's, so this resolves to the collection it filled.
+  const descriptor = todosCollection(user.id, query);
+  const collection = useDbClient().collection(descriptor);
+  // `isReady` turns true when Realtime delivers its first snapshot. The SSR
+  // rows are on screen before that.
   const { data: todos, isReady } = useLiveQuery({
     query: (q) =>
-      q.from({ todo: descriptor }).orderBy(({ todo }) => todo.id, "asc"),
+      q
+        .from({ todo: descriptor })
+        .orderBy(({ todo }) => todo.createdAt, "desc")
+        .orderBy(({ todo }) => todo.id, "desc"),
   });
+  const [error, setError] = useState<string | null>(null);
 
-  return <TodoList collection={collection} isReady={isReady} todos={todos} />;
-}
+  // Changes apply optimistically. If the server rejects one, TanStack DB rolls
+  // it back and the error shows here.
+  function track(tx: Transaction) {
+    setError(null);
+    tx.isPersisted.promise.catch((cause: unknown) =>
+      setError(cause instanceof Error ? cause.message : String(cause)),
+    );
+  }
 
-function TodoList({
-  collection,
-  isReady,
-  todos,
-}: {
-  readonly collection: Collection<
-    Todo,
-    number,
-    RealtimeCollectionUtils,
-    never,
-    Todo
-  >;
-  readonly isReady: boolean;
-  readonly todos: readonly Todo[];
-}) {
   function addTodo(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const title = String(new FormData(form).get("title") ?? "").trim();
     if (!title) return;
     form.reset();
-    collection.insert({ id: randomId(), title, completed: false });
+    track(
+      collection.insert({
+        id: crypto.randomUUID(),
+        title,
+        completed: false,
+        createdAt: new Date(),
+      }),
+    );
   }
 
   return (
@@ -91,13 +77,13 @@ function TodoList({
               TanStack Start + DB + Neon Realtime
             </p>
             <h1 className="mt-1 mb-3 text-4xl font-bold tracking-[-0.04em] sm:text-5xl">
-              Shared todos
+              Your todos
             </h1>
           </div>
           <output
             className={`mb-4.5 text-[13px] ${isReady ? "text-emerald-700 dark:text-emerald-400" : "text-zinc-500 dark:text-zinc-400"}`}
           >
-            {isReady ? "live" : "loading"}
+            {isReady ? "live" : "connecting"}
           </output>
         </header>
 
@@ -124,6 +110,15 @@ function TodoList({
           </button>
         </form>
 
+        {error ? (
+          <p
+            className="mt-3 mb-0 text-[13px] text-red-600 dark:text-red-400"
+            role="alert"
+          >
+            Couldn't save that change: {error}
+          </p>
+        ) : null}
+
         <ul aria-live="polite" className="my-5 list-none p-0">
           {todos.map((todo) => (
             <li
@@ -135,10 +130,12 @@ function TodoList({
                   aria-label={`Mark ${todo.title} as ${todo.completed ? "incomplete" : "complete"}`}
                   checked={todo.completed}
                   className="m-0 size-4.5 accent-emerald-500"
-                  onChange={(event) =>
-                    collection.update(todo.id, (draft) => {
-                      draft.completed = event.currentTarget.checked;
-                    })
+                  onChange={() =>
+                    track(
+                      collection.update(todo.id, (draft) => {
+                        draft.completed = !draft.completed;
+                      }),
+                    )
                   }
                   type="checkbox"
                 />
@@ -155,7 +152,7 @@ function TodoList({
               <button
                 aria-label={`Delete ${todo.title}`}
                 className="cursor-pointer bg-transparent p-2 text-xs font-medium text-zinc-500 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:text-zinc-400 dark:hover:text-red-400"
-                onClick={() => collection.delete(todo.id)}
+                onClick={() => track(collection.delete(todo.id))}
                 type="button"
               >
                 Delete
@@ -166,19 +163,4 @@ function TodoList({
       </div>
     </main>
   );
-}
-
-function randomId(): number {
-  const value = crypto.getRandomValues(new Uint32Array(1))[0]! & 0x7fff_ffff;
-  return value || 1;
-}
-
-interface TodoDbState {
-  readonly collections: readonly {
-    readonly collectionId: string;
-    readonly rows: readonly {
-      readonly key: number;
-      readonly value: Todo;
-    }[];
-  }[];
 }
