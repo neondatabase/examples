@@ -134,6 +134,8 @@ export function App({
 
       {status === "error" ? (
         <Alert onRetry={onRetry}>Live updates stopped: {error.message}</Alert>
+      ) : todos === undefined ? (
+        <p>Loading todos</p>
       ) : (
         <ul aria-live="polite" className="my-5 list-none p-0">
           {optimisticTodos.map((todo) => (

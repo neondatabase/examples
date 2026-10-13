@@ -31,7 +31,12 @@ function useConnection(attempt: number): Connection | undefined {
     getLiveTodos().then(
       ({ query, websocketUrl }) => {
         if (cancelled) return;
-        realtime = createRealtimeClient({ url: websocketUrl });
+        realtime = createRealtimeClient({
+          url: websocketUrl,
+          // A rejected handshake, such as from an origin Realtime doesn't
+          // allow, only shows up in the logs: the client keeps reconnecting
+          logLevel: import.meta.env.DEV ? "debug" : "warn",
+        });
         setConnection({ attempt, query, realtime });
       },
       (error: unknown) => {
