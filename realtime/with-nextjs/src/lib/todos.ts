@@ -1,6 +1,6 @@
 import "server-only";
 
-import { asc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 import { getDb } from "./db";
 import { getRealtime } from "./realtime";
@@ -18,7 +18,7 @@ function todosQuery(userId: string) {
     })
     .from(todos)
     .where(eq(todos.user_id, userId))
-    .orderBy(asc(todos.created_at), asc(todos.id));
+    .orderBy(desc(todos.created_at), desc(todos.id));
 }
 
 export type TodoRow = Awaited<ReturnType<typeof todosQuery>>[number];

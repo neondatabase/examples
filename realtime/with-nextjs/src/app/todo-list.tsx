@@ -42,7 +42,7 @@ function applyOptimisticAction(
     case "add":
       return todos.some((t) => t.id === action.todo.id)
         ? todos
-        : [...todos, { ...action.todo, pending: true }];
+        : [{ ...action.todo, pending: true }, ...todos];
     case "toggle":
       // Only dim rows the stream hasn't confirmed yet.
       return todos.map((t) =>
@@ -57,9 +57,10 @@ function applyOptimisticAction(
 
 // The live stream doesn't keep ORDER BY order (a package gap), so sort here. The server render and
 // hydration run the same sort, so the markup matches.
-const byCreated = (a: OptimisticTodo, b: OptimisticTodo) =>
-  a.created_at.getTime() - b.created_at.getTime() ||
-  (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+// Newest first, optimistic rows included (they carry the browser's created_at until the live row replaces them).
+const newestFirst = (a: OptimisticTodo, b: OptimisticTodo) =>
+  b.created_at.getTime() - a.created_at.getTime() ||
+  (a.id < b.id ? 1 : a.id > b.id ? -1 : 0);
 
 // How long a write stays pending while it waits for its transaction to arrive on the stream.
 const SYNC_TIMEOUT_MS = 300_000;
@@ -116,7 +117,7 @@ export function TodoList({
     OptimisticAction
   >(data ?? initialTodos, applyOptimisticAction);
   const todos = useMemo(
-    () => [...optimisticTodos].sort(byCreated),
+    () => [...optimisticTodos].sort(newestFirst),
     [optimisticTodos],
   );
   const [notice, setNotice] = useState<Notice | null>(null);
