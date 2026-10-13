@@ -163,9 +163,6 @@ templates:
     services:
       - Postgres
       - Realtime
-    requires:
-      - database
-      - realtime
     source:
       owner: neondatabase
       repo: examples
