@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createRealtime } from "@neon/realtime/server";
-import { drizzleAdapter } from "@neon/realtime-drizzle";
+import { kyselyAdapter } from "@neon/realtime-kysely";
 
 import { getEnv } from "./env";
 
@@ -11,7 +11,7 @@ function create() {
   return createRealtime({
     secret: env.realtimeSecret,
     db: env.database,
-    adapter: drizzleAdapter(),
+    adapter: kyselyAdapter(),
     debugMode: process.env.NODE_ENV === "development", // full database errors in dev only
   });
 }

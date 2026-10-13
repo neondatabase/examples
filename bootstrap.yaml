@@ -170,11 +170,11 @@ templates:
       subdir: realtime/with-react
   - id: realtime-nextjs
     title: "Realtime Next.js app"
-    description: "A full-stack Next.js app with server-side rendering, live reactivity and optimistic mutations, using Neon Auth, Neon Realtime and Drizzle."
+    description: "A full-stack Next.js app with server-side rendering, live reactivity and optimistic mutations, using Neon Auth, Neon Realtime and Kysely."
     tools:
       - Next.js
       - React
-      - Drizzle
+      - Kysely
     services:
       - Postgres
       - Neon Auth
