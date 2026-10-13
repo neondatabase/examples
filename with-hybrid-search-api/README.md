@@ -64,6 +64,19 @@ All endpoints require `Authorization: Bearer <SEARCH_API_KEY>`.
 
 Search defaults: `limit=10`, `candidates=40` per retriever, `rrfK=60`. Hybrid retrieval includes ties at the candidate cutoff, then limits the final results. BM25 allows partial query-term matches and excludes zero-score chunks. Invalid input returns HTTP 400.
 
+## MCP
+
+Connect an MCP client using Streamable HTTP to `<BASE_URL>/mcp` and set the `Authorization: Bearer <SEARCH_API_KEY>` header. For clients supporting URL and header configuration:
+
+```json
+{
+  "url": "http://localhost:8787/mcp",
+  "headers": { "Authorization": "Bearer <SEARCH_API_KEY>" }
+}
+```
+
+The read-only `search_documents` tool takes the same arguments and returns the same results as `POST /search`. It supports hybrid, vector, and keyword modes. Requests are stateless; no session ID is needed. Use the deployed Function URL in place of the local URL after deployment.
+
 ## Notes
 
 - Markdown chunks follow heading sections and preserve code, tables, lists, quotes, and HTML blocks. The target is 4,096 characters; oversized blocks stay intact. YAML/TOML front matter stays in the full document but is excluded from search. Writes with no searchable content or more than 100 chunks return HTTP 400.
