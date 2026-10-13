@@ -38,7 +38,10 @@ const todoParams = z.object({
 });
 
 const app = new Hono()
-  // The sealed query is a bearer token, so it isn't served from a cacheable GET
+  // This demo has no auth, so it seals every todo for anyone who asks. Check
+  // the session before sealing, and scope the query to what the user may see:
+  // https://neon.com/docs/realtime/guides/queries#authorization
+  // The sealed query is a bearer token, so it isn't served from a cacheable GET.
   .post("/api/todos/live", async (c) => {
     const query = await realtime.seal({ query: selectTodos() });
     return c.json({
@@ -46,6 +49,9 @@ const app = new Hono()
       websocketUrl: env.realtime.url,
     });
   })
+  // The write routes have no auth either, so anyone can change any todo. Check
+  // the session in each one, and only write rows the user may change:
+  // https://neon.com/docs/realtime/guides/queries#authorization
   .post("/api/todos", zValidator("json", createTodoInput), async (c) => {
     const { id, title } = c.req.valid("json");
     const [created] = await db
