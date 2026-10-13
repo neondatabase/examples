@@ -2,33 +2,45 @@ import type { SealedLiveQuery } from "@neon/realtime/client";
 import { useLiveQuery } from "@neon/realtime-react";
 import {
   type FormEvent,
+  startTransition,
   useCallback,
   useOptimistic,
-  useRef,
   useState,
-  useTransition,
 } from "react";
 
 import { createTodo, deleteTodo, getLiveTodos, toggleTodo } from "./api.js";
 
 type LiveTodosQuery = Awaited<ReturnType<typeof getLiveTodos>>["query"];
 type Todo = LiveTodosQuery extends SealedLiveQuery<infer Row> ? Row : never;
-type CreateTodoResult = Awaited<ReturnType<typeof createTodo>>;
+type OptimisticTodo = Todo & { readonly pending?: boolean };
+type MutationResult = Awaited<
+  ReturnType<typeof createTodo | typeof toggleTodo | typeof deleteTodo>
+>;
 type OptimisticAction =
   | { readonly type: "add"; readonly todo: Todo }
-  | { readonly type: "toggle"; readonly id: Todo["id"] }
+  | {
+      readonly type: "toggle";
+      readonly id: Todo["id"];
+      readonly completed: boolean;
+    }
   | { readonly type: "delete"; readonly id: Todo["id"] };
 
+// React reapplies pending actions whenever `todos` changes, and the synced row
+// can arrive before the action's transition ends. So each case must also be
+// right for rows that already include the change.
 function applyOptimisticAction(
-  todos: readonly Todo[],
+  todos: readonly OptimisticTodo[],
   action: OptimisticAction,
-): readonly Todo[] {
+): readonly OptimisticTodo[] {
   switch (action.type) {
     case "add":
-      return [...todos, action.todo];
+      if (todos.some((todo) => todo.id === action.todo.id)) return todos;
+      return [{ ...action.todo, pending: true }, ...todos];
     case "toggle":
       return todos.map((todo) =>
-        todo.id === action.id ? { ...todo, completed: !todo.completed } : todo,
+        todo.id === action.id
+          ? { ...todo, completed: action.completed, pending: true }
+          : todo,
       );
     case "delete":
       return todos.filter((todo) => todo.id !== action.id);
@@ -48,16 +60,11 @@ export function App({ query }: { readonly query: LiveTodosQuery }) {
   } = useLiveQuery(query, {
     refreshQuery,
   });
-  const [optimisticTodos, updateOptimistically] = useOptimistic(
-    todos ?? [],
-    applyOptimisticAction,
-  );
-  const nextOptimisticId = useRef(-1);
-  const pendingCreates = useRef(
-    new Map<Todo["id"], Promise<CreateTodoResult>>(),
-  );
+  const [optimisticTodos, updateOptimistically] = useOptimistic<
+    readonly OptimisticTodo[],
+    OptimisticAction
+  >(todos ?? [], applyOptimisticAction);
   const [mutationError, setMutationError] = useState<string>();
-  const [, startMutation] = useTransition();
 
   function addTodo(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -65,52 +72,28 @@ export function App({ query }: { readonly query: LiveTodosQuery }) {
     const title = String(new FormData(form).get("title") ?? "").trim();
     if (!title) return;
     form.reset();
-    const temporaryId = nextOptimisticId.current--;
-    mutate(
-      {
-        type: "add",
-        todo: { id: temporaryId, title, completed: false },
-      },
-      async () => {
-        const request = createTodo(title);
-        pendingCreates.current.set(temporaryId, request);
-        try {
-          const result = await request;
-          await utils.awaitTxId(result.txid, 10_000);
-        } finally {
-          pendingCreates.current.delete(temporaryId);
-        }
-      },
-    );
+    const todo = { id: crypto.randomUUID(), title, completed: false };
+    mutate({ type: "add", todo }, () => createTodo(todo.id, todo.title));
   }
 
-  function toggleCompleted(id: Todo["id"]) {
-    mutate({ type: "toggle", id }, async () => {
-      const result = await toggleTodo(await persistedId(id));
-      await utils.awaitTxId(result.txid, 10_000);
-    });
+  function toggleCompleted(id: Todo["id"], completed: boolean) {
+    mutate({ type: "toggle", id, completed }, () => toggleTodo(id, completed));
   }
 
   function removeTodo(id: Todo["id"]) {
-    mutate({ type: "delete", id }, async () => {
-      const result = await deleteTodo(await persistedId(id));
-      if ("txid" in result) await utils.awaitTxId(result.txid, 10_000);
-    });
+    mutate({ type: "delete", id }, () => deleteTodo(id));
   }
 
-  async function persistedId(id: Todo["id"]): Promise<Todo["id"]> {
-    if (id >= 0) return id;
-    const pendingCreate = pendingCreates.current.get(id);
-    if (!pendingCreate) throw new Error("The todo is no longer being created");
-    return (await pendingCreate).id;
-  }
-
-  function mutate(action: OptimisticAction, operation: () => Promise<void>) {
+  function mutate(
+    action: OptimisticAction,
+    write: () => Promise<MutationResult>,
+  ) {
     setMutationError(undefined);
-    startMutation(async () => {
+    startTransition(async () => {
       updateOptimistically(action);
       try {
-        await operation();
+        const { txid } = await write();
+        await utils.awaitTxId(txid, 10_000);
       } catch (cause) {
         setMutationError(
           cause instanceof Error ? cause.message : "The mutation failed",
@@ -174,6 +157,7 @@ export function App({ query }: { readonly query: LiveTodosQuery }) {
         <ul aria-live="polite" className="my-5 list-none p-0">
           {optimisticTodos.map((todo) => (
             <li
+              aria-busy={todo.pending}
               className="grid grid-cols-[1fr_auto] items-center gap-4 border-b border-emerald-950/10 px-0.5 py-3.5 dark:border-zinc-800"
               key={todo.id}
             >
@@ -182,7 +166,10 @@ export function App({ query }: { readonly query: LiveTodosQuery }) {
                   aria-label={`Mark ${todo.title} as ${todo.completed ? "incomplete" : "complete"}`}
                   checked={todo.completed}
                   className="m-0 size-4.5 accent-emerald-500"
-                  onChange={() => toggleCompleted(todo.id)}
+                  disabled={todo.pending}
+                  onChange={(event) =>
+                    toggleCompleted(todo.id, event.currentTarget.checked)
+                  }
                   type="checkbox"
                 />
                 <span
@@ -197,7 +184,8 @@ export function App({ query }: { readonly query: LiveTodosQuery }) {
               </label>
               <button
                 aria-label={`Delete ${todo.title}`}
-                className="cursor-pointer bg-transparent p-2 text-xs font-medium text-zinc-500 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:text-zinc-400 dark:hover:text-red-400"
+                className="cursor-pointer bg-transparent p-2 text-xs font-medium text-zinc-500 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 disabled:cursor-default disabled:opacity-50 dark:text-zinc-400 dark:hover:text-red-400"
+                disabled={todo.pending}
                 onClick={() => removeTodo(todo.id)}
                 type="button"
               >

@@ -4,7 +4,7 @@ import { serve } from "@hono/node-server";
 import { zValidator } from "@hono/zod-validator";
 import { createRealtime } from "@neon/realtime/server";
 import { drizzleAdapter } from "@neon/realtime-drizzle";
-import { asc, eq, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -22,14 +22,19 @@ const selectTodos = () =>
   db
     .select({ id: todos.id, title: todos.title, completed: todos.completed })
     .from(todos)
-    .orderBy(asc(todos.id));
+    .orderBy(desc(todos.created_at));
 
 const createTodoInput = z.object({
+  id: z.uuid(),
   title: z.string().trim().min(1).max(200),
 });
 
+const toggleTodoInput = z.object({
+  completed: z.boolean(),
+});
+
 const todoParams = z.object({
-  id: z.coerce.number().int().positive(),
+  id: z.uuid(),
 });
 
 const app = new Hono()
@@ -41,27 +46,30 @@ const app = new Hono()
     });
   })
   .post("/api/todos", zValidator("json", createTodoInput), async (c) => {
-    const { title } = c.req.valid("json");
-    const [todo] = await db
+    const { id, title } = c.req.valid("json");
+    const [created] = await db
       .insert(todos)
-      .values({ title })
-      .returning({
-        id: todos.id,
-        txid: sql<string>`pg_current_xact_id()::text`,
-      });
-    if (!todo) throw new Error("Postgres did not return the new todo");
-    return c.json(todo, 201);
-  })
-  .patch("/api/todos/:id", zValidator("param", todoParams), async (c) => {
-    const { id } = c.req.valid("param");
-    const [updated] = await db
-      .update(todos)
-      .set({ completed: sql`not ${todos.completed}` })
-      .where(eq(todos.id, id))
+      .values({ id, title })
       .returning({ txid: sql<string>`pg_current_xact_id()::text` });
-    if (!updated) return c.json({ error: "Todo not found" }, 404);
-    return c.json(updated);
+    if (!created) throw new Error("Postgres did not return the new todo");
+    return c.json(created, 201);
   })
+  .patch(
+    "/api/todos/:id",
+    zValidator("param", todoParams),
+    zValidator("json", toggleTodoInput),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const { completed } = c.req.valid("json");
+      const [updated] = await db
+        .update(todos)
+        .set({ completed })
+        .where(eq(todos.id, id))
+        .returning({ txid: sql<string>`pg_current_xact_id()::text` });
+      if (!updated) return c.json({ error: "Todo not found" }, 404);
+      return c.json(updated);
+    },
+  )
   .delete("/api/todos/:id", zValidator("param", todoParams), async (c) => {
     const { id } = c.req.valid("param");
     const [deleted] = await db

@@ -10,24 +10,23 @@ export async function getLiveTodos() {
   return response.json();
 }
 
-export async function createTodo(title: string) {
-  const response = await api.api.todos.$post({ json: { title } });
+export async function createTodo(id: string, title: string) {
+  const response = await api.api.todos.$post({ json: { id, title } });
   if (!response.ok) throw new Error("Could not create the todo");
   return response.json();
 }
 
-export async function toggleTodo(id: number) {
+export async function toggleTodo(id: string, completed: boolean) {
   const response = await api.api.todos[":id"].$patch({
-    param: { id: String(id) },
+    param: { id },
+    json: { completed },
   });
   if (!response.ok) throw new Error("Could not update the todo");
   return response.json();
 }
 
-export async function deleteTodo(id: number) {
-  const response = await api.api.todos[":id"].$delete({
-    param: { id: String(id) },
-  });
+export async function deleteTodo(id: string) {
+  const response = await api.api.todos[":id"].$delete({ param: { id } });
   if (!response.ok) throw new Error("Could not delete the todo");
   return response.json();
 }
