@@ -90,7 +90,7 @@ const limitMessage = "limit must be an integer from 1 to 20";
 const candidatesMessage = "candidates must be an integer between limit and 100";
 const rrfKMessage = "rrfK must be an integer from 1 to 200";
 
-const searchSchema = z
+export const searchSchema = z
   .strictObject(
     {
       query: searchableText("query"),
@@ -129,6 +129,8 @@ const searchSchema = z
     path: ["candidates"],
     error: candidatesMessage,
   });
+
+export type SearchInput = z.output<typeof searchSchema>;
 
 export function documentId(value: unknown): string {
   return parse(documentIdSchema, value);
