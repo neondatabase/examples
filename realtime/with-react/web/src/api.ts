@@ -5,7 +5,7 @@ import type { AppType } from "../../src/server.js";
 const api = hc<AppType>(window.location.origin);
 
 export async function getLiveTodos() {
-  const response = await api.api.todos.live.$get();
+  const response = await api.api.todos.live.$post();
   if (!response.ok) throw new Error("Could not create the live query");
   return response.json();
 }

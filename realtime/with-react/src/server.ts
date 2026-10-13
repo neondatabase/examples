@@ -38,7 +38,8 @@ const todoParams = z.object({
 });
 
 const app = new Hono()
-  .get("/api/todos/live", async (c) => {
+  // The sealed query is a bearer token, so it isn't served from a cacheable GET
+  .post("/api/todos/live", async (c) => {
     const query = await realtime.seal({ query: selectTodos() });
     return c.json({
       query,
