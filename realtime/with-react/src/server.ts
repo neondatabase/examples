@@ -18,6 +18,21 @@ const realtime = createRealtime({
   adapter: drizzleAdapter(),
 });
 
+// What a write route returns. `kind` is a literal, so the client can narrow on it.
+type MutationResponse =
+  | { readonly kind: "committed"; readonly txid: string }
+  | { readonly kind: "unchanged" };
+
+type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+// Must run inside the write transaction, so it returns that transaction's id
+async function currentTxId(tx: Transaction): Promise<string> {
+  const result = await tx.execute<{ txid: string }>(
+    sql`select pg_current_xact_id()::text as txid`,
+  );
+  return result.rows[0]!.txid;
+}
+
 const selectTodos = () =>
   db
     .select({ id: todos.id, title: todos.title, completed: todos.completed })
@@ -54,13 +69,13 @@ const app = new Hono()
   // https://neon.com/docs/realtime/guides/queries#authorization
   .post("/api/todos", zValidator("json", createTodoInput), async (c) => {
     const { id, title } = c.req.valid("json");
-    const [created] = await db
-      .insert(todos)
-      .values({ id, title })
-      .returning({ txid: sql<string>`pg_current_xact_id()::text` });
-    if (!created) throw new Error("Postgres did not return the new todo");
-    // `as const` keeps `kind` a literal, so the client can narrow on it
-    return c.json({ kind: "committed", txid: created.txid } as const, 201);
+    const result = await db.transaction(
+      async (tx): Promise<MutationResponse> => {
+        await tx.insert(todos).values({ id, title });
+        return { kind: "committed", txid: await currentTxId(tx) };
+      },
+    );
+    return c.json(result, 201);
   })
   .patch(
     "/api/todos/:id",
@@ -69,25 +84,35 @@ const app = new Hono()
     async (c) => {
       const { id } = c.req.valid("param");
       const { completed } = c.req.valid("json");
-      const [updated] = await db
-        .update(todos)
-        .set({ completed })
-        .where(eq(todos.id, id))
-        .returning({ txid: sql<string>`pg_current_xact_id()::text` });
-      // No row matched, for example because another tab deleted the todo.
-      // Nothing changed, so there's no txid for the client to wait for.
-      if (!updated) return c.json({ kind: "unchanged" } as const);
-      return c.json({ kind: "committed", txid: updated.txid } as const);
+      const result = await db.transaction(
+        async (tx): Promise<MutationResponse> => {
+          const updated = await tx
+            .update(todos)
+            .set({ completed })
+            .where(eq(todos.id, id))
+            .returning({ id: todos.id });
+          // No row matched, for example because another tab deleted the todo.
+          // Nothing changed, so there's no txid for the client to wait for.
+          if (updated.length === 0) return { kind: "unchanged" };
+          return { kind: "committed", txid: await currentTxId(tx) };
+        },
+      );
+      return c.json(result);
     },
   )
   .delete("/api/todos/:id", zValidator("param", todoParams), async (c) => {
     const { id } = c.req.valid("param");
-    const [deleted] = await db
-      .delete(todos)
-      .where(eq(todos.id, id))
-      .returning({ txid: sql<string>`pg_current_xact_id()::text` });
-    if (!deleted) return c.json({ kind: "unchanged" } as const);
-    return c.json({ kind: "committed", txid: deleted.txid } as const);
+    const result = await db.transaction(
+      async (tx): Promise<MutationResponse> => {
+        const deleted = await tx
+          .delete(todos)
+          .where(eq(todos.id, id))
+          .returning({ id: todos.id });
+        if (deleted.length === 0) return { kind: "unchanged" };
+        return { kind: "committed", txid: await currentTxId(tx) };
+      },
+    );
+    return c.json(result);
   });
 
 export type AppType = typeof app;
