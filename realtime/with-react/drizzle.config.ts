@@ -1,7 +1,6 @@
-import { config as loadEnv } from "dotenv";
-import { defineConfig } from "drizzle-kit";
+import "./src/load-env.js";
 
-loadEnv({ path: ".env.local", quiet: true });
+import { defineConfig } from "drizzle-kit";
 
 if (!process.env.DATABASE_URL) {
   throw new Error("Missing DATABASE_URL. Run `neon env pull` first.");
