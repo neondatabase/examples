@@ -8,7 +8,8 @@ type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 // One query for both the SSR rows and the sealed live query, so they match.
 // Realtime matches each result column to its key by name, so `createdAt` gets
 // an SQL alias (the column is `created_at`). `mapWith` keeps it a `Date`.
-// No `orderBy`: it makes Realtime resync on every write, and `useLiveQuery` sorts.
+// No `orderBy`: the collection stores rows by key and doesn't keep their order,
+// so the page sorts them in `useLiveQuery`.
 export const selectTodos = (userId: string) =>
   db
     .select({

@@ -10,9 +10,15 @@ import {
   updateTodos,
 } from "./todos.functions";
 
-// How long a write waits for its own change to come back over Realtime before
-// rolling back. Long, so a slow reconnect doesn't undo a write that succeeded.
-const ECHO_TIMEOUT_MS = 300_000;
+// How long a write waits for its own change to come back over Realtime. Keep it
+// short: while a handler waits, TanStack DB holds back the collection's synced
+// changes, including other tabs' writes.
+const ECHO_TIMEOUT_MS = 10_000;
+
+// The write committed, but its change didn't come back over Realtime in time,
+// for example while live updates reconnect. TanStack DB still rolls the change
+// back, and it shows again once Realtime catches up.
+export class NotSyncedYetError extends Error {}
 
 // A cheap descriptor, built by the loader and the page alike. The factory runs
 // once per DbClient, with the Realtime client `getRouter` gave that DbClient.
@@ -46,7 +52,10 @@ export function todosCollection(userId: string, query: SealedLiveQuery<Todo>) {
             ),
           },
         }).catch(leaveOnAuthLoss);
-        if (txid) await collection.utils.awaitTxId(txid, ECHO_TIMEOUT_MS);
+        if (txid)
+          await collection.utils
+            .awaitTxId(txid, ECHO_TIMEOUT_MS)
+            .catch(notSyncedYet);
       },
       onUpdate: async ({ transaction, collection }) => {
         const { txid } = await updateTodos({
@@ -59,16 +68,26 @@ export function todosCollection(userId: string, query: SealedLiveQuery<Todo>) {
             })),
           },
         }).catch(leaveOnAuthLoss);
-        if (txid) await collection.utils.awaitTxId(txid, ECHO_TIMEOUT_MS);
+        if (txid)
+          await collection.utils
+            .awaitTxId(txid, ECHO_TIMEOUT_MS)
+            .catch(notSyncedYet);
       },
       onDelete: async ({ transaction, collection }) => {
         const { txid } = await deleteTodos({
           data: { userId, batch: transaction.mutations.map(({ key }) => key) },
         }).catch(leaveOnAuthLoss);
-        if (txid) await collection.utils.awaitTxId(txid, ECHO_TIMEOUT_MS);
+        if (txid)
+          await collection.utils
+            .awaitTxId(txid, ECHO_TIMEOUT_MS)
+            .catch(notSyncedYet);
       },
     }),
   );
+}
+
+function notSyncedYet(cause: unknown): never {
+  throw new NotSyncedYetError("Saved, but not synced yet", { cause });
 }
 
 // Signed out, or signed in as someone else: this page's rows and live query

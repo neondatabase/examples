@@ -6,8 +6,10 @@ import {
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 
-import { todosCollection } from "../../todos.collection";
+import { NotSyncedYetError, todosCollection } from "../../todos.collection";
 import { loadTodos } from "../../todos.functions";
+
+type Notice = { tone: "error" | "info"; text: string };
 
 export const Route = createFileRoute("/_authed/")({
   // Don't refetch on a navigation back here while the collection is live.
@@ -42,14 +44,24 @@ function TodosPage() {
         .orderBy(({ todo }) => todo.createdAt, "desc")
         .orderBy(({ todo }) => todo.id, "desc"),
   });
-  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
 
-  // Changes apply optimistically. If the server rejects one, TanStack DB rolls
-  // it back and the error shows here.
+  // Changes apply optimistically. If one fails, TanStack DB rolls it back and
+  // the reason shows here.
   function track(tx: Transaction) {
-    setError(null);
-    tx.isPersisted.promise.catch((cause: unknown) =>
-      setError(cause instanceof Error ? cause.message : String(cause)),
+    setNotice(null);
+    tx.when("settled").catch((cause: unknown) =>
+      setNotice(
+        cause instanceof NotSyncedYetError
+          ? {
+              tone: "info",
+              text: "Saved. It will appear when live updates reconnect.",
+            }
+          : {
+              tone: "error",
+              text: `Couldn't save that change: ${cause instanceof Error ? cause.message : String(cause)}`,
+            },
+      ),
     );
   }
 
@@ -111,12 +123,12 @@ function TodosPage() {
           </button>
         </form>
 
-        {error ? (
+        {notice ? (
           <p
-            className="mt-3 mb-0 text-[13px] text-red-600 dark:text-red-400"
-            role="alert"
+            className={`mt-3 mb-0 text-[13px] ${notice.tone === "error" ? "text-red-600 dark:text-red-400" : "text-zinc-600 dark:text-zinc-400"}`}
+            role={notice.tone === "error" ? "alert" : "status"}
           >
-            Couldn't save that change: {error}
+            {notice.text}
           </p>
         ) : null}
 
@@ -131,6 +143,10 @@ function TodosPage() {
                   aria-label={`Mark ${todo.title} as ${todo.completed ? "incomplete" : "complete"}`}
                   checked={todo.completed}
                   className="m-0 size-4.5 accent-emerald-500"
+                  // Off until the row's last change is confirmed, like Delete.
+                  // Handlers run concurrently, so a change sent before the
+                  // insert commits could match no rows and be lost.
+                  disabled={todo.$hasPendingWrites}
                   onChange={() =>
                     track(
                       collection.update(todo.id, (draft) => {
@@ -152,7 +168,8 @@ function TodosPage() {
               </label>
               <button
                 aria-label={`Delete ${todo.title}`}
-                className="cursor-pointer bg-transparent p-2 text-xs font-medium text-zinc-500 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:text-zinc-400 dark:hover:text-red-400"
+                className="cursor-pointer bg-transparent p-2 text-xs font-medium text-zinc-500 hover:text-red-600 disabled:cursor-default disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 dark:text-zinc-400 dark:hover:text-red-400"
+                disabled={todo.$hasPendingWrites}
                 onClick={() => track(collection.delete(todo.id))}
                 type="button"
               >
