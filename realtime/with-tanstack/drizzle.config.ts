@@ -1,6 +1,8 @@
 import { config as loadEnv } from "dotenv";
 import { defineConfig } from "drizzle-kit";
 
+import { withVerifyFullSsl } from "./src/database-url";
+
 loadEnv({ path: ".env.local", quiet: true });
 
 if (!process.env.DATABASE_URL) {
@@ -12,6 +14,6 @@ export default defineConfig({
   schema: "./src/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL,
+    url: withVerifyFullSsl(process.env.DATABASE_URL),
   },
 });

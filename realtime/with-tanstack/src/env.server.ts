@@ -2,6 +2,7 @@ import { parseEnv } from "@neon/env";
 import { parse as parsePostgresConnectionString } from "pg-connection-string";
 
 import neonConfig from "../neon";
+import { withVerifyFullSsl } from "./database-url";
 
 // Start's Vite plugin loads `.env.local` in dev; `npm start` passes it to Node.
 export const env = parseEnv(neonConfig, [
@@ -10,9 +11,9 @@ export const env = parseEnv(neonConfig, [
   "NEON_REALTIME_SECRET",
 ]);
 
-const databaseName = parsePostgresConnectionString(
-  env.postgres.databaseUrl,
-).database;
+export const databaseUrl = withVerifyFullSsl(env.postgres.databaseUrl);
+
+const databaseName = parsePostgresConnectionString(databaseUrl).database;
 if (!databaseName) {
   throw new Error("DATABASE_URL must include a database name in its path.");
 }

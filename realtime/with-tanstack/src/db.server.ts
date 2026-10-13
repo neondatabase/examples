@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-import { env } from "./env.server";
+import { databaseUrl } from "./env.server";
 
 const globalDatabase = globalThis as typeof globalThis & {
   realtimeTodoPool?: Pool;
@@ -10,7 +10,7 @@ const globalDatabase = globalThis as typeof globalThis & {
 export const pool =
   globalDatabase.realtimeTodoPool ??
   new Pool({
-    connectionString: env.postgres.databaseUrl,
+    connectionString: databaseUrl,
     max: 5,
     min: 1,
   });
