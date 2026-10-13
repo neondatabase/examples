@@ -62,8 +62,9 @@ const newestFirst = (a: OptimisticTodo, b: OptimisticTodo) =>
   b.created_at.getTime() - a.created_at.getTime() ||
   (a.id < b.id ? 1 : a.id > b.id ? -1 : 0);
 
-// How long a write stays pending while it waits for its transaction to arrive on the stream.
-const SYNC_TIMEOUT_MS = 300_000;
+// How long a write stays pending while it waits for its transaction to arrive on the stream. Keep it short:
+// React holds every transition started meanwhile (router.refresh(), navigations, sign-out) until it settles.
+const SYNC_TIMEOUT_MS = 10_000;
 
 export function TodoList({
   initialTodos,
