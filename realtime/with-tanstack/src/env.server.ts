@@ -2,8 +2,8 @@ import { parseEnv } from "@neon/env";
 import { parse as parsePostgresConnectionString } from "pg-connection-string";
 
 import neonConfig from "../neon";
-import "./load-env";
 
+// Start's Vite plugin loads `.env.local` in dev; `npm start` passes it to Node.
 export const env = parseEnv(neonConfig, [
   "DATABASE_URL",
   "NEON_REALTIME_URL",

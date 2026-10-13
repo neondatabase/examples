@@ -9,7 +9,7 @@
     "db:setup": "npm run db:push && tsx src/setup.ts",
     "dev": "vite dev",
     "fmt": "prettier --write .",
-    "start": "node .output/server/index.mjs",
+    "start": "node --env-file-if-exists=.env.local .output/server/index.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -46,7 +46,7 @@
     "vite": "8.0.14"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.9"
   },
   "overrides": {
     "@tanstack/router-core": "1.171.30"
