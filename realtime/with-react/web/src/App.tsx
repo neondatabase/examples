@@ -92,8 +92,10 @@ export function App({ query }: { readonly query: LiveTodosQuery }) {
     startTransition(async () => {
       updateOptimistically(action);
       try {
-        const { txid } = await write();
-        await utils.awaitTxId(txid, 10_000);
+        const result = await write();
+        if (result.kind === "committed") {
+          await utils.awaitTxId(result.txid, 10_000);
+        }
       } catch (cause) {
         setMutationError(
           cause instanceof Error ? cause.message : "The mutation failed",

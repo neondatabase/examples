@@ -52,7 +52,8 @@ const app = new Hono()
       .values({ id, title })
       .returning({ txid: sql<string>`pg_current_xact_id()::text` });
     if (!created) throw new Error("Postgres did not return the new todo");
-    return c.json(created, 201);
+    // `as const` keeps `kind` a literal, so the client can narrow on it
+    return c.json({ kind: "committed", txid: created.txid } as const, 201);
   })
   .patch(
     "/api/todos/:id",
@@ -66,8 +67,10 @@ const app = new Hono()
         .set({ completed })
         .where(eq(todos.id, id))
         .returning({ txid: sql<string>`pg_current_xact_id()::text` });
-      if (!updated) return c.json({ error: "Todo not found" }, 404);
-      return c.json(updated);
+      // No row matched, for example because another tab deleted the todo.
+      // Nothing changed, so there's no txid for the client to wait for.
+      if (!updated) return c.json({ kind: "unchanged" } as const);
+      return c.json({ kind: "committed", txid: updated.txid } as const);
     },
   )
   .delete("/api/todos/:id", zValidator("param", todoParams), async (c) => {
@@ -76,8 +79,8 @@ const app = new Hono()
       .delete(todos)
       .where(eq(todos.id, id))
       .returning({ txid: sql<string>`pg_current_xact_id()::text` });
-    if (!deleted) return c.json({ error: "Todo not found" }, 404);
-    return c.json(deleted);
+    if (!deleted) return c.json({ kind: "unchanged" } as const);
+    return c.json({ kind: "committed", txid: deleted.txid } as const);
   });
 
 export type AppType = typeof app;
