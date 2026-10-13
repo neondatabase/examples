@@ -29,11 +29,12 @@ Realtime credentials:
 neon deploy
 ```
 
-If provisioning takes longer than the command's readiness window, retry the env
-pull once Realtime is ready:
+If provisioning takes longer than the command's readiness window, pull the env
+again. `--service realtime` makes the pull wait until Realtime is ready, and
+`--service postgres` writes `DATABASE_URL` too:
 
 ```bash
-neon env pull
+neon env pull --service postgres --service realtime
 ```
 
 The app parses and validates the database name from `DATABASE_URL`, keeping
