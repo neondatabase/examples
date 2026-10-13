@@ -7,7 +7,7 @@ const globalDatabase = globalThis as typeof globalThis & {
   realtimeTodoPool?: Pool;
 };
 
-export const pool =
+const pool =
   globalDatabase.realtimeTodoPool ??
   new Pool({
     connectionString: databaseUrl,

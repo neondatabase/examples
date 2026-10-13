@@ -11,9 +11,6 @@ export default defineConfig({
     tailwindcss(),
     nitro(),
   ],
-  resolve: {
-    tsconfigPaths: true,
-  },
   server: {
     port: 3000,
     strictPort: true,

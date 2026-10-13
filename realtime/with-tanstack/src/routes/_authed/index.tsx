@@ -32,8 +32,9 @@ function TodosPage() {
   // Same id as the loader's, so this resolves to the collection it filled.
   const descriptor = todosCollection(user.id, query);
   const collection = useDbClient().collection(descriptor);
-  // `isReady` turns true when Realtime delivers its first snapshot. The SSR
-  // rows are on screen before that.
+  // `isReady` turns true when Realtime sends its first complete result, and
+  // stays true while it reconnects or renews the query. The SSR rows are on
+  // screen before that.
   const { data: todos, isReady } = useLiveQuery({
     query: (q) =>
       q

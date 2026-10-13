@@ -25,7 +25,8 @@ export function todosCollection(userId: string, query: SealedLiveQuery<Todo>) {
       client: db.requireDependency<RealtimeClient>("realtime"),
       getKey: (todo) => todo.id,
       // Never garbage-collect while the page is open. A collection rebuilt
-      // later would resubscribe with this long-expired sealed query.
+      // later would start empty, from this long-expired sealed query, and stay
+      // `stale` until a refresh replaced it.
       gcTime: 0,
       refreshQuery: () =>
         refreshTodosQuery({ data: { userId } }).catch(leaveOnAuthLoss),
