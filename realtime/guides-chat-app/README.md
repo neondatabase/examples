@@ -79,7 +79,7 @@ neon psql -- -c "INSERT INTO messages (id, channel_id, author_id, body) VALUES (
 
 `neon deploy` only applies `neon.ts` here: it enables Neon Auth and Realtime and writes `.env.local`. Neon doesn't host this frontend, so the app runs locally with `npm run dev`. `neon dev` doesn't apply either, because `neon.ts` declares no functions.
 
-For a hosted version, run the Hono API on Neon Functions and host the SPA on Vercel, as the [Realtime counter example](https://github.com/neondatabase/examples/tree/main/with-realtime-sse) does. Then add the deployed origin to `allowedOrigins` in `neon.ts` and to Neon Auth's [trusted domains](https://neon.com/docs/auth/guides/configure-domains).
+For a hosted version, run the Hono API on Neon Functions and host the SPA on Vercel, as the [server-sent events example](https://github.com/neondatabase/examples/tree/main/with-server-sent-events-function) does. Then add the deployed origin to `allowedOrigins` in `neon.ts` and to Neon Auth's [trusted domains](https://neon.com/docs/auth/guides/configure-domains).
 
 ## Try it with two users
 
