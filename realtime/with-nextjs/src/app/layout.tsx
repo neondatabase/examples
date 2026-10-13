@@ -2,18 +2,24 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Neon Realtime Todos",
-  description: "An optimistic SSR todo app powered by Neon Realtime.",
+  description:
+    "A per-user todo list: server-rendered, live across tabs, with optimistic updates. Built on Neon Auth and Neon Realtime.",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    // NeonAuthUIProvider's theme script sets class and color-scheme on <html> before hydration.
+    // suppressHydrationWarning covers this element's attributes only, not its children.
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

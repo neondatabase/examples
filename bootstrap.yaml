@@ -170,17 +170,15 @@ templates:
       subdir: realtime/with-react
   - id: realtime-nextjs
     title: "Realtime Next.js app"
-    description: "An SSR todo app using Next.js, Neon Realtime, React optimistic state, and Drizzle."
+    description: "A full-stack Next.js app with server-side rendering, live reactivity and optimistic mutations, using Neon Auth, Neon Realtime and Drizzle."
     tools:
       - Next.js
       - React
       - Drizzle
     services:
       - Postgres
+      - Neon Auth
       - Realtime
-    requires:
-      - database
-      - realtime
     source:
       owner: neondatabase
       repo: examples

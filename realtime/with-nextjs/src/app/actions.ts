@@ -1,46 +1,73 @@
 "use server";
 
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
+import { z } from "zod";
 
-import { getDb } from "@/db";
-import { getRealtime } from "@/realtime";
-import { todos } from "@/schema";
-import { selectTodos } from "@/todos";
+import { getUser } from "@/lib/auth/server";
+import { getDb } from "@/lib/db";
+import { todos } from "@/lib/schema";
 
-export async function refreshTodosQuery() {
-  return getRealtime().seal({ query: selectTodos() });
-}
+// Typed results rather than throws: in production Next.js hides a thrown error's message.
+export type WriteResult =
+  | { kind: "committed"; txid: string }
+  | { kind: "unchanged" } // nothing matched: deleted elsewhere, someone else's id, or a replayed add
+  | { kind: "rejected"; reason: "UNAUTHENTICATED" | "INVALID_INPUT" };
 
-export async function createTodo(titleInput: string) {
-  const title = titleInput.trim();
-  if (!title || title.length > 200) throw new Error("Invalid todo title");
+const addInput = z.object({
+  id: z.uuid(),
+  title: z.string().trim().min(1).max(200),
+});
+const setCompletedInput = z.object({ id: z.uuid(), completed: z.boolean() });
+const deleteInput = z.object({ id: z.uuid() });
 
-  const [todo] = await getDb()
+// Same statement, same transaction; works on any driver.
+const txid = sql<string>`pg_current_xact_id()::text`;
+const toResult = (row?: { txid: string }): WriteResult =>
+  row ? { kind: "committed", txid: row.txid } : { kind: "unchanged" };
+
+export async function addTodo(
+  raw: z.input<typeof addInput>,
+): Promise<WriteResult> {
+  const user = await getUser(); // every action checks the session itself: proxy.ts skips actions
+  if (!user) return { kind: "rejected", reason: "UNAUTHENTICATED" };
+  const input = addInput.safeParse(raw);
+  if (!input.success) return { kind: "rejected", reason: "INVALID_INPUT" };
+  const [row] = await getDb()
     .insert(todos)
-    .values({ title })
-    .returning({
-      id: todos.id,
-      txid: sql<string>`pg_current_xact_id()::text`,
-    });
-  if (!todo) throw new Error("Postgres did not return the new todo");
-  return todo;
+    .values({ id: input.data.id, user_id: user.id, title: input.data.title }) // user_id from the session only
+    .onConflictDoNothing({ target: todos.id }) // replayed id: no write, nothing to wait for
+    .returning({ txid });
+  return toResult(row);
 }
 
-export async function setTodoCompleted(id: number, completed: boolean) {
-  const [updated] = await getDb()
+export async function setTodoCompleted(
+  raw: z.input<typeof setCompletedInput>,
+): Promise<WriteResult> {
+  const user = await getUser();
+  if (!user) return { kind: "rejected", reason: "UNAUTHENTICATED" };
+  const input = setCompletedInput.safeParse(raw);
+  if (!input.success) return { kind: "rejected", reason: "INVALID_INPUT" };
+  const [row] = await getDb()
     .update(todos)
-    .set({ completed })
-    .where(eq(todos.id, id))
-    .returning({ txid: sql<string>`pg_current_xact_id()::text` });
-  if (!updated) throw new Error("Todo not found");
-  return updated;
+    .set({ completed: input.data.completed })
+    .where(and(eq(todos.id, input.data.id), eq(todos.user_id, user.id))) // only the user's own row
+    .returning({ txid });
+  return toResult(row);
 }
 
-export async function deleteTodo(id: number) {
-  const [deleted] = await getDb()
+export async function deleteTodo(
+  raw: z.input<typeof deleteInput>,
+): Promise<WriteResult> {
+  const user = await getUser();
+  if (!user) return { kind: "rejected", reason: "UNAUTHENTICATED" };
+  const input = deleteInput.safeParse(raw);
+  if (!input.success) return { kind: "rejected", reason: "INVALID_INPUT" };
+  const [row] = await getDb()
     .delete(todos)
-    .where(eq(todos.id, id))
-    .returning({ txid: sql<string>`pg_current_xact_id()::text` });
-  if (!deleted) throw new Error("Todo not found");
-  return deleted;
+    .where(and(eq(todos.id, input.data.id), eq(todos.user_id, user.id))) // only the user's own row
+    .returning({ txid });
+  return toResult(row);
 }
+
+// No revalidatePath, refresh() or updateTag: the live query delivers every write, and a re-render would
+// restart the subscription (see todo-list.tsx and todos.tsx).

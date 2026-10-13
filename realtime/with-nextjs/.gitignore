@@ -3,6 +3,7 @@ node_modules/
 *.tsbuildinfo
 .env*
 !.env.example
-.neon/
+.neon
 .DS_Store
 *.log
+next-env.d.ts
