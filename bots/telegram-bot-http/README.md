@@ -73,8 +73,6 @@ cp .env.example .env.local
 neon link
 ```
 
-If you let your agent drive this, add `--agent` to skip interactive mode.
-
 ## Configure Telegram
 
 Create a bot with [BotFather](https://t.me/BotFather), then uncomment and fill in the required keys in `.env.local`:

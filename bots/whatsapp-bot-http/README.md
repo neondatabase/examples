@@ -72,8 +72,6 @@ cp .env.example .env.local
 neon link
 ```
 
-If you let your agent drive this, add `--agent` to skip interactive mode.
-
 ## Configure WhatsApp
 
 Create a Meta app with WhatsApp Cloud API enabled, then uncomment and fill in the required keys in `.env.local`:

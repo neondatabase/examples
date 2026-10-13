@@ -53,8 +53,6 @@ Link (or create) a Neon project by running the `link` command from the workspace
 neon link
 ```
 
-If you let your agent drive this, add `--agent` to skip interactive mode.
-
 > The Neon AI Gateway is a Preview feature. Link to a project/region where AI Gateway early access is enabled, otherwise `neon dev` / `neon deploy` can't mint the gateway credentials.
 
 ## Provision and deploy

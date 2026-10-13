@@ -63,8 +63,6 @@ npm install
 neon link
 ```
 
-If you let your agent drive this, add `--agent` to skip interactive mode.
-
 `neon link` pulls your branch-scoped environment variables — including `DATABASE_URL` and the `AWS_*` object-storage credentials — into `.env.local`.
 
 ## Apply the schema

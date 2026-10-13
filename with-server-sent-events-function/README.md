@@ -68,8 +68,6 @@ npm install --prefix web # the SPA
 neon link
 ```
 
-If you let your agent drive this, add `--agent` to skip interactive mode.
-
 `neon link` pulls your branch-scoped variables — `DATABASE_URL` and `DATABASE_URL_UNPOOLED` — into `.env.local`.
 
 ## Apply the schema

@@ -96,7 +96,7 @@ npm install
 cp .env.example .env
 
 # Link (or create) a Neon project. Writes the ids to a git-ignored .neon file.
-neon link                            # add --agent to skip the prompts
+neon link
 
 # Provision the services declared in neon.ts (Neon Auth + the `photos` bucket).
 neon deploy

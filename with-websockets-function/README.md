@@ -71,8 +71,6 @@ npm install --prefix web   # the Next.js app
 neon link
 ```
 
-If you let your agent drive this, add `--agent` to skip interactive mode.
-
 ## Provision and deploy
 
 Provision the services declared in `neon.ts`:

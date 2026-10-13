@@ -62,8 +62,6 @@ Link (or create) a Neon project by running the `link` command from the workspace
 neon link
 ```
 
-If you let your agent drive this, add `--agent` to skip interactive mode.
-
 `neon link` pulls your branch-scoped environment variables — including `DATABASE_URL` — into `.env.local`. You can also find your connection string in the [Neon Console](https://console.neon.tech).
 
 ## Apply the schema
