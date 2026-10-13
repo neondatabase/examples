@@ -3,19 +3,27 @@
 import { NeonAuthUIProvider } from "@neondatabase/auth-ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useRef } from "react";
 
 import { authClient } from "@/lib/auth/client";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  // After a sign-in or sign-out, the auth UI's next navigation is a full page load. It drops the Realtime
+  // client, its socket and the previous user's rows.
+  const sessionChanged = useRef(false);
   return (
     <NeonAuthUIProvider
       authClient={authClient}
-      navigate={router.push}
+      navigate={(href) =>
+        sessionChanged.current
+          ? window.location.assign(href)
+          : router.push(href)
+      }
       replace={router.replace}
-      // Re-renders Server Components with the new session. Safe for the live list: todo-list.tsx pins the
-      // sealed query from the first render, so a refresh doesn't restart its stream.
-      onSessionChange={() => router.refresh()}
+      onSessionChange={() => {
+        sessionChanged.current = true;
+      }}
       Link={Link}
       redirectTo="/"
     >

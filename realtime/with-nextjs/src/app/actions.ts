@@ -73,5 +73,4 @@ export async function deleteTodo(
   return toResult(row);
 }
 
-// No revalidatePath, refresh() or updateTag: the live query delivers every write, and a re-render would
-// restart the subscription (see todo-list.tsx and todos.tsx).
+// No revalidatePath, refresh() or updateTag after a write: the live query delivers the change.

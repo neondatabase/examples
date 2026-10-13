@@ -19,7 +19,7 @@ function todosQuery(userId: string) {
 export type TodoRow = InferResult<ReturnType<typeof todosQuery>>[number];
 
 // Read and seal the same query. The stream's first full result replaces these rows, so nothing is missed
-// or doubled. It doesn't resume from them either: the rows are sent again (a package gap).
+// or doubled. It sends every row again rather than resuming from these.
 export async function loadTodos(userId: string) {
   const query = todosQuery(userId);
   const [rows, sealedQuery] = await Promise.all([

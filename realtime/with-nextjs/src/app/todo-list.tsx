@@ -55,8 +55,8 @@ function applyOptimisticAction(
   }
 }
 
-// The live stream doesn't keep ORDER BY order (a package gap), so sort here. The server render and
-// hydration run the same sort, so the markup matches.
+// The live rows don't follow the query's ORDER BY, so sort here. The server render and hydration run the
+// same sort, so the markup matches.
 // Newest first, optimistic rows included (they carry the browser's created_at until the live row replaces them).
 const newestFirst = (a: OptimisticTodo, b: OptimisticTodo) =>
   b.created_at.getTime() - a.created_at.getTime() ||
@@ -84,8 +84,8 @@ export function TodoList({
   const refreshQuery = useCallback(async (): Promise<
     SealedLiveQuery<TodoRow>
   > => {
-    // The hook retries a failed renewal every second, forever (a package gap). After a 401, stop calling
-    // the server. router.refresh() lets proxy.ts redirect to sign-in, which unmounts this list.
+    // The hook retries a failed renewal every second until one succeeds. After a 401, stop calling the
+    // server and go to sign-in with a full page load, which drops the Realtime client and this user's rows.
     if (signedOut.current) throw new Error("Signed out");
     const response = await fetch("/api/todos/live-query", {
       method: "POST",
@@ -93,13 +93,13 @@ export function TodoList({
     });
     if (response.status === 401) {
       signedOut.current = true;
-      router.refresh();
+      window.location.assign("/auth/sign-in");
       throw new Error("Signed out");
     }
     if (!response.ok)
       throw new Error(`Live query renewal failed: ${response.status}`);
     return (await response.json()) as SealedLiveQuery<TodoRow>;
-  }, [router]);
+  }, []);
 
   // The server render and hydration both show initialTodos with status "connecting". The socket opens after
   // hydration. refreshQuery re-seals 10 s before expiry, so a renewal on time stays "live".
@@ -155,7 +155,7 @@ export function TodoList({
       }
       if (result.kind === "rejected") {
         if (result.reason === "UNAUTHENTICATED")
-          router.refresh(); // proxy.ts redirects to sign-in
+          window.location.assign("/auth/sign-in"); // a full page load, like the 401 above
         else setNotice({ tone: "error", text: failure });
         return;
       }
@@ -209,18 +209,7 @@ export function TodoList({
       `Couldn't delete "${todo.title}".`,
     );
 
-  // Render. Nothing here may move the rows when the status or a message changes:
-  // - The status <output> sits in a fixed-size slot: "Live" (live), "Live updates stopped" (error),
-  //   "Connecting…" after 500 ms of anything else. The server render and hydration leave it empty.
-  // - One message slot with reserved height, always rendered. It holds the notice (role="alert" for errors,
-  //   role="status" for info), or a Reconnect button that calls window.location.reload() when
-  //   status === "error" (including QUERY_REFRESH_FAILED: a renewal rejected for the same query doesn't remount, so
-  //   it needs a way out). There's no client reset API (a package gap).
-  // - <form onSubmit={addTodoFromForm}> with <input name="title" required maxLength={200} autoComplete="off">.
-  // - Empty list: "No todos yet. Open this page in a second tab, then add one."
-  // - <ul> of todos, key={todo.id}, opacity-60 when pending. Each row: a checkbox with
-  //   onChange={(e) => toggleCompleted(todo, e.currentTarget.checked)}, the title, <LocalTime date={todo.created_at} />,
-  //   and a delete button.
+  // The status and message slots keep a fixed height, so the rows don't move when either changes.
   const statusText =
     shownStatus === "live"
       ? "Live"
@@ -235,6 +224,7 @@ export function TodoList({
       : shownStatus === "error"
         ? "text-red-700 dark:text-red-400"
         : "text-zinc-500 dark:text-zinc-400";
+  // useLiveQuery can't restart a stopped query, so Reconnect reloads the page.
   const showReconnect = status === "error";
 
   return (

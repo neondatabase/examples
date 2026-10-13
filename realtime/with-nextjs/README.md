@@ -79,11 +79,11 @@ The [SSR](https://neon.com/docs/realtime/guides/ssr), [reactivity](https://neon.
   ```
 
 - **Kysely.** `src/lib/realtime.ts` passes `kyselyAdapter()` to `createRealtime`. It compiles the query builder to SQL and never executes it. The server read runs the same builder with `.execute()`. Live rows use PostgreSQL's result column names as keys, so aliases work but `CamelCasePlugin` doesn't: Kysely would type camelCase keys while the live rows stay snake_case. The browser needs no parsers, because the Realtime client's defaults match `pg`, which Kysely's `PostgresDialect` uses. To change the schema, append a migration to `scripts/migrate.mts`.
-- **Keeping the subscription alive across re-renders.** [`useLiveQuery`](https://neon.com/docs/realtime/guides/reactivity#uselivequery) restarts its subscription when it gets a new sealed-query object, and that rejects every pending `awaitTxId()`. A server re-render sends one even when the query hasn't changed: `router.refresh()` (Neon Auth's UI calls it on every session change), a Server Action that revalidates or sets a cookie, or navigating to `/` from `/`. So the example follows three rules:
+- **Keeping the subscription alive across re-renders.** [`useLiveQuery`](https://neon.com/docs/realtime/guides/reactivity#uselivequery) restarts its subscription when it gets a new sealed-query object, and that rejects every pending `awaitTxId()`. A server re-render sends one even when the query hasn't changed: `router.refresh()`, a Server Action that revalidates or sets a cookie, or navigating to `/` from `/`. So the example follows three rules:
   1. `src/app/todo-list.tsx` keeps the first sealed query it gets (`useState(sealedQuery)`). Renewals go through `refreshQuery`, not new props.
   2. `<RealtimeRoot>` is keyed on `sealedQuery.queryFingerprint`, so a different query (another user, or a deploy that changed the SQL) remounts the list.
   3. Server Actions never call `revalidatePath`, `refresh()` or `updateTag`. The live query already delivers every write.
-- **Renewal.** The sealed query expires after 60 seconds. Ten seconds before that, `refreshQuery` re-seals it with a `POST` to the Route Handler in `src/app/api/todos/live-query/route.ts`, which checks the session and seals the same query, and the list stays live. It's a Route Handler, not a Server Action, because Next.js runs Server Actions one at a time, so a renewal would queue behind pending writes. After a 401 it stops renewing and calls `router.refresh()`, so `proxy.ts` redirects to sign-in. See [renew from the server](https://neon.com/docs/realtime/guides/ssr#renew-from-the-server).
+- **Renewal.** The sealed query expires after 60 seconds. Ten seconds before that, `refreshQuery` re-seals it with a `POST` to the Route Handler in `src/app/api/todos/live-query/route.ts`, which checks the session and seals the same query, and the list stays live. It's a Route Handler, not a Server Action, because Next.js runs Server Actions one at a time, so a renewal would queue behind pending writes. After a 401 it stops renewing and goes to sign-in with a full page load. See [renew from the server](https://neon.com/docs/realtime/guides/ssr#renew-from-the-server).
 - **Writes.** `addTodo`, `setTodoCompleted` and `deleteTodo` in `src/app/actions.ts` check the session, validate their input with zod and scope the write to the user. They return the transaction id from `RETURNING pg_current_xact_id()::text` as `{ kind: "committed", txid }`, `{ kind: "unchanged" }` when nothing matched, or `{ kind: "rejected", reason }`. They don't throw for expected failures, because Next.js hides a thrown error's message in production. In the browser, `mutate` applies the change with `useOptimistic` and keeps the transition open until the transaction arrives on the stream. The browser creates each new todo's id, so the optimistic row and the live row match. See [with React's `useOptimistic` hook](https://neon.com/docs/realtime/guides/mutations#with-reacts-useoptimistic-hook).
 
   ```tsx
@@ -103,8 +103,9 @@ The [SSR](https://neon.com/docs/realtime/guides/ssr), [reactivity](https://neon.
         return;
       }
       if (result.kind === "rejected") {
-        // Signed out: refresh, and proxy.ts redirects to sign-in.
-        if (result.reason === "UNAUTHENTICATED") router.refresh();
+        // Signed out: go to sign-in with a full page load.
+        if (result.reason === "UNAUTHENTICATED")
+          window.location.assign("/auth/sign-in");
         else setNotice({ tone: "error", text: failure });
         return;
       }
@@ -125,6 +126,8 @@ The [SSR](https://neon.com/docs/realtime/guides/ssr), [reactivity](https://neon.
 
 - Realtime has no row-level security. Users are kept apart only by the `WHERE user_id = …` that the server puts in the sealed query after checking the session, and by `AND user_id = …` on every write. `user_id` never comes from the browser. See [authorization](https://neon.com/docs/realtime/guides/queries#authorization).
 - `src/proxy.ts` isn't the security boundary. It only redirects page loads. `<Todos/>`, every Server Action and the renewal route call `getUser()` themselves.
+- If Neon Auth can't be reached, `getUser()` treats the request as signed out.
+- Signing in or out ends with a full page load (`src/app/providers.tsx`), which drops the browser's Realtime client and the previous user's rows.
 - `NEON_REALTIME_SECRET` and `NEON_AUTH_COOKIE_SECRET` stay on the server (`import "server-only"`). The browser gets sealed queries and the public WebSocket URL, passed as a prop.
 - A user whose session is revoked elsewhere can keep seeing live updates for up to about 6 minutes: up to 5 minutes of Neon Auth's session cookie cache, plus the sealed query's 60 seconds.
 

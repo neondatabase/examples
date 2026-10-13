@@ -19,8 +19,7 @@ export function getAuth() {
  */
 export async function getUser() {
   const { data, error } = await getAuth().getSession(); // returns { data, error }; doesn't throw on HTTP errors
-  // An Auth outage is an error, not "signed out" (treating it as signed out causes redirect loops).
-  if (error && (error.status ?? 0) >= 500)
-    throw new Error(`Neon Auth is unavailable: ${error.message}`);
+  // If Neon Auth can't be reached, treat the request as signed out.
+  if (error) console.warn("[auth] getSession failed", error.code);
   return data?.user ?? null;
 }
