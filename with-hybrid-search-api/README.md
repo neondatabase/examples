@@ -27,7 +27,7 @@ npm run db:setup
 npm run dev
 ```
 
-Use `db:setup`, rather than `drizzle-kit push`, to create the Lakebase extensions before the tables and indexes.
+Use `db:setup`, rather than `drizzle-kit push`, to create the Lakebase extensions before the tables and indexes. Document writes batch chunks through binary COPY in the same transaction as the document update.
 
 ## Try it
 

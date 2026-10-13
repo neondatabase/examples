@@ -2,8 +2,8 @@ import { timingSafeEqual } from "node:crypto";
 import { attachDatabasePool } from "@neon/functions";
 import { Hono, type Context } from "hono";
 import { cosineDistance, eq, sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
+import { Pool, type PoolClient } from "pg";
 import { postgresUrl } from "./connection.js";
 import { createEmbedder } from "./embedding.js";
 import {
@@ -17,6 +17,7 @@ import { searchResults } from "./search-results.js";
 import { hybridSearchSql, keywordSearchSql } from "./search-sql.js";
 import { chunks, documents } from "./schema.js";
 import { chunkMarkdown } from "./chunking.js";
+import { copyChunks, type EmbeddedChunk } from "./chunk-copy.js";
 
 const apiKey = process.env.SEARCH_API_KEY;
 if (!apiKey || apiKey.length < 32)
@@ -33,12 +34,27 @@ attachDatabasePool(pool);
 const db = drizzle(pool);
 const embed = createEmbedder();
 
+// COPY and Drizzle writes must share one checked-out connection and transaction.
+async function documentTransaction<T>(
+  write: (tx: NodePgDatabase, client: PoolClient) => Promise<T>,
+): Promise<T> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const result = await write(drizzle(client), client);
+    await client.query("COMMIT");
+    return result;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 async function prepareChunks(content: string) {
   const parsed = chunkMarkdown(content);
-  const prepared: ((typeof parsed)[number] & {
-    chunkIndex: number;
-    embedding: number[];
-  })[] = [];
+  const prepared: EmbeddedChunk[] = [];
   for (let offset = 0; offset < parsed.length; offset += 32) {
     const batch = parsed.slice(offset, offset + 32);
     const vectors = await embed(
@@ -63,7 +79,7 @@ async function saveDocument(
   metadata: Record<string, unknown>,
 ) {
   const prepared = await prepareChunks(content);
-  return db.transaction(async (tx) => {
+  return documentTransaction(async (tx, client) => {
     const rows = await tx
       .insert(documents)
       .values({ id, content, metadata })
@@ -73,10 +89,7 @@ async function saveDocument(
       })
       .returning();
     await tx.delete(chunks).where(eq(chunks.documentId, id));
-    if (prepared.length)
-      await tx
-        .insert(chunks)
-        .values(prepared.map((chunk) => ({ ...chunk, documentId: id })));
+    await copyChunks(client, id, prepared);
     return rows[0];
   });
 }
@@ -141,7 +154,7 @@ app.patch("/documents/:id", async (c) => {
     input.removeMetadataKeys.map((key) => sql`${key}`),
     sql`, `,
   )}]::text[]`;
-  const row = await db.transaction(async (tx) => {
+  const row = await documentTransaction(async (tx, client) => {
     const rows = await tx
       .update(documents)
       .set({
@@ -153,10 +166,7 @@ app.patch("/documents/:id", async (c) => {
       .returning();
     if (rows[0] && prepared !== null) {
       await tx.delete(chunks).where(eq(chunks.documentId, id));
-      if (prepared.length)
-        await tx
-          .insert(chunks)
-          .values(prepared.map((chunk) => ({ ...chunk, documentId: id })));
+      await copyChunks(client, id, prepared);
     }
     return rows[0];
   });
