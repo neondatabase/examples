@@ -59,6 +59,11 @@ Open <http://localhost:5173> in two tabs. Add, complete, or delete an item in
 either tab; the current tab updates optimistically while the other tab updates
 through Neon Realtime.
 
+Realtime accepts WebSocket connections only from the browser origins listed in
+`neon.ts`, which allows just `http://localhost:5173`. Other origins, such as a LAN address
+or a deployed URL, are rejected. To allow another origin, add it to
+`preview.realtime.allowedOrigins` in `neon.ts` and run `neon deploy` again.
+
 The backend keeps `NEON_REALTIME_SECRET` private. It seals the Drizzle query and
 returns only the sealed query and public WebSocket URL to the browser. This demo
 does not authenticate its API routes; add authorization before adapting it for
