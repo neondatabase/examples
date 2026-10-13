@@ -1,3 +1,4 @@
+// From guides/mutations.md "Render the app", plus sign-in and joining channels, which the guides leave out
 import "./style.css";
 
 import { StrictMode } from "react";
@@ -9,7 +10,7 @@ import { fetchSealedInbox, joinChannels } from "./api";
 import { authClient } from "./auth";
 import { client } from "./client";
 import { createMessagesCollection } from "./collections";
-import { ChatApp } from "./components/ChatApp";
+import { ChatApp } from "./ChatApp";
 
 const root = createRoot(document.getElementById("root")!);
 

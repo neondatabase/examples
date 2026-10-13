@@ -1,4 +1,7 @@
-// Load .env.local and check it before the modules below read process.env
+// From guides/queries.md "Exposing an endpoint", reactivity.md "Seal a broader query"
+// and mutations.md "Returning the txid from your backend"
+
+// Not from the guides: load .env.local and check it before the modules below read process.env
 import "./load-env";
 import "./env";
 
@@ -219,7 +222,7 @@ export type AppType = typeof app;
 
 export default app;
 
-// Checks the database, then serves the API behind Vite's /api proxy
+// Not from the guides: checks the database, then serves the API behind Vite's /api proxy
 await pool.query("select 1");
 
 const server = serve({

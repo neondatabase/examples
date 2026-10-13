@@ -7,11 +7,9 @@ import * as schema from "./schema";
 // Node.js versions older than v22 need a WebSocket constructor
 neonConfig.webSocketConstructor = ws;
 
-// Exported for the server's startup check and shutdown, and for setup.ts
+// Exported, unlike in the guides, for the server's startup check and shutdown, and for setup.ts
 export const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
 export const db = drizzle(pool, { schema });
 
-// So an idle connection error doesn't crash the server
-pool.on("error", (error: Error) => {
-  console.error("Unexpected error on idle PostgreSQL client", error);
-});
+// So an idle connection error, for example when the compute scales to zero, doesn't crash the API
+pool.on("error", (error: Error) => console.error(error));

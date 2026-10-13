@@ -9,7 +9,7 @@ import {
 import { useLiveQuery } from "@neon/realtime-react";
 import type { SealedLiveQuery } from "@neon/realtime/client";
 
-import type { Message } from "../../backend/schema";
+import type { Message } from "../backend/schema";
 import { LocalTime } from "./LocalTime";
 import {
   applyMutation,
@@ -17,7 +17,7 @@ import {
   newMessage,
   type OptimisticMessage,
   writeMutation,
-} from "../mutations";
+} from "./mutations";
 
 const NO_MESSAGES: readonly OptimisticMessage[] = [];
 
@@ -67,10 +67,12 @@ export function Messages({
   }, [status]);
 
   useEffect(() => {
-    return utils.onBatch((changes, batch) => {
-      console.debug(
-        `Applied ${changes.length} changes from transactions ${batch.txids.join(", ")}`,
-      );
+    return utils.onUpdate((update) => {
+      if (update.type === "changes") {
+        console.debug(
+          `Applied ${update.changes.length} changes from transactions ${update.batch.txids.join(", ")}`,
+        );
+      }
     });
   }, [utils]);
 

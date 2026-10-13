@@ -1,3 +1,5 @@
+// From guides/subscribing.md "Fetch from an API endpoint", reactivity.md "Create the collection"
+// and mutations.md "Calling the routes from the frontend"
 import type { SealedLiveQuery } from "@neon/realtime/client";
 import { hc } from "hono/client";
 
@@ -7,7 +9,6 @@ import { authClient } from "./auth";
 
 export const server = hc<AppType>(window.location.origin, {
   headers: async (): Promise<Record<string, string>> => {
-    // token() is served from the session cache without a JWT, so every call 401s
     const { data } = await authClient.getSession();
     const token = data?.session.token;
 
@@ -79,7 +80,7 @@ export async function deleteMessage(id: string): Promise<MutationResponse> {
   return res.json();
 }
 
-// Adds the signed-in user to channels 1-3 and returns them
+// Not from the guides: adds the signed-in user to channels 1-3 and returns them
 export async function joinChannels() {
   const res = await server.api.v1.channels.join.$post();
 

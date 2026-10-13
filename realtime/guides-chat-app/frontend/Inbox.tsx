@@ -2,9 +2,9 @@
 import type { FormEvent } from "react";
 import { eq, useLiveQuery as useCollectionQuery } from "@tanstack/react-db";
 
-import type { Message } from "../../backend/schema";
-import type { MessagesCollection } from "../collections";
-import { newMessage } from "../mutations";
+import type { Message } from "../backend/schema";
+import type { MessagesCollection } from "./collections";
+import { newMessage } from "./mutations";
 
 interface Props {
   messagesCollection: MessagesCollection;

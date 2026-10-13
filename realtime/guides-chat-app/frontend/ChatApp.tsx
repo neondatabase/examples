@@ -2,8 +2,8 @@
 import { UserButton } from "@neondatabase/auth-ui";
 import { useState } from "react";
 
-import type { joinChannels } from "../api";
-import type { MessagesCollection } from "../collections";
+import type { joinChannels } from "./api";
+import type { MessagesCollection } from "./collections";
 import { Channel } from "./Channel";
 import { Inbox } from "./Inbox";
 

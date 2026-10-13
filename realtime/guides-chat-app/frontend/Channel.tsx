@@ -2,8 +2,8 @@
 import { useCallback, useEffect, useState } from "react";
 import type { SealedLiveQuery } from "@neon/realtime/client";
 
-import type { Message } from "../../backend/schema";
-import { fetchSealedMessages } from "../api";
+import type { Message } from "../backend/schema";
+import { fetchSealedMessages } from "./api";
 import { Messages } from "./Messages";
 
 interface SealedChannel {
