@@ -15,6 +15,7 @@
   "dependencies": {
     "@hono/node-server": "^1.19.7",
     "@hono/zod-validator": "^0.7.6",
+    "@neon/config": "^1.9.1",
     "@neon/env": "^1.5.3",
     "@neon/realtime": "^0.1.0",
     "@neon/realtime-drizzle": "^0.1.0",
