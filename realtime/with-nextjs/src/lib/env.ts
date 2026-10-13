@@ -20,12 +20,19 @@ function load() {
         "printf '\\nNEON_AUTH_COOKIE_SECRET=%s\\n' \"$(openssl rand -base64 32)\" >> .env.local",
     );
   }
+  // pg already treats prefer/require/verify-ca as verify-full. Say so explicitly to avoid
+  // pg's deprecation warning, which Next replays in the browser console.
+  const url = new URL(env.postgres.databaseUrl);
+  const sslmode = url.searchParams.get("sslmode");
+  if (sslmode === "prefer" || sslmode === "require" || sslmode === "verify-ca")
+    url.searchParams.set("sslmode", "verify-full");
+  const databaseUrl = url.toString();
   // Realtime must target the same database as DATABASE_URL, so derive the name instead of configuring it.
-  const database = parseConnectionString(env.postgres.databaseUrl).database;
+  const database = parseConnectionString(databaseUrl).database;
   if (!database)
     throw new Error("DATABASE_URL must include a database name in its path.");
   return {
-    databaseUrl: env.postgres.databaseUrl,
+    databaseUrl,
     database,
     authBaseUrl: env.auth.baseUrl,
     authCookieSecret,
