@@ -11,6 +11,9 @@ export default defineConfig({
   out: "./drizzle",
   schema: "./src/schema.ts",
   dialect: "postgresql",
+  // Only manage this example's table, so `drizzle-kit push` against a shared
+  // database never proposes dropping other tables.
+  tablesFilter: ["realtime_todos"],
   dbCredentials: {
     url: process.env.DATABASE_URL,
   },
