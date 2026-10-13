@@ -106,6 +106,17 @@ export function TodoList({
     refreshQuery,
   });
 
+  // A query reset (during writes, for one) briefly leaves "live", so the label waits 500 ms before showing
+  // "Connecting…". Until then it keeps the last label, or an empty slot on first mount.
+  const settled = status === "live" || status === "error";
+  const [shownStatus, setShownStatus] = useState<typeof status | null>(null);
+  if (settled && shownStatus !== status) setShownStatus(status); // adjust during render: no stale frame
+  useEffect(() => {
+    if (settled) return;
+    const timer = setTimeout(() => setShownStatus("connecting"), 500);
+    return () => clearTimeout(timer);
+  }, [settled]);
+
   useEffect(() => {
     // The renewal came back for a different query: another user signed in on this browser, or a deploy
     // changed the SQL. Re-render, and the new fingerprint remounts this list (todos.tsx).
@@ -197,7 +208,7 @@ export function TodoList({
 
   // Render. Nothing here may move the rows when the status or a message changes:
   // - The status <output> sits in a fixed-size slot: "Live" (live), "Live updates stopped" (error),
-  //   otherwise "Connecting…". The server render and hydration show "Connecting…".
+  //   "Connecting…" after 500 ms of anything else. The server render and hydration leave it empty.
   // - One message slot with reserved height, always rendered. It holds the notice (role="alert" for errors,
   //   role="status" for info), or a Reconnect button that calls window.location.reload() when
   //   status === "error" (including QUERY_REFRESH_FAILED: a renewal rejected for the same query doesn't remount, so
@@ -208,15 +219,17 @@ export function TodoList({
   //   onChange={(e) => toggleCompleted(todo, e.currentTarget.checked)}, the title, <LocalTime date={todo.created_at} />,
   //   and a delete button.
   const statusText =
-    status === "live"
+    shownStatus === "live"
       ? "Live"
-      : status === "error"
+      : shownStatus === "error"
         ? "Live updates stopped"
-        : "Connecting…";
+        : shownStatus
+          ? "Connecting…"
+          : "";
   const statusColor =
-    status === "live"
+    shownStatus === "live"
       ? "text-emerald-700 dark:text-emerald-400"
-      : status === "error"
+      : shownStatus === "error"
         ? "text-red-700 dark:text-red-400"
         : "text-zinc-500 dark:text-zinc-400";
   const showReconnect = status === "error";

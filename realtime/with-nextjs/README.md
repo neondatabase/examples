@@ -52,7 +52,7 @@ Open <http://localhost:3000>. You're sent to `/auth/sign-in`. Sign up, and you l
 
 - **Live.** Open a second tab as the same user. Add, complete or delete a todo in one tab. It shows dimmed at once, turns normal when Postgres confirms it, and appears in the other tab over Realtime.
 - **Per user.** Sign up as a second user in a private window. That user sees none of the first user's todos.
-- **SSR.** Reload with a few todos and view the source: the rows are in the HTML. The status goes from "Connecting…" to "Live" without moving the rows.
+- **SSR.** Reload with a few todos and view the source: the rows are in the HTML. The status slot starts empty and shows "Live" without moving the rows. It shows "Connecting…" only if the connection stays down for 500 ms.
 
 ## How it works
 
