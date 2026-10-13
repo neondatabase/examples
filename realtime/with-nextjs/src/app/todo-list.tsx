@@ -101,17 +101,19 @@ export function TodoList({
     return (await response.json()) as SealedLiveQuery<TodoRow>;
   }, [router]);
 
-  // The server render and hydration both show initialTodos with status "stale". The socket opens after hydration.
+  // The server render and hydration both show initialTodos with status "connecting". The socket opens after
+  // hydration. refreshQuery re-seals 10 s before expiry, so a renewal on time stays "live".
   const { data, status, error, utils } = useLiveQuery(query, {
     initialData: initialTodos,
     refreshQuery,
   });
 
-  // A query reset (during writes, for one) briefly leaves "live", so the label waits 500 ms before showing
-  // "Connecting…". Until then it keeps the last label, or an empty slot on first mount.
+  // The first connect and every reconnect report "connecting", and "stale" means the sealed query expired
+  // before a renewal landed. The label waits 500 ms before showing "Connecting…" for either, so a fast
+  // connect goes from an empty slot straight to "Live" and a brief reconnect keeps the last label.
   const settled = status === "live" || status === "error";
   const [shownStatus, setShownStatus] = useState<typeof status | null>(null);
-  if (settled && shownStatus !== status) setShownStatus(status); // adjust during render: no stale frame
+  if (settled && shownStatus !== status) setShownStatus(status); // adjust during render: no frame with the old label
   useEffect(() => {
     if (settled) return;
     const timer = setTimeout(() => setShownStatus("connecting"), 500);
@@ -163,7 +165,7 @@ export function TodoList({
         // the wait resolves, so the live data already contains the write: no flicker and no duplicate.
         await utils.awaitTxId(result.txid, SYNC_TIMEOUT_MS);
       } catch {
-        // Committed but not seen yet (the stream is reconnecting, or the list unmounted).
+        // Committed but not seen yet (the stream is reconnecting or has stopped, or the list unmounted).
         setNotice({
           tone: "info",
           text: "Saved. It will appear when live updates reconnect.",
