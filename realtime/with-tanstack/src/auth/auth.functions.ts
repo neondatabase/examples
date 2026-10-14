@@ -14,7 +14,7 @@ export type SessionUser = { id: string; email: string; name: string };
 export const sessionMiddleware = createMiddleware({ type: "function" }).server(
   async ({ next }) => {
     const { data, error } = await auth.getSession();
-    // If Neon Auth can't be reached, treat the request as signed out.
+    // If Managed Better Auth can't be reached, treat the request as signed out.
     if (error) console.warn("[auth] getSession failed", error.code);
     const user: SessionUser | null = data?.user
       ? { id: data.user.id, email: data.user.email, name: data.user.name }

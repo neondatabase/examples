@@ -21,7 +21,7 @@ if (!databaseName) {
 
 export const postgresDatabaseName = databaseName;
 
-// Signs the Neon Auth session cookie. `neon env pull` doesn't write it.
+// Signs the Managed Better Auth session cookie. `neon env pull` doesn't write it.
 const cookieSecret = process.env.NEON_AUTH_COOKIE_SECRET;
 if (!cookieSecret || cookieSecret.length < 32) {
   throw new Error(

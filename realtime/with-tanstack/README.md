@@ -6,18 +6,18 @@
 
 # Realtime TanStack DB app
 
-A per-user todo app built with [TanStack Start](https://tanstack.com/start), [TanStack DB](https://tanstack.com/db), [Drizzle ORM](https://orm.drizzle.team), [Neon Realtime](https://neon.com/docs/realtime/overview) and [Neon Auth](https://neon.com/docs/neon-auth/overview).
+A per-user todo app built with [TanStack Start](https://tanstack.com/start), [TanStack DB](https://tanstack.com/db), [Drizzle ORM](https://orm.drizzle.team), [Neon Realtime](https://neon.com/docs/realtime/overview) and Neon's [Managed Better Auth](https://neon.com/docs/auth/overview).
 
 - **SSR.** The first HTML already contains the signed-in user's todos.
 - **Live.** In the browser, a TanStack DB live query reads a collection that Realtime keeps in sync with Postgres.
 - **Optimistic writes.** Changes apply at once. A server function writes them to Postgres, and the change is confirmed when its transaction comes back over Realtime.
-- **Auth.** Neon Auth, through a small TanStack Start adapter that ships with the example, and Neon's prebuilt sign-in UI.
+- **Auth.** Managed Better Auth, through a small TanStack Start adapter that ships with the example, and Neon's prebuilt sign-in UI.
 
 ## Project structure
 
 ```
 my-app/
-├── neon.ts                    # Neon policy: Neon Auth + Realtime allowedOrigins
+├── neon.ts                    # Neon policy: Managed Better Auth + Realtime allowedOrigins
 ├── drizzle.config.ts          # drizzle-kit, reads .env.local
 ├── .env.example               # Every variable, and where it comes from
 └── src/
@@ -32,10 +32,10 @@ my-app/
     ├── todos.functions.ts     # Server functions: load, refresh, create, update, delete
     ├── todos.collection.ts    # todosCollection(userId, query)
     ├── auth/
-    │   ├── auth.server.ts     # Neon Auth server, wired to Start's request and cookies
+    │   ├── auth.server.ts     # Managed Better Auth server, wired to Start's request and cookies
     │   ├── auth.functions.ts  # sessionMiddleware, requireUser, getSessionUser
     │   ├── client.ts          # Browser auth client
-    │   ├── handler.server.ts  # Proxy to Neon Auth
+    │   ├── handler.server.ts  # Proxy to Managed Better Auth
     │   ├── auth-page.tsx      # Neon's AuthView (sign-in, sign-up, ...)
     │   ├── user-menu.tsx      # Email and Sign out button
     │   └── session-lost.ts    # Full page load when the session is gone
@@ -64,7 +64,7 @@ neon login
 neon link
 ```
 
-Provision the services in `neon.ts`. `neon deploy` turns on Realtime and Neon Auth for the branch, then writes `NEON_REALTIME_URL`, `NEON_REALTIME_SECRET` and `NEON_AUTH_BASE_URL` to `.env.local` next to `DATABASE_URL`. It doesn't host the app.
+Provision the services in `neon.ts`. `neon deploy` turns on Realtime and Managed Better Auth for the branch, then writes `NEON_REALTIME_URL`, `NEON_REALTIME_SECRET` and `NEON_AUTH_BASE_URL` to `.env.local` next to `DATABASE_URL`. It doesn't host the app.
 
 ```bash
 neon deploy
@@ -109,8 +109,8 @@ Open <http://localhost:3000>. You're sent to `/auth/sign-in`. Create an account 
 
 Notes:
 
-- Safari may reject Neon Auth's `__Secure-` cookies on `http://localhost`, so sign-in can fail without an error. Use Chrome or Firefox for local development.
-- Localhost is a trusted Neon Auth domain by default. If sign-in from localhost is rejected, run `neon neon-auth domain allow-localhost enable`.
+- Safari may reject the Managed Better Auth `__Secure-` cookies on `http://localhost`, so sign-in can fail without an error. Use Chrome or Firefox for local development.
+- Localhost is a trusted Managed Better Auth domain by default. If sign-in from localhost is rejected, run `neon neon-auth domain allow-localhost enable`.
 
 ## How it works
 
@@ -124,13 +124,13 @@ Notes:
 
 The `Todo` type is inferred from the `selectTodos` Drizzle query. The sealed query carries it into the collection and `useLiveQuery`.
 
-## The Neon Auth adapter
+## The Managed Better Auth adapter
 
-Neon Auth has no official TanStack Start adapter yet, so the example ships a small one on `@neondatabase/auth/server`:
+Managed Better Auth has no official TanStack Start adapter yet, so the example ships a small one on `@neondatabase/auth/server`:
 
 - `src/auth/auth.server.ts` creates the auth server, wired to Start's request and `setCookie`.
 - `src/auth/auth.functions.ts` has `sessionMiddleware`, `requireUser` and the `getSessionUser` server function.
-- `src/auth/handler.server.ts` proxies `/api/auth/*` to Neon Auth, through the route in `src/routes/api/auth/$.ts`.
+- `src/auth/handler.server.ts` proxies `/api/auth/*` to Managed Better Auth, through the route in `src/routes/api/auth/$.ts`.
 
 The sign-in UI is Neon's prebuilt `AuthView` in `src/auth/auth-page.tsx`. It and its route, `src/routes/auth/$path.tsx`, are the only files that import `@neondatabase/auth-ui` and its CSS. Leaving that route is always a full page load, so the auth UI's styles don't reach the todos page. The Sign out button in `src/auth/user-menu.tsx` is hand-built for the same reason. Both auth packages are beta and pinned exactly. Replace `src/auth/` when an official adapter or `@neon/auth` ships.
 
@@ -153,7 +153,7 @@ This template doesn't host the app. To run it on your own host:
    neon deploy --update-existing
    ```
 
-2. Trust the origin in Neon Auth:
+2. Trust the origin in Managed Better Auth:
 
    ```bash
    neon neon-auth domain add https://your-app.example.com

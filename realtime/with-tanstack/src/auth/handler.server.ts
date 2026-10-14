@@ -2,8 +2,8 @@ import { handleAuthProxyRequest } from "@neondatabase/auth/server";
 
 import { authConfig } from "./auth.server";
 
-// Proxies the browser auth client's requests to Neon Auth and rewrites its
-// cookies onto this origin.
+// Proxies the browser auth client's requests to Managed Better Auth and
+// rewrites its cookies onto this origin.
 export async function handleAuthRequest(request: Request, path: string) {
   const response = await handleAuthProxyRequest({
     request,

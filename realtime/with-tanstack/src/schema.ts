@@ -12,7 +12,7 @@ export const todos = pgTable(
   {
     // Generated in the browser, so an optimistic insert already has its key.
     id: uuid("id").primaryKey(),
-    // The Neon Auth user id. Set on the server only; never sent to the browser.
+    // The Managed Better Auth user id. Set on the server only; never sent to the browser.
     userId: text("user_id").notNull(),
     title: text("title").notNull(),
     completed: boolean("completed").notNull().default(false),

@@ -1,6 +1,6 @@
 {
   "name": "with-realtime-tanstack",
-  "description": "Per-user SSR TanStack Start and TanStack DB app using Neon Realtime, Neon Auth and Drizzle ORM.",
+  "description": "Per-user SSR TanStack Start and TanStack DB app using Neon Realtime, Managed Better Auth and Drizzle ORM.",
   "private": true,
   "type": "module",
   "scripts": {
