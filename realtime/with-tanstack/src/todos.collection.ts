@@ -2,6 +2,7 @@ import type { RealtimeClient, SealedLiveQuery } from "@neon/realtime/client";
 import { realtimeCollectionOptions } from "@neon/realtime-tanstack";
 import { collectionOptions } from "@tanstack/react-db";
 
+import { leaveIfSignedOut } from "./auth/session-lost";
 import {
   createTodos,
   deleteTodos,
@@ -35,7 +36,7 @@ export function todosCollection(userId: string, query: SealedLiveQuery<Todo>) {
       // `stale` until a refresh replaced it.
       gcTime: 0,
       refreshQuery: () =>
-        refreshTodosQuery({ data: { userId } }).catch(leaveOnAuthLoss),
+        refreshTodosQuery({ data: { userId } }).catch(leaveIfSignedOut),
       // One server call per transaction, with all of its mutations. Each also
       // sends `userId`, so the server refuses writes from a page loaded for
       // another user.
@@ -51,7 +52,7 @@ export function todosCollection(userId: string, query: SealedLiveQuery<Todo>) {
               }),
             ),
           },
-        }).catch(leaveOnAuthLoss);
+        }).catch(leaveIfSignedOut);
         if (txid)
           await collection.utils
             .awaitTxId(txid, ECHO_TIMEOUT_MS)
@@ -67,7 +68,7 @@ export function todosCollection(userId: string, query: SealedLiveQuery<Todo>) {
               changes,
             })),
           },
-        }).catch(leaveOnAuthLoss);
+        }).catch(leaveIfSignedOut);
         if (txid)
           await collection.utils
             .awaitTxId(txid, ECHO_TIMEOUT_MS)
@@ -76,7 +77,7 @@ export function todosCollection(userId: string, query: SealedLiveQuery<Todo>) {
       onDelete: async ({ transaction, collection }) => {
         const { txid } = await deleteTodos({
           data: { userId, batch: transaction.mutations.map(({ key }) => key) },
-        }).catch(leaveOnAuthLoss);
+        }).catch(leaveIfSignedOut);
         if (txid)
           await collection.utils
             .awaitTxId(txid, ECHO_TIMEOUT_MS)
@@ -88,13 +89,4 @@ export function todosCollection(userId: string, query: SealedLiveQuery<Todo>) {
 
 function notSyncedYet(cause: unknown): never {
   throw new NotSyncedYetError("Saved, but not synced yet", { cause });
-}
-
-// Signed out, or signed in as someone else: this page's rows and live query
-// no longer apply, so go to sign-in with a full page load. Browser only.
-function leaveOnAuthLoss(error: unknown): never {
-  if (/UNAUTHORIZED|SESSION_CHANGED/.test(String(error))) {
-    window.location.assign("/auth/sign-in");
-  }
-  throw error;
 }

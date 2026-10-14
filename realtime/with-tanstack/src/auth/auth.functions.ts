@@ -3,6 +3,7 @@ import {
   setResponseHeader,
   setResponseStatus,
 } from "@tanstack/react-start/server";
+import { z } from "zod";
 
 import { auth } from "./auth.server";
 
@@ -23,13 +24,16 @@ export const sessionMiddleware = createMiddleware({ type: "function" }).server(
 );
 
 // The data boundary: every todo server function uses this, whatever the
-// route guards do.
+// route guards do. The page sends the user id it was loaded for, so a session
+// for another user (signed in from another tab) counts as signed out. The
+// schema is loose, so the function's own fields reach its validator.
 export const requireUser = createMiddleware({ type: "function" })
   .middleware([sessionMiddleware])
-  .server(({ next, context }) => {
-    if (!context.user) {
+  .validator(z.looseObject({ userId: z.string() }))
+  .server(({ next, context, data }) => {
+    if (context.user?.id !== data.userId) {
       setResponseStatus(401);
-      throw new Error("UNAUTHORIZED");
+      throw new Error("UNAUTHENTICATED");
     }
     return next({ context: { user: context.user } });
   });

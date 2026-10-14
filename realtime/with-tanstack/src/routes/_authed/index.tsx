@@ -18,7 +18,9 @@ export const Route = createFileRoute("/_authed/")({
   // Fills the router's DbClient. On the server, routerWithDbClient snapshots
   // these rows into the HTML and restores them in the browser before render.
   loader: async ({ context }) => {
-    const { rows, query } = await loadTodos();
+    const { rows, query } = await loadTodos({
+      data: { userId: context.user.id },
+    });
     // A no-op if this user's collection already exists.
     context.dbClient.collection(todosCollection(context.user.id, query), {
       initialData: rows,

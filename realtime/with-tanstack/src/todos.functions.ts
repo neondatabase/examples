@@ -1,17 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray, sql } from "drizzle-orm";
 
-import { requireUser, type SessionUser } from "./auth/auth.functions";
+import { requireUser } from "./auth/auth.functions";
 import { db } from "./db.server";
 import { realtime } from "./realtime.server";
 import { todos } from "./schema";
 import { selectTodos } from "./todos.server";
-import {
-  newTodosInput,
-  pageUserInput,
-  todoIdsInput,
-  todoUpdatesInput,
-} from "./todos.schemas";
+import { newTodosInput, todoIdsInput, todoUpdatesInput } from "./todos.schemas";
 
 // Every function requires a signed-in user and only touches that user's rows.
 // Anything that returns rows or a sealed query is POST, so it's never cached.
@@ -39,21 +34,12 @@ export const loadTodos = createServerFn({ method: "POST" })
     return { rows, query };
   });
 
-// The browser sends the user id its page was loaded for. If another tab has
-// since signed in as someone else, the page has to reload: its writes would go
-// to the new user, and Realtime rejects a refreshed query for a different user.
-function requireSameUser(userId: string, user: SessionUser) {
-  if (userId !== user.id) throw new Error("SESSION_CHANGED");
-}
-
 // Re-seals the live query before it expires.
 export const refreshTodosQuery = createServerFn({ method: "POST" })
   .middleware([requireUser])
-  .validator(pageUserInput)
-  .handler(({ data, context }) => {
-    requireSameUser(data.userId, context.user);
-    return realtime.seal({ query: selectTodos(context.user.id) });
-  });
+  .handler(({ context }) =>
+    realtime.seal({ query: selectTodos(context.user.id) }),
+  );
 
 // Each write sends a whole TanStack DB batch in one SQL statement and returns
 // its Postgres transaction id, or `null` if no row changed (for example, an id
@@ -61,8 +47,7 @@ export const refreshTodosQuery = createServerFn({ method: "POST" })
 export const createTodos = createServerFn({ method: "POST" })
   .middleware([requireUser])
   .validator(newTodosInput)
-  .handler(async ({ data: { userId, batch }, context }) => {
-    requireSameUser(userId, context.user);
+  .handler(async ({ data: { batch }, context }) => {
     const [created] = await db
       .insert(todos)
       .values(batch.map((todo) => ({ ...todo, userId: context.user.id })))
@@ -73,9 +58,7 @@ export const createTodos = createServerFn({ method: "POST" })
 export const updateTodos = createServerFn({ method: "POST" })
   .middleware([requireUser])
   .validator(todoUpdatesInput)
-  .handler(async ({ data: { userId, batch }, context }) => {
-    requireSameUser(userId, context.user);
-
+  .handler(async ({ data: { batch }, context }) => {
     const changed = batch.filter(({ changes }) =>
       Object.values(changes).some((value) => value !== undefined),
     );
@@ -122,8 +105,7 @@ export const updateTodos = createServerFn({ method: "POST" })
 export const deleteTodos = createServerFn({ method: "POST" })
   .middleware([requireUser])
   .validator(todoIdsInput)
-  .handler(async ({ data: { userId, batch }, context }) => {
-    requireSameUser(userId, context.user);
+  .handler(async ({ data: { batch }, context }) => {
     const [deleted] = await db
       .delete(todos)
       .where(and(inArray(todos.id, batch), eq(todos.userId, context.user.id)))
