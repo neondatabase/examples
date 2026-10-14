@@ -6,6 +6,7 @@
   "scripts": {
     "build": "vite build && tsc --noEmit",
     "db:push": "drizzle-kit push",
+    "db:setup": "npm run db:push",
     "dev": "vite dev",
     "fmt": "prettier --write .",
     "start": "node --env-file-if-exists=.env.local .output/server/index.mjs",
