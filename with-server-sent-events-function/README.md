@@ -4,9 +4,9 @@
   <img width="250px" alt="Neon Logo fallback" src="https://neon.com/brand/neon-logo-dark-color.svg">
 </picture>
 
-# Getting started with Neon realtime SSE
+# Getting started with server-sent events on Neon Functions
 
-A minimal realtime counter: a client-only [TanStack Router](https://tanstack.com/router) SPA talking over **server-sent events (SSE)** to a [Hono](https://hono.dev) server running on [Neon Functions](https://neon.com/docs/compute/functions/overview), with the count stored in [Neon](https://neon.com) Postgres via [Drizzle ORM](https://orm.drizzle.team).
+A minimal shared counter: a client-only [TanStack Router](https://tanstack.com/router) SPA talking over **server-sent events (SSE)** to a [Hono](https://hono.dev) server running on [Neon Functions](https://neon.com/docs/compute/functions/overview), with the count stored in [Neon](https://neon.com) Postgres via [Drizzle ORM](https://orm.drizzle.team).
 
 There is one shared counter for everyone:
 
@@ -23,7 +23,7 @@ Browser ──(POST /increment)──▶ Neon Function ──▶ Postgres
 ## Project structure
 
 ```
-with-realtime-sse/
+with-server-sent-events-function/
 ├── neon.ts                 # Neon policy: the `counter` function
 ├── drizzle.config.ts       # Drizzle Kit config
 ├── .env.example            # Function environment variables
@@ -42,8 +42,8 @@ with-realtime-sse/
 ## Clone the repository
 
 ```bash
-npx degit neondatabase/examples/with-realtime-sse ./with-realtime-sse
-cd with-realtime-sse
+npx degit neondatabase/examples/with-server-sent-events-function ./with-server-sent-events-function
+cd with-server-sent-events-function
 ```
 
 ## Install and authenticate the Neon CLI
@@ -67,8 +67,6 @@ npm install --prefix web # the SPA
 ```bash
 neon link
 ```
-
-If you let your agent drive this, add `--agent` to skip interactive mode.
 
 `neon link` pulls your branch-scoped variables — `DATABASE_URL` and `DATABASE_URL_UNPOOLED` — into `.env.local`.
 

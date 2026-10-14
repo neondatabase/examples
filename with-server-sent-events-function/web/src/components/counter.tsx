@@ -37,7 +37,7 @@ export function Counter() {
         <span className={`status ${connected ? 'status--on' : 'status--off'}`}>
           {connected ? 'live' : 'connecting…'}
         </span>
-        <h1>Neon realtime counter</h1>
+        <h1>Neon SSE counter</h1>
         <p className="count">{count ?? '—'}</p>
         <button onClick={increment} disabled={busy}>
           Increment

@@ -95,7 +95,7 @@ const app = new Hono();
 app.use('*', cors({ origin: WEB_ORIGIN }));
 
 app.get('/', (c) =>
-  c.text('Neon realtime counter — GET /count, POST /increment, GET /events (SSE)'),
+  c.text('Neon SSE counter — GET /count, POST /increment, GET /events (SSE)'),
 );
 
 app.get('/count', async (c) => c.json({ value: await readCount() }));

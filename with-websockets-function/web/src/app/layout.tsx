@@ -3,8 +3,8 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "Neon Realtime Chat",
-  description: "A shared realtime chat on Neon Functions (WebSockets) + Neon Auth.",
+  title: "Neon WebSocket Chat",
+  description: "A shared chat on Neon Functions (WebSockets) + Neon Auth.",
 };
 
 export default function RootLayout({
