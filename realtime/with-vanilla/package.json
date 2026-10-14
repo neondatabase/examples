@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@neon/env": "^1.5.3",
-    "@neon/realtime": "0.0.1",
+    "@neon/realtime": "^0.1.0",
     "dotenv": "^17.2.3",
     "pg": "^8.16.3",
     "pg-connection-string": "^2.14.1"
