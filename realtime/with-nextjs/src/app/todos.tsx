@@ -18,9 +18,13 @@ export async function Todos() {
   const { rows, sealedQuery } = await loadTodos(user.id);
   return (
     // Keyed on the query's identity. A re-render for the same query (router.refresh(), a cookie refresh)
-    // keeps the subscription. Another user, or a deploy that changed the SQL, remounts the list (see todo-list.tsx).
+    // keeps the subscription. A deploy that changed the SQL remounts the list.
     <RealtimeRoot key={sealedQuery.queryFingerprint} url={getEnv().realtimeUrl}>
-      <TodoList initialTodos={rows} sealedQuery={sealedQuery} />
+      <TodoList
+        initialTodos={rows}
+        sealedQuery={sealedQuery}
+        userId={user.id}
+      />
     </RealtimeRoot>
   );
 }

@@ -15,11 +15,13 @@ export function getAuth() {
 
 /**
  * The signed-in user, or null. Call it first in every Server Component data path, Server Action and
- * Route Handler: proxy.ts is not the security boundary. Never accept a user id from the client.
+ * Route Handler: proxy.ts is not the security boundary. Pass the user id the page was loaded for, and a
+ * different signed-in user counts as signed out. That id is only compared, never used to scope a query.
  */
-export async function getUser() {
+export async function getUser(pageUserId?: string) {
   const { data, error } = await getAuth().getSession(); // returns { data, error }; doesn't throw on HTTP errors
   // If Neon Auth can't be reached, treat the request as signed out.
   if (error) console.warn("[auth] getSession failed", error.code);
-  return data?.user ?? null;
+  const user = data?.user ?? null;
+  return pageUserId === undefined || user?.id === pageUserId ? user : null;
 }

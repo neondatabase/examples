@@ -25,9 +25,10 @@ const toResult = (row?: { txid: string }): WriteResult =>
   row ? { kind: "committed", txid: row.txid } : { kind: "unchanged" };
 
 export async function addTodo(
+  pageUserId: string,
   raw: z.input<typeof addInput>,
 ): Promise<WriteResult> {
-  const user = await getUser(); // every action checks the session itself: proxy.ts skips actions
+  const user = await getUser(pageUserId); // every action checks the session itself: proxy.ts skips actions
   if (!user) return { kind: "rejected", reason: "UNAUTHENTICATED" };
   const input = addInput.safeParse(raw);
   if (!input.success) return { kind: "rejected", reason: "INVALID_INPUT" };
@@ -41,9 +42,10 @@ export async function addTodo(
 }
 
 export async function setTodoCompleted(
+  pageUserId: string,
   raw: z.input<typeof setCompletedInput>,
 ): Promise<WriteResult> {
-  const user = await getUser();
+  const user = await getUser(pageUserId);
   if (!user) return { kind: "rejected", reason: "UNAUTHENTICATED" };
   const input = setCompletedInput.safeParse(raw);
   if (!input.success) return { kind: "rejected", reason: "INVALID_INPUT" };
@@ -58,9 +60,10 @@ export async function setTodoCompleted(
 }
 
 export async function deleteTodo(
+  pageUserId: string,
   raw: z.input<typeof deleteInput>,
 ): Promise<WriteResult> {
-  const user = await getUser();
+  const user = await getUser(pageUserId);
   if (!user) return { kind: "rejected", reason: "UNAUTHENTICATED" };
   const input = deleteInput.safeParse(raw);
   if (!input.success) return { kind: "rejected", reason: "INVALID_INPUT" };

@@ -3,18 +3,16 @@
 import type { SealedLiveQuery } from "@neon/realtime/client";
 // @neon/realtime-react's build has no "use client" directive: import it only from client modules.
 import { useLiveQuery } from "@neon/realtime-react";
-import { useRouter } from "next/navigation";
 import {
   type FormEvent,
   startTransition,
   useCallback,
-  useEffect,
   useMemo,
   useOptimistic,
-  useRef,
   useState,
 } from "react";
 
+import { leaveSession, renewOrLeave } from "@/auth/session-lost";
 import type { TodoRow } from "@/lib/todos"; // type-only: erased at build, so no server code reaches the browser
 
 import {
@@ -69,50 +67,36 @@ const SYNC_TIMEOUT_MS = 10_000;
 export function TodoList({
   initialTodos,
   sealedQuery,
+  userId,
 }: {
   initialTodos: TodoRow[];
   sealedQuery: SealedLiveQuery<TodoRow>;
+  userId: string;
 }) {
-  const router = useRouter();
-
   // Keep the first sealed query. useLiveQuery restarts its subscription whenever it gets a new object, and
   // every server re-render (router.refresh(), a Server Action that sets a cookie) sends one for the same
   // query. Renewals go through refreshQuery. A different query remounts this list through the key in todos.tsx.
   const [query] = useState(sealedQuery);
 
-  const signedOut = useRef(false);
-  const refreshQuery = useCallback(async (): Promise<
-    SealedLiveQuery<TodoRow>
-  > => {
-    // The hook retries a failed renewal every second until one succeeds. After a 401, stop calling the
-    // server and go to sign-in with a full page load, which drops the Realtime client and this user's rows.
-    if (signedOut.current) throw new Error("Signed out");
-    const response = await fetch("/api/todos/live-query", {
-      method: "POST",
-      cache: "no-store",
-    });
-    if (response.status === 401) {
-      signedOut.current = true;
-      window.location.assign("/auth/sign-in");
-      throw new Error("Signed out");
-    }
-    if (!response.ok)
-      throw new Error(`Live query renewal failed: ${response.status}`);
-    return (await response.json()) as SealedLiveQuery<TodoRow>;
-  }, []);
+  // Sends the page's user id: a 401 means signed out or signed in as someone else, and the page leaves.
+  const refreshQuery = useCallback(
+    () =>
+      renewOrLeave<SealedLiveQuery<TodoRow>>(() =>
+        fetch("/api/todos/live-query", {
+          method: "POST",
+          cache: "no-store",
+          body: JSON.stringify({ userId }),
+        }),
+      ),
+    [userId],
+  );
 
   // The server render and hydration both show initialTodos with status "connecting". The socket opens after
   // hydration. refreshQuery re-seals 10 s before expiry, so a renewal on time stays "live".
-  const { data, status, error, utils } = useLiveQuery(query, {
+  const { data, status, utils } = useLiveQuery(query, {
     initialData: initialTodos,
     refreshQuery,
   });
-
-  useEffect(() => {
-    // The renewal came back for a different query: another user signed in on this browser, or a deploy
-    // changed the SQL. Re-render, and the new fingerprint remounts this list (todos.tsx).
-    if (error?.code === "QUERY_REFRESH_FAILED") router.refresh();
-  }, [error, router]);
 
   const [optimisticTodos, updateOptimistically] = useOptimistic<
     readonly OptimisticTodo[],
@@ -143,7 +127,7 @@ export function TodoList({
       }
       if (result.kind === "rejected") {
         if (result.reason === "UNAUTHENTICATED")
-          window.location.assign("/auth/sign-in"); // a full page load, like the 401 above
+          leaveSession(); // signed out or another user, like a renewal 401
         else setNotice({ tone: "error", text: failure });
         return;
       }
@@ -178,7 +162,7 @@ export function TodoList({
     };
     mutate(
       { type: "add", todo },
-      () => addTodo({ id: todo.id, title }),
+      () => addTodo(userId, { id: todo.id, title }),
       `Couldn't add "${title}".`,
     );
   }
@@ -186,14 +170,14 @@ export function TodoList({
   const toggleCompleted = (todo: OptimisticTodo, completed: boolean) =>
     mutate(
       { type: "toggle", id: todo.id, completed },
-      () => setTodoCompleted({ id: todo.id, completed }),
+      () => setTodoCompleted(userId, { id: todo.id, completed }),
       `Couldn't update "${todo.title}".`,
     );
 
   const removeTodo = (todo: OptimisticTodo) =>
     mutate(
       { type: "delete", id: todo.id },
-      () => deleteTodo({ id: todo.id }),
+      () => deleteTodo(userId, { id: todo.id }),
       `Couldn't delete "${todo.title}".`,
     );
 
