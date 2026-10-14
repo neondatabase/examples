@@ -1,4 +1,5 @@
 import { createRealtimeClient } from "@neon/realtime/client";
+import { drizzleParsers } from "@neon/realtime-drizzle/client";
 import { DbClient } from "@tanstack/react-db";
 import { createRouter } from "@tanstack/react-router";
 import { routerWithDbClient } from "@tanstack/react-router-with-db";
@@ -19,7 +20,12 @@ export function getRouter() {
   }
   // Collections read this with `db.requireDependency("realtime")`. On the
   // server it never connects: sync only starts in the browser.
-  const realtime = createRealtimeClient({ url });
+  const realtime = createRealtimeClient({
+    url,
+    // Decode `date` and zone-less `timestamp` columns as Drizzle does.
+    // This app has neither, but most Drizzle apps do
+    parsers: { ...drizzleParsers },
+  });
   const dbClient = new DbClient({ realtime });
   const router = createRouter({
     routeTree,
