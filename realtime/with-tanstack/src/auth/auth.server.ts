@@ -11,8 +11,6 @@ import { authCookieSecret, env } from "../env.server";
 export const authConfig = {
   baseUrl: env.auth.baseUrl,
   cookieSecret: authCookieSecret,
-  // The package's JSDoc says the default is "strict"; the runtime uses "lax".
-  sameSite: "lax" as const,
 };
 
 export const auth = createAuthServer({

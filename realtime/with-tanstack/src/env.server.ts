@@ -26,7 +26,7 @@ const cookieSecret = process.env.NEON_AUTH_COOKIE_SECRET;
 if (!cookieSecret || cookieSecret.length < 32) {
   throw new Error(
     "NEON_AUTH_COOKIE_SECRET must be at least 32 characters. Generate one with:\n" +
-      '  echo "NEON_AUTH_COOKIE_SECRET=$(openssl rand -base64 32)" >> .env.local',
+      "  printf '\\nNEON_AUTH_COOKIE_SECRET=%s\\n' \"$(openssl rand -base64 32)\" >> .env.local",
   );
 }
 

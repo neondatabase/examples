@@ -1,11 +1,11 @@
 import { authClient } from "./client";
+import { leaveSession } from "./session-lost";
 
 // The signed-in user's email and a Sign out button.
 export function UserMenu({ email }: { readonly email: string }) {
-  // A full page load drops the DbClient, the Realtime socket and cached rows.
   async function signOut() {
     await authClient.signOut();
-    window.location.assign("/auth/sign-in");
+    leaveSession();
   }
 
   return (

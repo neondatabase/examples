@@ -10,10 +10,6 @@ import { newTodosInput, todoIdsInput, todoUpdatesInput } from "./todos.schemas";
 
 // Every function requires a signed-in user and only touches that user's rows.
 // Anything that returns rows or a sealed query is POST, so it's never cached.
-//
-// Start applies its default CSRF middleware to server functions as long as
-// there's no `src/start.ts`. If you add one, re-add
-// `createCsrfMiddleware({ filter: (c) => c.handlerType === "serverFn" })`.
 
 type WriteResult = { readonly txid: string | null };
 

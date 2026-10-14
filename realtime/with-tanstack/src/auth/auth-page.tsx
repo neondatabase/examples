@@ -11,7 +11,6 @@ const route = getRouteApi("/auth/$path");
 // route import the auth UI.
 export function AuthPage() {
   const { path } = route.useParams();
-  const { redirect: redirectTo = "/" } = route.useSearch();
   const router = useRouter();
 
   return (
@@ -20,9 +19,9 @@ export function AuthPage() {
       navigate={(href) => router.navigate({ href })}
       replace={(href) => router.navigate({ href, replace: true })}
       Link={RouterLink}
-      redirectTo={redirectTo}
+      redirectTo="/"
       onSessionChange={() => {
-        window.location.assign(redirectTo);
+        window.location.assign("/");
         // Never settles, so the auth UI doesn't also navigate client-side.
         return new Promise<never>(() => {});
       }}
@@ -30,14 +29,14 @@ export function AuthPage() {
       <main className="flex min-h-screen items-center justify-center p-4">
         {/* Without `redirectTo` here, the auth UI reads an unchecked
             `?redirectTo=` from the URL. */}
-        <AuthView path={path} redirectTo={redirectTo} />
+        <AuthView path={path} redirectTo="/" />
       </main>
     </NeonAuthUIProvider>
   );
 }
 
-// The auth UI's links carry the query string (`?redirect=…`), which `to`
-// doesn't parse.
+// The auth UI's links append the current query string, which `to` doesn't
+// parse.
 function RouterLink({
   href,
   ...props
