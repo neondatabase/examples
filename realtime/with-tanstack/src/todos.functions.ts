@@ -1,10 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 
 import { requireUser, type SessionUser } from "./auth.functions";
+import { db } from "./db.server";
 import { realtime } from "./realtime.server";
 import { todos } from "./schema";
-import { selectTodos, writeTodos } from "./todos.server";
+import { selectTodos } from "./todos.server";
 import {
   newTodosInput,
   pageUserInput,
@@ -18,6 +19,14 @@ import {
 // Start applies its default CSRF middleware to server functions as long as
 // there's no `src/start.ts`. If you add one, re-add
 // `createCsrfMiddleware({ filter: (c) => c.handlerType === "serverFn" })`.
+
+type WriteResult = { readonly txid: string | null };
+
+const txid = sql<string>`pg_current_xact_id()::text`;
+
+const writeResult = (row?: { txid: string }): WriteResult => ({
+  txid: row?.txid ?? null,
+});
 
 // The page's rows, plus a sealed live query for exactly the same rows.
 export const loadTodos = createServerFn({ method: "POST" })
@@ -46,54 +55,78 @@ export const refreshTodosQuery = createServerFn({ method: "POST" })
     return realtime.seal({ query: selectTodos(context.user.id) });
   });
 
-// Each write takes a whole batch of changes from one TanStack DB transaction
-// and returns its Postgres transaction id, or `null` if no row changed (for
-// example, an id that's already gone).
+// Each write sends a whole TanStack DB batch in one SQL statement and returns
+// its Postgres transaction id, or `null` if no row changed (for example, an id
+// that's already gone).
 export const createTodos = createServerFn({ method: "POST" })
   .middleware([requireUser])
   .validator(newTodosInput)
-  .handler(({ data: { userId, batch }, context }) => {
+  .handler(async ({ data: { userId, batch }, context }) => {
     requireSameUser(userId, context.user);
-    return writeTodos(async (tx) => {
-      const inserted = await tx
-        .insert(todos)
-        .values(batch.map((todo) => ({ ...todo, userId: context.user.id })))
-        .returning({ id: todos.id });
-      return inserted.length;
-    });
+    const [created] = await db
+      .insert(todos)
+      .values(batch.map((todo) => ({ ...todo, userId: context.user.id })))
+      .returning({ txid });
+    return writeResult(created);
   });
 
 export const updateTodos = createServerFn({ method: "POST" })
   .middleware([requireUser])
   .validator(todoUpdatesInput)
-  .handler(({ data: { userId, batch }, context }) => {
+  .handler(async ({ data: { userId, batch }, context }) => {
     requireSameUser(userId, context.user);
-    return writeTodos(async (tx) => {
-      let count = 0;
-      for (const { id, changes } of batch) {
-        // Drizzle rejects an empty `set`.
-        if (Object.values(changes).every((v) => v === undefined)) continue;
-        const updated = await tx
-          .update(todos)
-          .set(changes)
-          .where(and(eq(todos.id, id), eq(todos.userId, context.user.id)))
-          .returning({ id: todos.id });
-        count += updated.length;
-      }
-      return count;
-    });
+
+    const changed = batch.filter(({ changes }) =>
+      Object.values(changes).some((value) => value !== undefined),
+    );
+    if (changed.length === 0) return writeResult();
+
+    const titleCases = changed.flatMap(({ id, changes }) =>
+      changes.title === undefined
+        ? []
+        : [sql`WHEN ${todos.id} = ${id} THEN ${changes.title}`],
+    );
+    const completedCases = changed.flatMap(({ id, changes }) =>
+      changes.completed === undefined
+        ? []
+        : [sql`WHEN ${todos.id} = ${id} THEN ${changes.completed}`],
+    );
+
+    const [updated] = await db
+      .update(todos)
+      .set({
+        ...(titleCases.length > 0
+          ? {
+              title: sql<string>`CASE ${sql.join(titleCases, sql.raw(" "))} ELSE ${todos.title} END`,
+            }
+          : {}),
+        ...(completedCases.length > 0
+          ? {
+              completed: sql<boolean>`CASE ${sql.join(completedCases, sql.raw(" "))} ELSE ${todos.completed} END`,
+            }
+          : {}),
+      })
+      .where(
+        and(
+          inArray(
+            todos.id,
+            changed.map(({ id }) => id),
+          ),
+          eq(todos.userId, context.user.id),
+        ),
+      )
+      .returning({ txid });
+    return writeResult(updated);
   });
 
 export const deleteTodos = createServerFn({ method: "POST" })
   .middleware([requireUser])
   .validator(todoIdsInput)
-  .handler(({ data: { userId, batch }, context }) => {
+  .handler(async ({ data: { userId, batch }, context }) => {
     requireSameUser(userId, context.user);
-    return writeTodos(async (tx) => {
-      const deleted = await tx
-        .delete(todos)
-        .where(and(inArray(todos.id, batch), eq(todos.userId, context.user.id)))
-        .returning({ id: todos.id });
-      return deleted.length;
-    });
+    const [deleted] = await db
+      .delete(todos)
+      .where(and(inArray(todos.id, batch), eq(todos.userId, context.user.id)))
+      .returning({ txid });
+    return writeResult(deleted);
   });

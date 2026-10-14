@@ -27,7 +27,7 @@ my-app/
     ├── env.d.ts               # Type for import.meta.env.VITE_NEON_REALTIME_URL
     ├── db.server.ts           # node-postgres pool + Drizzle
     ├── realtime.server.ts     # Seals queries with NEON_REALTIME_SECRET
-    ├── todos.server.ts        # selectTodos(userId) and its Todo row type, writeTodos() → { txid }
+    ├── todos.server.ts        # selectTodos(userId) and its Todo row type
     ├── todos.schemas.ts       # zod input schemas for writes
     ├── todos.functions.ts     # Server functions: load, refresh, create, update, delete
     ├── todos.collection.ts    # todosCollection(userId, query)
@@ -114,7 +114,7 @@ Notes:
 3. **Loader.** `loadTodos()` checks the session and returns the user's rows plus a sealed copy of the same query. The loader seeds a `todos:<userId>` collection in the router's `DbClient` with those rows.
 4. **Hydration.** `routerWithDbClient` snapshots that collection into the HTML and restores it in the browser before the first render. The page renders with rows and without a hydration mismatch.
 5. **Live.** In the browser the collection subscribes to Realtime with the sealed query, and `useLiveQuery` reads it. `refreshTodosQuery` re-seals the query about every 50 seconds. Through a reconnect, or a refresh that lands after the query expired, the collection keeps its rows until Realtime sends the complete result again. The collection stays live for the life of the page (`gcTime: 0`), and the route doesn't refetch it when you navigate back (`staleTime: Infinity`).
-6. **Writes.** Each optimistic transaction becomes one call to a POST server function (`createTodos`, `updateTodos` or `deleteTodos`). The function checks the session, validates the batch with zod, and writes it in one Postgres transaction limited to the user's rows. It returns the transaction id, and the collection waits up to 10 seconds for that transaction to arrive over Realtime (`awaitTxId`). A failed write rolls back and shows the error. A write that committed but didn't arrive in time also rolls back, with a notice that it was saved, and shows again once live updates reconnect. A row's checkbox and Delete button stay disabled until its last change is confirmed. A write that changes nothing returns `{ txid: null }` and isn't rolled back.
+6. **Writes.** Each optimistic transaction becomes one call to a POST server function (`createTodos`, `updateTodos` or `deleteTodos`). The function checks the session, validates the batch with zod, and writes it in one SQL statement limited to the user's rows. Its `RETURNING` clause includes `pg_current_xact_id()`, so the collection can wait up to 10 seconds for that transaction to arrive over Realtime (`awaitTxId`) without another database round trip. A failed write rolls back and shows the error. A write that committed but didn't arrive in time also rolls back, with a notice that it was saved, and shows again once live updates reconnect. A row's checkbox and Delete button stay disabled until its last change is confirmed. A write that changes nothing returns `{ txid: null }` and isn't rolled back.
 7. **Sign-in and sign-out** are full page loads, which drop the `DbClient`, the socket and any cached rows. If the session is gone when the page refreshes its query or writes, it goes to `/auth/sign-in`. So does a query refresh or a write after another user signs in.
 
 The `Todo` type is inferred from the `selectTodos` Drizzle query. The sealed query carries it into the collection and `useLiveQuery`.
