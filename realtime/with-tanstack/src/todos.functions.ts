@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray, sql } from "drizzle-orm";
 
-import { requireUser, type SessionUser } from "./auth.functions";
+import { requireUser, type SessionUser } from "./auth/auth.functions";
 import { db } from "./db.server";
 import { realtime } from "./realtime.server";
 import { todos } from "./schema";

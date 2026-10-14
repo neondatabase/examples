@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
-import { getSessionUser } from "../auth.functions";
+import { getSessionUser } from "../auth/auth.functions";
 import type { RouterContext } from "../router";
 import stylesheet from "../style.css?url";
 

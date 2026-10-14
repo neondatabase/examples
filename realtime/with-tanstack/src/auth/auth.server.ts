@@ -4,7 +4,7 @@ import {
 } from "@neondatabase/auth/server";
 import { getRequest, setCookie } from "@tanstack/react-start/server";
 
-import { authCookieSecret, env } from "./env.server";
+import { authCookieSecret, env } from "../env.server";
 
 // The only importer of `@neondatabase/auth/server`: a small Neon Auth adapter
 // for TanStack Start. Shared by the server functions and the `/api/auth` proxy.
