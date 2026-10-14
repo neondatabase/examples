@@ -31,15 +31,20 @@ my-app/
     ├── todos.schemas.ts       # zod input schemas for writes
     ├── todos.functions.ts     # Server functions: load, refresh, create, update, delete
     ├── todos.collection.ts    # todosCollection(userId, query)
-    ├── auth.server.ts         # Neon Auth server, wired to Start's request and cookies
-    ├── auth.functions.ts      # sessionMiddleware, requireUser, getSessionUser
-    ├── auth-client.ts         # Browser auth client
+    ├── auth/
+    │   ├── auth.server.ts     # Neon Auth server, wired to Start's request and cookies
+    │   ├── auth.functions.ts  # sessionMiddleware, requireUser, getSessionUser
+    │   ├── client.ts          # Browser auth client
+    │   ├── handler.server.ts  # Proxy to Neon Auth
+    │   ├── auth-page.tsx      # Neon's AuthView (sign-in, sign-up, ...)
+    │   ├── user-menu.tsx      # Email and Sign out button
+    │   └── session-lost.ts    # Full page load when the session is gone
     └── routes/
         ├── __root.tsx         # Session in beforeLoad, no-store headers
-        ├── _authed.tsx        # Sign-in guard, header, sign-out
+        ├── _authed.tsx        # Sign-in guard and header
         ├── _authed/index.tsx  # Todos page
-        ├── auth/$path.tsx     # Neon's AuthView (sign-in, sign-up, ...)
-        └── api/auth/$.ts      # Proxy to Neon Auth
+        ├── auth/$path.tsx     # Auth pages route
+        └── api/auth/$.ts      # Auth proxy route
 ```
 
 ## Get the code
@@ -75,7 +80,7 @@ Append two keys to `.env.local`. Don't copy `.env.example` over it; that overwri
 
 ```bash
 echo 'VITE_NEON_REALTIME_URL=$NEON_REALTIME_URL' >> .env.local
-echo "NEON_AUTH_COOKIE_SECRET=$(openssl rand -base64 32)" >> .env.local
+printf '\nNEON_AUTH_COOKIE_SECRET=%s\n' "$(openssl rand -base64 32)" >> .env.local
 ```
 
 - The single quotes keep `$NEON_REALTIME_URL` literal. Vite expands it when it loads the file, so the browser's Realtime URL follows the branch after each pull.
@@ -111,11 +116,11 @@ Notes:
 
 1. **Router.** `getRouter()` creates a Realtime client and a TanStack DB `DbClient` that holds it. On the server it runs once per request, and its Realtime client never connects. In the browser there's one per page load.
 2. **Session.** The root route's `beforeLoad` calls `getSessionUser`. The `_authed` layout sends signed-out visitors to `/auth/sign-in`.
-3. **Loader.** `loadTodos()` checks the session and returns the user's rows plus a sealed copy of the same query. The loader seeds a `todos:<userId>` collection in the router's `DbClient` with those rows.
+3. **Loader.** `loadTodos` checks the session and returns the user's rows plus a sealed copy of the same query. The loader seeds a `todos:<userId>` collection in the router's `DbClient` with those rows.
 4. **Hydration.** `routerWithDbClient` snapshots that collection into the HTML and restores it in the browser before the first render. The page renders with rows and without a hydration mismatch.
 5. **Live.** In the browser the collection subscribes to Realtime with the sealed query, and `useLiveQuery` reads it. `refreshTodosQuery` re-seals the query about every 50 seconds. Through a reconnect, or a refresh that lands after the query expired, the collection keeps its rows until Realtime sends the complete result again. The collection stays live for the life of the page (`gcTime: 0`), and the route doesn't refetch it when you navigate back (`staleTime: Infinity`).
 6. **Writes.** Each optimistic transaction becomes one call to a POST server function (`createTodos`, `updateTodos` or `deleteTodos`). The function checks the session, validates the batch with zod, and writes it in one SQL statement limited to the user's rows. Its `RETURNING` clause includes `pg_current_xact_id()`, so the collection can wait up to 10 seconds for that transaction to arrive over Realtime (`awaitTxId`) without another database round trip. A failed write rolls back and shows the error. A write that committed but didn't arrive in time also rolls back, with a notice that it was saved, and shows again once live updates reconnect. A row's checkbox and Delete button stay disabled until its last change is confirmed. A write that changes nothing returns `{ txid: null }` and isn't rolled back.
-7. **Sign-in and sign-out** are full page loads, which drop the `DbClient`, the socket and any cached rows. If the session is gone when the page refreshes its query or writes, it goes to `/auth/sign-in`. So does a query refresh or a write after another user signs in.
+7. **Sign-in and sign-out** are full page loads of `/`, which drop the `DbClient`, the socket and any cached rows. Each query refresh and write sends the user id the page was loaded for. If the session is gone, or another tab has signed in as someone else, the call fails with a 401 and the page reloads `/`. A signed-out visitor goes on to `/auth/sign-in`, and a different user lands on their own list.
 
 The `Todo` type is inferred from the `selectTodos` Drizzle query. The sealed query carries it into the collection and `useLiveQuery`.
 
@@ -123,18 +128,18 @@ The `Todo` type is inferred from the `selectTodos` Drizzle query. The sealed que
 
 Neon Auth has no official TanStack Start adapter yet, so the example ships a small one on `@neondatabase/auth/server`:
 
-- `src/auth.server.ts` creates the auth server, wired to Start's request and `setCookie`.
-- `src/auth.functions.ts` has `sessionMiddleware`, `requireUser` and the `getSessionUser` server function.
-- `src/routes/api/auth/$.ts` proxies `/api/auth/*` to Neon Auth.
+- `src/auth/auth.server.ts` creates the auth server, wired to Start's request and `setCookie`.
+- `src/auth/auth.functions.ts` has `sessionMiddleware`, `requireUser` and the `getSessionUser` server function.
+- `src/auth/handler.server.ts` proxies `/api/auth/*` to Neon Auth, through the route in `src/routes/api/auth/$.ts`.
 
-The sign-in UI is Neon's prebuilt `AuthView` in `src/routes/auth/$path.tsx`, the only file that imports `@neondatabase/auth-ui` and its CSS. Leaving that route is always a full page load, so the auth UI's styles don't reach the todos page. Both auth packages are beta and pinned exactly. Replace these files when an official adapter or `@neon/auth` ships.
+The sign-in UI is Neon's prebuilt `AuthView` in `src/auth/auth-page.tsx`. It and its route, `src/routes/auth/$path.tsx`, are the only files that import `@neondatabase/auth-ui` and its CSS. Leaving that route is always a full page load, so the auth UI's styles don't reach the todos page. The Sign out button in `src/auth/user-menu.tsx` is hand-built for the same reason. Both auth packages are beta and pinned exactly. Replace `src/auth/` when an official adapter or `@neon/auth` ships.
 
 ## Security
 
 - `NEON_REALTIME_SECRET` and `NEON_AUTH_COOKIE_SECRET` stay on the server. The browser gets sealed queries and the public WebSocket URL.
 - A sealed query is a 60-second bearer token for one SQL query and its parameters. It isn't tied to a user: anyone holding it can subscribe until it expires. Pages carry rows and a sealed query, so they're sent with `Cache-Control: private, no-store`. Otherwise, rows and sealed queries only come from POST server functions.
 - Users are kept apart only by the `WHERE user_id = …` that the server puts in the sealed query after checking the session. Realtime doesn't know who the user is.
-- Every todo server function checks the session again with `requireUser`. The `_authed` redirect only shapes the UI. Writes never take `user_id` from the browser: the user id they send is only checked against the session.
+- Every todo server function checks the session again with `requireUser`, and treats a session for a different user than the page's as signed out. The `_authed` redirect only shapes the UI. Writes never take `user_id` from the browser: the user id they send is only checked against the session.
 - A session revoked elsewhere can look valid for up to 5 minutes, because server checks trust the session cookie cache (`sessionDataTtl`, 300 seconds by default).
 - Server functions rely on Start's default CSRF middleware, which Start only installs when there's no `src/start.ts`. If you add one, add `createCsrfMiddleware` back.
 
