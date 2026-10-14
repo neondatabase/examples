@@ -3,7 +3,7 @@
 import { sql } from "kysely";
 import { z } from "zod";
 
-import { getUser } from "@/lib/auth/server";
+import { getUser } from "@/auth/server";
 import { getDb } from "@/lib/db";
 
 // Typed results rather than throws: in production Next.js hides a thrown error's message.

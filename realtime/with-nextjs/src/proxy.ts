@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 
-import { getAuth } from "@/lib/auth/server";
+import { getAuth } from "@/auth/server";
 
 let middleware:
   ReturnType<ReturnType<typeof getAuth>["middleware"]> | undefined;

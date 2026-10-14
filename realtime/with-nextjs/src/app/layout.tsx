@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { Providers } from "@/auth/provider";
+
 import "./globals.css";
-import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Neon Realtime Todos",

@@ -1,4 +1,4 @@
-import { getUser } from "@/lib/auth/server";
+import { getUser } from "@/auth/server";
 import { sealTodos } from "@/lib/todos";
 
 const noStore = { "Cache-Control": "no-store" };

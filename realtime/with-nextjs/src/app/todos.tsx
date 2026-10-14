@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 
-import { getUser } from "@/lib/auth/server";
+import { getUser } from "@/auth/server";
 import { getEnv } from "@/lib/env";
 import { loadTodos } from "@/lib/todos";
 

@@ -1,4 +1,4 @@
-import { getAuth } from "@/lib/auth/server";
+import { getAuth } from "@/auth/server";
 
 // The catch-all MUST be named `path`: the handler reads params.path.
 // Lazy form of `export const { GET, POST } = auth.handler()`, so `next build` needs no cookie secret.
