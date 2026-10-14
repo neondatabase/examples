@@ -72,7 +72,11 @@ The [SSR](https://neon.com/docs/realtime/guides/ssr), [reactivity](https://neon.
         key={sealedQuery.queryFingerprint}
         url={getEnv().realtimeUrl}
       >
-        <TodoList initialTodos={rows} sealedQuery={sealedQuery} />
+        <TodoList
+          initialTodos={rows}
+          sealedQuery={sealedQuery}
+          userId={user.id}
+        />
       </RealtimeRoot>
     );
   }
@@ -81,10 +85,10 @@ The [SSR](https://neon.com/docs/realtime/guides/ssr), [reactivity](https://neon.
 - **Kysely.** `src/lib/realtime.ts` passes `kyselyAdapter()` to `createRealtime`. It compiles the query builder to SQL and never executes it. The server read runs the same builder with `.execute()`. Live rows use PostgreSQL's result column names as keys, so aliases work but `CamelCasePlugin` doesn't: Kysely would type camelCase keys while the live rows stay snake_case. The browser needs no parsers, because the Realtime client's defaults match `pg`, which Kysely's `PostgresDialect` uses. To change the schema, append a migration to `scripts/migrate.mts`.
 - **Keeping the subscription alive across re-renders.** [`useLiveQuery`](https://neon.com/docs/realtime/guides/reactivity#uselivequery) restarts its subscription when it gets a new sealed-query object, and that rejects every pending `awaitTxId()`. A server re-render sends one even when the query hasn't changed: `router.refresh()`, a Server Action that revalidates or sets a cookie, or navigating to `/` from `/`. So the example follows three rules:
   1. `src/app/todo-list.tsx` keeps the first sealed query it gets (`useState(sealedQuery)`). Renewals go through `refreshQuery`, not new props.
-  2. `<RealtimeRoot>` is keyed on `sealedQuery.queryFingerprint`, so a different query (another user, or a deploy that changed the SQL) remounts the list.
+  2. `<RealtimeRoot>` is keyed on `sealedQuery.queryFingerprint`, so a different query (a deploy that changed the SQL) remounts the list.
   3. Server Actions never call `revalidatePath`, `refresh()` or `updateTag`. The live query already delivers every write.
-- **Renewal.** The sealed query expires after 60 seconds. Ten seconds before that, `refreshQuery` re-seals it with a `POST` to the Route Handler in `src/app/api/todos/live-query/route.ts`, which checks the session and seals the same query, and the list stays live. It's a Route Handler, not a Server Action, because Next.js runs Server Actions one at a time, so a renewal would queue behind pending writes. After a 401 it stops renewing and goes to sign-in with a full page load. See [renew from the server](https://neon.com/docs/realtime/guides/ssr#renew-from-the-server).
-- **Writes.** `addTodo`, `setTodoCompleted` and `deleteTodo` in `src/app/actions.ts` check the session, validate their input with zod and scope the write to the user. They return the transaction id from `RETURNING pg_current_xact_id()::text` as `{ kind: "committed", txid }`, `{ kind: "unchanged" }` when nothing matched, or `{ kind: "rejected", reason }`. They don't throw for expected failures, because Next.js hides a thrown error's message in production. In the browser, `mutate` applies the change with `useOptimistic` and keeps the transition open until the transaction arrives on the stream. The browser creates each new todo's id, so the optimistic row and the live row match. See [with React's `useOptimistic` hook](https://neon.com/docs/realtime/guides/mutations#with-reacts-useoptimistic-hook).
+- **Renewal.** The sealed query expires after 60 seconds. Ten seconds before that, `refreshQuery` re-seals it with a `POST` to the Route Handler in `src/app/api/todos/live-query/route.ts`, which checks the session and seals the same query, and the list stays live. It's a Route Handler, not a Server Action, because Next.js runs Server Actions one at a time, so a renewal would queue behind pending writes. The `POST` sends the user id the page was loaded for, and the route answers 401 when the session has no user or a different one. After a 401, `renewOrLeave()` in `src/auth/session-lost.ts` stops renewing and leaves the page with a full page load. See [renew from the server](https://neon.com/docs/realtime/guides/ssr#renew-from-the-server).
+- **Writes.** `addTodo`, `setTodoCompleted` and `deleteTodo` in `src/app/actions.ts` check the session against the page's user id, validate their input with zod and scope the write to the user. They return the transaction id from `RETURNING pg_current_xact_id()::text` as `{ kind: "committed", txid }`, `{ kind: "unchanged" }` when nothing matched, or `{ kind: "rejected", reason }`. They don't throw for expected failures, because Next.js hides a thrown error's message in production. In the browser, `mutate` applies the change with `useOptimistic` and keeps the transition open until the transaction arrives on the stream. The browser creates each new todo's id, so the optimistic row and the live row match. See [with React's `useOptimistic` hook](https://neon.com/docs/realtime/guides/mutations#with-reacts-useoptimistic-hook).
 
   ```tsx
   function mutate(
@@ -103,9 +107,8 @@ The [SSR](https://neon.com/docs/realtime/guides/ssr), [reactivity](https://neon.
         return;
       }
       if (result.kind === "rejected") {
-        // Signed out: go to sign-in with a full page load.
-        if (result.reason === "UNAUTHENTICATED")
-          window.location.assign("/auth/sign-in");
+        // Signed out, or signed in as someone else: leave with a full page load.
+        if (result.reason === "UNAUTHENTICATED") leaveSession();
         else setNotice({ tone: "error", text: failure });
         return;
       }
@@ -124,10 +127,12 @@ The [SSR](https://neon.com/docs/realtime/guides/ssr), [reactivity](https://neon.
 
 ## Auth and isolation
 
-- Realtime has no row-level security. Users are kept apart only by the `WHERE user_id = …` that the server puts in the sealed query after checking the session, and by `AND user_id = …` on every write. `user_id` never comes from the browser. See [authorization](https://neon.com/docs/realtime/guides/queries#authorization).
+- Realtime has no row-level security. Users are kept apart only by the `WHERE user_id = …` that the server puts in the sealed query after checking the session, and by `AND user_id = …` on every write. `user_id` never comes from the browser. The page sends the user id it was loaded for, but the server only compares it with the session's. See [authorization](https://neon.com/docs/realtime/guides/queries#authorization).
 - `src/proxy.ts` isn't the security boundary. It only redirects page loads. `<Todos/>`, every Server Action and the renewal route call `getUser()` themselves.
 - If Neon Auth can't be reached, `getUser()` treats the request as signed out.
-- Signing in or out ends with a full page load (`src/app/providers.tsx`), which drops the browser's Realtime client and the previous user's rows.
+- A different signed-in user counts as signed out. If another tab signs in as someone else, this page's next write or renewal gets `UNAUTHENTICATED` and the page leaves.
+- Signing in, signing out and leaving all end with a full page load of `/` (`src/auth/provider.tsx`, `src/auth/user-menu.tsx`, `src/auth/session-lost.ts`). It drops the browser's Realtime client and the previous user's rows. Then `src/proxy.ts` sends a signed-out visitor to sign-in, and a different user lands on their own list.
+- The Neon Auth UI provider and its styles load only on the auth pages (`src/app/(auth)/layout.tsx`). The todos page has a hand-built Sign out button.
 - `NEON_REALTIME_SECRET` and `NEON_AUTH_COOKIE_SECRET` stay on the server (`import "server-only"`). The browser gets sealed queries and the public WebSocket URL, passed as a prop.
 - A user whose session is revoked elsewhere can keep seeing live updates for up to about 6 minutes: up to 5 minutes of Neon Auth's session cookie cache, plus the sealed query's 60 seconds.
 
@@ -141,29 +146,36 @@ realtime/with-nextjs/
 │   └── migrate.mts                      # Kysely migrations: creates realtime_next_todos
 └── src/
     ├── proxy.ts                         # Neon Auth middleware: HTTP redirect for signed-out loads of /
+    ├── auth/
+    │   ├── server.ts                    # getAuth, getUser
+    │   ├── client.ts                    # Browser auth client
+    │   ├── provider.tsx                 # Neon Auth UI provider: sign-in ends with a full page load
+    │   ├── auth-ui.css                  # Neon Auth UI styles, for the auth pages only
+    │   ├── auth-page.tsx                # Prebuilt sign-in, sign-up and account pages
+    │   ├── handler.ts                   # Neon Auth API handler
+    │   ├── user-menu.tsx                # Email and Sign out button
+    │   └── session-lost.ts              # leaveSession, renewOrLeave
     ├── lib/
     │   ├── env.ts                       # Lazy, validated server env; database name from DATABASE_URL
     │   ├── schema.ts                    # Kysely table types
     │   ├── db.ts                        # Lazy pg pool + Kysely
     │   ├── realtime.ts                  # Lazy Realtime server, seals queries
-    │   ├── todos.ts                     # The one live query: loadTodos, sealTodos, TodoRow
-    │   └── auth/
-    │       ├── server.ts                # getAuth, getUser
-    │       └── client.ts                # Browser auth client
+    │   └── todos.ts                     # The one live query: loadTodos, sealTodos, TodoRow
     └── app/
-        ├── layout.tsx                   # Root layout, wraps the app in <Providers>
-        ├── providers.tsx                # Neon Auth UI provider
-        ├── page.tsx                     # Static shell: header, <UserButton/>, <Suspense><Todos/></Suspense>
-        ├── todos.tsx                    # Async Server Component: session, read, seal
+        ├── layout.tsx                   # Root layout
+        ├── page.tsx                     # Static shell: header, <Suspense><Todos/></Suspense>
+        ├── todos.tsx                    # Async Server Component: session, read, seal, user menu
         ├── realtime-root.tsx            # Realtime client and provider
         ├── todo-list.tsx                # Live list, optimistic writes, status
         ├── local-time.tsx               # Dates in the browser's locale after hydration
         ├── actions.ts                   # Server Actions: addTodo, setTodoCompleted, deleteTodo
         ├── error.tsx                    # Error boundary
-        ├── globals.css                  # Tailwind and the Neon Auth UI styles
-        ├── auth/[path]/page.tsx         # Prebuilt sign-in, sign-up and account pages
+        ├── globals.css                  # Tailwind
+        ├── (auth)/
+        │   ├── layout.tsx               # Neon Auth UI provider and styles
+        │   ├── auth/[path]/page.tsx     # Route for src/auth/auth-page.tsx
+        │   └── api/auth/[...path]/route.ts # Route for src/auth/handler.ts
         └── api/
-            ├── auth/[...path]/route.ts  # Neon Auth handler
             └── todos/live-query/route.ts # POST: renew the sealed query
 ```
 
@@ -179,7 +191,7 @@ realtime/with-nextjs/
 
 ## Turning on `cacheComponents`
 
-Set `cacheComponents: true` in `next.config.ts`, and remove `export const dynamicParams = false` from `src/app/auth/[path]/page.tsx`. `<Todos/>` already reads the session inside `<Suspense>`, so it needs no other change. With the flag on, a page that Next.js hides and shows again briefly shows the original server rows before the live rows return.
+Set `cacheComponents: true` in `next.config.ts`, and remove `export const dynamicParams = false` from `src/app/(auth)/auth/[path]/page.tsx`. `<Todos/>` already reads the session inside `<Suspense>`, so it needs no other change. With the flag on, a page that Next.js hides and shows again briefly shows the original server rows before the live rows return.
 
 ## Troubleshooting
 
