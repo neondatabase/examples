@@ -189,13 +189,6 @@ export function Page({
   readonly status: LiveQueryState["status"];
   readonly children: ReactNode;
 }) {
-  const statusColor =
-    status === "live"
-      ? "text-emerald-700 dark:text-emerald-400"
-      : status === "error"
-        ? "text-red-700 dark:text-red-400"
-        : "text-zinc-500 dark:text-zinc-400";
-
   return (
     <main className="min-h-screen bg-emerald-50 px-4 py-18 text-emerald-950 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="mx-auto w-full max-w-2xl">
@@ -208,8 +201,8 @@ export function Page({
               Shared todos
             </h1>
           </div>
-          <output className={`mb-4.5 text-[13px] ${statusColor}`}>
-            {status}
+          <output className="mb-4.5 text-[13px] text-zinc-500 dark:text-zinc-400">
+            {status === "stale" && "Updating"}
           </output>
         </header>
 
