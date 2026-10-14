@@ -4,6 +4,7 @@ import {
   createRealtimeClient,
   type RealtimeClient,
 } from "@neon/realtime/client";
+import { drizzleParsers } from "@neon/realtime-drizzle/client";
 import { RealtimeProvider } from "@neon/realtime-react";
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -33,6 +34,9 @@ function useConnection(attempt: number): Connection | undefined {
         if (cancelled) return;
         realtime = createRealtimeClient({
           url: websocketUrl,
+          // Decode `date` and zone-less `timestamp` columns as Drizzle does.
+          // This app has neither, but most Drizzle apps do
+          parsers: { ...drizzleParsers },
           // A rejected handshake, such as from an origin Realtime doesn't
           // allow, only shows up in the logs: the client keeps reconnecting
           logLevel: import.meta.env.DEV ? "debug" : "warn",
