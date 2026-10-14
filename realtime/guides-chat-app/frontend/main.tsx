@@ -1,4 +1,5 @@
-// From guides/mutations.md "Render the app", plus sign-in and joining channels, which the guides leave out
+// From guides/mutations.md "Render the app". Not from the guides: the sign-in views, joining channels
+// and the ChatApp shell, which the guides leave out
 import "./style.css";
 
 import { StrictMode } from "react";

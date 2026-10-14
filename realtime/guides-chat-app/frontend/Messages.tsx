@@ -21,9 +21,6 @@ import {
 
 const NO_MESSAGES: readonly OptimisticMessage[] = [];
 
-// A write can briefly make the query stale while it resyncs, so only say so if it lasts
-const STALE_NOTICE_DELAY_MS = 500;
-
 interface Props {
   sealedQuery: SealedLiveQuery<Message>;
   refreshQuery: () => Promise<SealedLiveQuery<Message>>;
@@ -50,21 +47,6 @@ export function Messages({
   >(data ?? NO_MESSAGES, applyMutation);
 
   const [mutationError, setMutationError] = useState<string>();
-  const [staleForAWhile, setStaleForAWhile] = useState(false);
-
-  useEffect(() => {
-    if (status !== "stale") return;
-
-    const timer = setTimeout(
-      () => setStaleForAWhile(true),
-      STALE_NOTICE_DELAY_MS,
-    );
-
-    return () => {
-      clearTimeout(timer);
-      setStaleForAWhile(false);
-    };
-  }, [status]);
 
   useEffect(() => {
     return utils.onUpdate((update) => {
@@ -129,7 +111,7 @@ export function Messages({
         <button type="submit">Send</button>
       </form>
 
-      <p role="status">{status === "stale" && staleForAWhile && "Updating"}</p>
+      {status === "stale" && <p role="status">Updating</p>}
       {mutationError && <p role="alert">{mutationError}</p>}
 
       <ul>

@@ -38,43 +38,43 @@ export async function fetchSealedInbox(): Promise<SealedLiveQuery<Message>> {
   return (await res.json()) as SealedLiveQuery<Message>;
 }
 
-export async function sendMessage({
-  id,
-  channel_id,
-  body,
-}: Pick<Message, "id" | "channel_id" | "body">): Promise<MutationResponse> {
-  const res = await server.api.v1.messages.$post({
-    json: { id, channelId: channel_id, body },
-  });
-
-  if (!res.ok) {
-    throw new Error(`Could not send the message (${res.status})`);
-  }
-
-  return res.json();
-}
-
-export async function editMessage(
-  id: string,
-  body: string,
+export async function sendMessages(
+  batch: Pick<Message, "id" | "channel_id" | "body">[],
 ): Promise<MutationResponse> {
-  const res = await server.api.v1.messages[":id"].$patch({
-    param: { id },
-    json: { body },
+  const res = await server.api.v1.messages.$post({
+    json: {
+      batch: batch.map(({ id, channel_id, body }) => ({
+        id,
+        channelId: channel_id,
+        body,
+      })),
+    },
   });
 
   if (!res.ok) {
-    throw new Error(`Could not edit the message (${res.status})`);
+    throw new Error(`Could not send the messages (${res.status})`);
   }
 
   return res.json();
 }
 
-export async function deleteMessage(id: string): Promise<MutationResponse> {
-  const res = await server.api.v1.messages[":id"].$delete({ param: { id } });
+export async function editMessages(
+  batch: { id: string; body: string }[],
+): Promise<MutationResponse> {
+  const res = await server.api.v1.messages.$patch({ json: { batch } });
 
   if (!res.ok) {
-    throw new Error(`Could not delete the message (${res.status})`);
+    throw new Error(`Could not edit the messages (${res.status})`);
+  }
+
+  return res.json();
+}
+
+export async function deleteMessages(ids: string[]): Promise<MutationResponse> {
+  const res = await server.api.v1.messages.$delete({ json: { batch: ids } });
+
+  if (!res.ok) {
+    throw new Error(`Could not delete the messages (${res.status})`);
   }
 
   return res.json();

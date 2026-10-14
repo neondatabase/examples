@@ -1,7 +1,7 @@
 // From guides/mutations.md "Shared mutation helpers"
 import type { Message } from "../backend/schema";
 import type { MutationResponse } from "../backend/server";
-import { deleteMessage, editMessage, sendMessage } from "./api";
+import { deleteMessages, editMessages, sendMessages } from "./api";
 
 export type MessageMutation =
   | { readonly type: "send"; readonly message: Message }
@@ -56,10 +56,10 @@ export function writeMutation(
 ): Promise<MutationResponse> {
   switch (mutation.type) {
     case "send":
-      return sendMessage(mutation.message);
+      return sendMessages([mutation.message]);
     case "edit":
-      return editMessage(mutation.id, mutation.body);
+      return editMessages([{ id: mutation.id, body: mutation.body }]);
     case "delete":
-      return deleteMessage(mutation.id);
+      return deleteMessages([mutation.id]);
   }
 }

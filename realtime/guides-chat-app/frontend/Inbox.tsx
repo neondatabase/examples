@@ -60,19 +60,19 @@ export function Inbox({ messagesCollection, channelId, userId }: Props) {
 
       <ul>
         {data.map((message) => (
-          <li key={message.id} aria-busy={!message.$synced}>
+          <li key={message.id} aria-busy={message.$hasPendingWrites}>
             {message.body}
             {message.author_id === userId && (
               <>
                 <button
-                  disabled={!message.$synced}
+                  disabled={message.$hasPendingWrites}
                   onClick={() => edit(message)}
                   type="button"
                 >
                   Edit
                 </button>
                 <button
-                  disabled={!message.$synced}
+                  disabled={message.$hasPendingWrites}
                   onClick={() => messagesCollection.delete(message.id)}
                   type="button"
                 >

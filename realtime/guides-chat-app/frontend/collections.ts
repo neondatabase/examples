@@ -5,10 +5,10 @@ import type { SealedLiveQuery } from "@neon/realtime/client";
 
 import type { Message } from "../backend/schema";
 import {
-  deleteMessage,
-  editMessage,
+  deleteMessages,
+  editMessages,
   fetchSealedInbox,
-  sendMessage,
+  sendMessages,
 } from "./api";
 import { client } from "./client";
 
@@ -23,23 +23,29 @@ export function createMessagesCollection(
       refreshQuery: fetchSealedInbox,
       getKey: (message) => message.id,
       onInsert: async ({ transaction, collection }) => {
-        const result = await sendMessage(transaction.mutations[0].modified);
+        const result = await sendMessages(
+          transaction.mutations.map(({ modified }) => modified),
+        );
 
         if (result.kind === "committed") {
           await collection.utils.awaitTxId(result.txid, 10_000);
         }
       },
       onUpdate: async ({ transaction, collection }) => {
-        const { id, body } = transaction.mutations[0].modified;
-        const result = await editMessage(id, body);
+        const result = await editMessages(
+          transaction.mutations.map(({ modified: { id, body } }) => ({
+            id,
+            body,
+          })),
+        );
 
         if (result.kind === "committed") {
           await collection.utils.awaitTxId(result.txid, 10_000);
         }
       },
       onDelete: async ({ transaction, collection }) => {
-        const result = await deleteMessage(
-          transaction.mutations[0].original.id,
+        const result = await deleteMessages(
+          transaction.mutations.map(({ original }) => original.id),
         );
 
         if (result.kind === "committed") {

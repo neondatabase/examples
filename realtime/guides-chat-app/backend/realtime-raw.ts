@@ -5,5 +5,6 @@ import { postgresDatabaseName } from "./env";
 
 export const realtime = createRealtime({
   secret: process.env.NEON_REALTIME_SECRET!,
+  // Not from the guides: the database name comes from DATABASE_URL, where the guides use "neondb"
   db: postgresDatabaseName,
 });

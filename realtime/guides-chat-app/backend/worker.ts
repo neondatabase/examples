@@ -1,5 +1,5 @@
 // From guides/subscribing.md "Subscribe in trusted backend code". Run it with `npm run worker`
-// load .env.local first, because ./env and ./queries read process.env when imported
+// Not from the guides: load .env.local first, because ./env and ./queries read process.env when imported
 import "./load-env";
 
 import { createRealtime } from "@neon/realtime/server";
@@ -15,6 +15,7 @@ const SUPPORT_CHANNEL_ID = 2;
 const realtime = createRealtime({
   url: process.env.NEON_REALTIME_URL!,
   secret: process.env.NEON_REALTIME_SECRET!,
+  // Not from the guides: the database name comes from DATABASE_URL, where the guides use "neondb"
   db: postgresDatabaseName,
   adapter: drizzleAdapter(),
 });

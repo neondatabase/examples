@@ -6,7 +6,7 @@ import "./load-env";
 import "./env";
 
 import { serve } from "@hono/node-server";
-import { and, eq, ne, sql } from "drizzle-orm";
+import { and, eq, inArray, ne, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
@@ -21,16 +21,11 @@ export type MutationResponse =
   | { readonly kind: "committed"; readonly txid: string }
   | { readonly kind: "unchanged" };
 
-type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+// The id of the transaction that made the change, read in the write's own RETURNING
+const txid = sql<string>`pg_current_xact_id()::text`;
 
-// Must run inside the write transaction, so it returns that transaction's id
-async function currentTxId(tx: Transaction): Promise<string> {
-  const result = await tx.execute<{ txid: string }>(
-    sql`select pg_current_xact_id()::text as txid`,
-  );
-
-  return result.rows[0]!.txid;
-}
+const mutationResponse = (row?: { txid: string }): MutationResponse =>
+  row ? { kind: "committed", txid: row.txid } : { kind: "unchanged" };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -38,15 +33,9 @@ function isUuid(value: unknown): value is string {
   return typeof value === "string" && UUID.test(value);
 }
 
-const messageId = validator("param", (value, c) => {
-  const id: unknown = value.id;
-
-  if (!isUuid(id)) {
-    return c.json({ error: "id must be a uuid" }, 400);
-  }
-
-  return { id };
-});
+function isBody(value: unknown): value is string {
+  return typeof value === "string" && value.trim() !== "";
+}
 
 // Not from the guides: there's no channels table, and the guides use channel 2
 const CHANNELS = [
@@ -103,120 +92,150 @@ const app = new Hono()
   .post(
     "/api/v1/messages",
     validator("json", (value, c) => {
-      const id: unknown = value?.id;
-      const channelId: unknown = value?.channelId;
-      const body: unknown = value?.body;
+      const batch: unknown = value?.batch;
 
-      if (!isUuid(id)) {
-        return c.json({ error: "id must be a uuid" }, 400);
+      if (
+        !Array.isArray(batch) ||
+        batch.length === 0 ||
+        !batch.every(
+          (item): item is { id: string; channelId: number; body: string } =>
+            isUuid(item?.id) &&
+            Number.isInteger(item?.channelId) &&
+            isBody(item?.body),
+        )
+      ) {
+        return c.json(
+          {
+            error: "batch must be a non-empty array of { id, channelId, body }",
+          },
+          400,
+        );
       }
 
-      if (typeof channelId !== "number" || !Number.isInteger(channelId)) {
-        return c.json({ error: "channelId must be an integer" }, 400);
-      }
-
-      if (typeof body !== "string" || body.trim() === "") {
-        return c.json({ error: "body must be a non-empty string" }, 400);
-      }
-
-      return { id, channelId, body };
+      return { batch };
     }),
     async (c) => {
       const user = await requireUser(c);
-      const { id, channelId, body } = c.req.valid("json");
+      const { batch } = c.req.valid("json");
+      const channelIds = [
+        ...new Set(batch.map((message) => message.channelId)),
+      ];
+      const rows = batch.map(({ id, channelId, body }) => ({
+        id,
+        channel_id: channelId,
+        body,
+      }));
 
-      const result = await db.transaction(
-        async (tx): Promise<MutationResponse> => {
-          const [membership] = await tx
-            .select({ user_id: channelMembers.user_id })
-            .from(channelMembers)
+      // One statement: the batch is written only if the user is a member of every channel in it
+      const [sent] = await db
+        .insert(messages)
+        .select(
+          db
+            .select({
+              id: sql`batch.id`.as("id"),
+              channel_id: sql`batch.channel_id`.as("channel_id"),
+              author_id: sql`${user.id}`.as("author_id"),
+              body: sql`batch.body`.as("body"),
+              created_at: sql`now()`.as("created_at"),
+            })
+            .from(
+              sql`jsonb_to_recordset(${JSON.stringify(rows)}::jsonb) as batch(id uuid, channel_id integer, body text)`,
+            )
             .where(
-              and(
-                eq(channelMembers.channel_id, channelId),
-                eq(channelMembers.user_id, user.id),
+              eq(
+                db.$count(
+                  channelMembers,
+                  and(
+                    eq(channelMembers.user_id, user.id),
+                    inArray(channelMembers.channel_id, channelIds),
+                  ),
+                ),
+                channelIds.length,
               ),
-            );
+            ),
+        )
+        .returning({ txid });
 
-          if (!membership) {
-            throw new HTTPException(403, {
-              message: "Not a member of this channel",
-            });
-          }
+      if (!sent) {
+        throw new HTTPException(403, {
+          message: "Not a member of this channel",
+        });
+      }
 
-          await tx
-            .insert(messages)
-            .values({ id, channel_id: channelId, author_id: user.id, body });
-
-          return { kind: "committed", txid: await currentTxId(tx) };
-        },
-      );
-
-      return c.json(result);
+      return c.json(mutationResponse(sent));
     },
   )
   .patch(
-    "/api/v1/messages/:id",
-    messageId,
+    "/api/v1/messages",
     validator("json", (value, c) => {
-      const body: unknown = value?.body;
+      const batch: unknown = value?.batch;
 
-      if (typeof body !== "string" || body.trim() === "") {
-        return c.json({ error: "body must be a non-empty string" }, 400);
+      if (
+        !Array.isArray(batch) ||
+        batch.length === 0 ||
+        !batch.every(
+          (item): item is { id: string; body: string } =>
+            isUuid(item?.id) && isBody(item?.body),
+        )
+      ) {
+        return c.json(
+          { error: "batch must be a non-empty array of { id, body }" },
+          400,
+        );
       }
 
-      return { body };
+      return { batch };
     }),
     async (c) => {
       const user = await requireUser(c);
-      const { id } = c.req.valid("param");
-      const { body } = c.req.valid("json");
+      const { batch } = c.req.valid("json");
 
-      const result = await db.transaction(
-        async (tx): Promise<MutationResponse> => {
-          const updated = await tx
-            .update(messages)
-            .set({ body })
-            .where(
-              and(
-                eq(messages.id, id),
-                eq(messages.author_id, user.id),
-                ne(messages.body, body),
-              ),
-            )
-            .returning({ id: messages.id });
+      const [edited] = await db
+        .update(messages)
+        .set({ body: sql`edit.body` })
+        .from(
+          sql`jsonb_to_recordset(${JSON.stringify(batch)}::jsonb) as edit(id uuid, body text)`,
+        )
+        .where(
+          and(
+            eq(messages.id, sql`edit.id`),
+            eq(messages.author_id, user.id),
+            ne(messages.body, sql`edit.body`),
+          ),
+        )
+        .returning({ txid });
 
-          if (updated.length === 0) {
-            return { kind: "unchanged" };
-          }
-
-          return { kind: "committed", txid: await currentTxId(tx) };
-        },
-      );
-
-      return c.json(result);
+      return c.json(mutationResponse(edited));
     },
   )
-  .delete("/api/v1/messages/:id", messageId, async (c) => {
-    const user = await requireUser(c);
-    const { id } = c.req.valid("param");
+  .delete(
+    "/api/v1/messages",
+    validator("json", (value, c) => {
+      const batch: unknown = value?.batch;
 
-    const result = await db.transaction(
-      async (tx): Promise<MutationResponse> => {
-        const deleted = await tx
-          .delete(messages)
-          .where(and(eq(messages.id, id), eq(messages.author_id, user.id)))
-          .returning({ id: messages.id });
+      if (!Array.isArray(batch) || batch.length === 0 || !batch.every(isUuid)) {
+        return c.json(
+          { error: "batch must be a non-empty array of uuids" },
+          400,
+        );
+      }
 
-        if (deleted.length === 0) {
-          return { kind: "unchanged" };
-        }
+      return { batch };
+    }),
+    async (c) => {
+      const user = await requireUser(c);
+      const { batch } = c.req.valid("json");
 
-        return { kind: "committed", txid: await currentTxId(tx) };
-      },
-    );
+      const [deleted] = await db
+        .delete(messages)
+        .where(
+          and(inArray(messages.id, batch), eq(messages.author_id, user.id)),
+        )
+        .returning({ txid });
 
-    return c.json(result);
-  });
+      return c.json(mutationResponse(deleted));
+    },
+  );
 
 export type AppType = typeof app;
 

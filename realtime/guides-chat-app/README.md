@@ -6,7 +6,7 @@
 
 # Realtime guides chat app
 
-The chat app that runs through the [Neon Realtime guides](https://neon.com/docs/realtime/guides/queries). This is the runnable app the guides' snippets come from, and it adds the Vite config, env loading and dev server around them. Users sign in with Neon Auth and read the channels they belong to. A Hono API verifies the Neon Auth JWT, seals Drizzle live queries that join through channel membership, and writes each message in a transaction that returns its txid. In React, one view binds a sealed query per channel with `useLiveQuery` and `useOptimistic`. The other syncs every channel into a TanStack DB collection and writes through it. Each file names the guide section it comes from.
+The chat app that runs through the [Neon Realtime guides](https://neon.com/docs/realtime/guides/queries). This is the runnable app the guides' snippets come from, and it adds the Vite config, env loading and dev server around them. Users sign in with Neon Auth and read the channels they belong to. A Hono API verifies the Neon Auth JWT, seals Drizzle live queries that join through channel membership, and writes each batch of messages in one SQL statement that returns its txid. In React, one view binds a sealed query per channel with `useLiveQuery` and `useOptimistic`. The other syncs every channel into a TanStack DB collection and writes through it. Each file names the guide section it comes from.
 
 ## Set up
 
