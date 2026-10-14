@@ -108,18 +108,6 @@ export function TodoList({
     refreshQuery,
   });
 
-  // The first connect and every reconnect report "connecting", and "stale" means the sealed query expired
-  // before a renewal landed. The label waits 500 ms before showing "Connecting…" for either, so a fast
-  // connect goes from an empty slot straight to "Live" and a brief reconnect keeps the last label.
-  const settled = status === "live" || status === "error";
-  const [shownStatus, setShownStatus] = useState<typeof status | null>(null);
-  if (settled && shownStatus !== status) setShownStatus(status); // adjust during render: no frame with the old label
-  useEffect(() => {
-    if (settled) return;
-    const timer = setTimeout(() => setShownStatus("connecting"), 500);
-    return () => clearTimeout(timer);
-  }, [settled]);
-
   useEffect(() => {
     // The renewal came back for a different query: another user signed in on this browser, or a deploy
     // changed the SQL. Re-render, and the new fingerprint remounts this list (todos.tsx).
@@ -210,20 +198,18 @@ export function TodoList({
     );
 
   // The status and message slots keep a fixed height, so the rows don't move when either changes.
+  // "stale" means the sealed query expired before a renewal landed. Resets stay "live" and reconnects are
+  // "connecting", so "Updating" doesn't flicker.
   const statusText =
-    shownStatus === "live"
-      ? "Live"
-      : shownStatus === "error"
+    status === "stale"
+      ? "Updating"
+      : status === "error"
         ? "Live updates stopped"
-        : shownStatus
-          ? "Connecting…"
-          : "";
+        : "";
   const statusColor =
-    shownStatus === "live"
-      ? "text-emerald-700 dark:text-emerald-400"
-      : shownStatus === "error"
-        ? "text-red-700 dark:text-red-400"
-        : "text-zinc-500 dark:text-zinc-400";
+    status === "error"
+      ? "text-red-700 dark:text-red-400"
+      : "text-zinc-500 dark:text-zinc-400";
   // useLiveQuery can't restart a stopped query, so Reconnect reloads the page.
   const showReconnect = status === "error";
 

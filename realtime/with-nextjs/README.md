@@ -52,7 +52,7 @@ Open <http://localhost:3000>. You're sent to `/auth/sign-in`. Sign up, and you l
 
 - **Live.** Open a second tab as the same user. Add, complete or delete a todo in one tab. It shows dimmed at once, turns normal when Postgres confirms it, and appears in the other tab over Realtime.
 - **Per user.** Sign up as a second user in a private window. That user sees none of the first user's todos.
-- **SSR.** Reload with a few todos and view the source: the rows are in the HTML. The status slot starts empty and shows "Live" without moving the rows. It shows "Connecting…" only if the connection stays down for 500 ms.
+- **SSR.** Reload with a few todos and view the source: the rows are in the HTML. The status slot stays empty and holds its height, so the rows don't move. It shows "Updating" only when the sealed query expires before a renewal lands, for example after the laptop wakes from sleep.
 
 ## How it works
 
@@ -183,7 +183,7 @@ Set `cacheComponents: true` in `next.config.ts`, and remove `export const dynami
 
 ## Troubleshooting
 
-- **Stuck on "Connecting…".** The page's origin isn't in `allowedOrigins` in `neon.ts`. Realtime doesn't report this as an error. Check that Next.js started on port 3000, not 3001 because 3000 was busy. To allow another origin, add it and run `neon deploy`.
+- **Changes from another tab never appear.** The page's origin isn't in `allowedOrigins` in `neon.ts`. Realtime doesn't report this as an error: the query stays `connecting`. Check that Next.js started on port 3000, not 3001 because 3000 was busy. To allow another origin, add it and run `neon deploy`.
 - **`NEON_AUTH_COOKIE_SECRET must be at least 32 characters`.** The secret is missing from `.env.local` or too short. Append it with the `printf` command in [Set up](#set-up), then restart `npm run dev`.
 - **`neon env pull` fails on a new branch.** Neon Auth and Realtime aren't enabled until `neon deploy` applies `neon.ts`. Run `neon deploy` first.
 
