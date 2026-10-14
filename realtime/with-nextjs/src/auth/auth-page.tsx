@@ -13,7 +13,8 @@ export default async function AuthPage({
   const { path } = await params;
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
-      <AuthView path={path} />
+      {/* Without `redirectTo` here, the auth UI reads an unchecked `?redirectTo=` from the URL. */}
+      <AuthView path={path} redirectTo="/" />
     </main>
   );
 }

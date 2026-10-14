@@ -3,26 +3,20 @@
 import { NeonAuthUIProvider } from "@neondatabase/auth-ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
 
 import { authClient } from "./client";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  // After a sign-in or sign-out, the auth UI's next navigation is a full page load. It drops the Realtime
-  // client, its socket and the previous user's rows.
-  const sessionChanged = useRef(false);
   return (
     <NeonAuthUIProvider
       authClient={authClient}
-      navigate={(href) =>
-        sessionChanged.current
-          ? window.location.assign(href)
-          : router.push(href)
-      }
+      navigate={router.push}
       replace={router.replace}
       onSessionChange={() => {
-        sessionChanged.current = true;
+        window.location.assign("/");
+        // Never settles, so the auth UI doesn't also navigate client-side.
+        return new Promise<never>(() => {});
       }}
       Link={Link}
       redirectTo="/"

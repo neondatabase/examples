@@ -1,10 +1,9 @@
 import { getUser } from "@/auth/server";
 import { sealTodos } from "@/lib/todos";
 
-const noStore = { "Cache-Control": "no-store" };
+const noStore = { "Cache-Control": "private, no-store" };
 
 // Renewal is a read, so it's a Route Handler. A Server Action would queue behind pending writes.
-// A cross-site POST carries no SameSite=Lax session cookie, so it gets a 401.
 export async function POST(request: Request) {
   const { userId } = await request.json(); // the user the page was loaded for
   const user = await getUser(userId);

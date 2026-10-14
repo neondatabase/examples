@@ -1,4 +1,3 @@
-import { UserButton } from "@neondatabase/auth-ui";
 import { Suspense } from "react";
 
 import { Todos } from "./todos";
@@ -8,18 +7,13 @@ export default function Page() {
   return (
     <main className="min-h-screen bg-emerald-50 px-4 py-18 text-emerald-950 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="mx-auto w-full max-w-2xl">
-        <header className="flex items-end justify-between gap-6">
-          <div>
-            <p className="m-0 text-xs font-extrabold tracking-[0.08em] text-emerald-700 uppercase dark:text-emerald-400">
-              Next.js SSR + Neon Realtime
-            </p>
-            <h1 className="mt-1 mb-3 text-4xl font-bold tracking-[-0.04em] sm:text-5xl">
-              Your todos
-            </h1>
-          </div>
-          <div className="mb-3">
-            <UserButton size="icon" />
-          </div>
+        <header>
+          <p className="m-0 text-xs font-extrabold tracking-[0.08em] text-emerald-700 uppercase dark:text-emerald-400">
+            Next.js SSR + Neon Realtime
+          </p>
+          <h1 className="mt-1 mb-3 text-4xl font-bold tracking-[-0.04em] sm:text-5xl">
+            Your todos
+          </h1>
         </header>
 
         <p className="mb-7 max-w-xl leading-relaxed text-zinc-600 dark:text-zinc-400">

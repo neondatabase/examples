@@ -1,2 +1,6 @@
 @import "tailwindcss";
-@import "@neondatabase/auth-ui/tailwind";
+
+/* dark: follows the OS theme. This makes native controls and scrollbars match it too. */
+:root {
+  color-scheme: light dark;
+}

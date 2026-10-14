@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-import { Providers } from "@/auth/provider";
-
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,12 +13,11 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
-    // NeonAuthUIProvider wraps next-themes, whose pre-hydration script sets class and color-scheme on <html>
-    // from the saved or system theme, which the server can't know. This suppresses <html>'s own attributes only.
+    // On the auth pages, next-themes (inside NeonAuthUIProvider) runs a pre-hydration script that sets class and
+    // color-scheme on <html> from the saved or system theme, which the server can't know. This suppresses
+    // <html>'s own attributes only.
     <html lang="en" suppressHydrationWarning>
-      <body>
-        <Providers>{children}</Providers>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

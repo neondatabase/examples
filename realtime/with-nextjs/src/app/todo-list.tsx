@@ -61,7 +61,7 @@ const newestFirst = (a: OptimisticTodo, b: OptimisticTodo) =>
   (a.id < b.id ? 1 : a.id > b.id ? -1 : 0);
 
 // How long a write stays pending while it waits for its transaction to arrive on the stream. Keep it short:
-// React holds every transition started meanwhile (router.refresh(), navigations, sign-out) until it settles.
+// React holds every transition started meanwhile (router.refresh(), navigations) until it settles.
 const SYNC_TIMEOUT_MS = 10_000;
 
 export function TodoList({
@@ -91,8 +91,6 @@ export function TodoList({
     [userId],
   );
 
-  // The server render and hydration both show initialTodos with status "connecting". The socket opens after
-  // hydration. refreshQuery re-seals 10 s before expiry, so a renewal on time stays "live".
   const { data, status, utils } = useLiveQuery(query, {
     initialData: initialTodos,
     refreshQuery,
