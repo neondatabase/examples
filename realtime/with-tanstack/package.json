@@ -14,9 +14,9 @@
   },
   "dependencies": {
     "@neon/env": "^1.5.3",
-    "@neon/realtime": "0.0.1",
-    "@neon/realtime-drizzle": "0.0.1",
-    "@neon/realtime-tanstack": "0.0.1",
+    "@neon/realtime": "^0.1.0",
+    "@neon/realtime-drizzle": "^0.1.0",
+    "@neon/realtime-tanstack": "^0.1.0",
     "@standard-schema/spec": "^1.1.0",
     "@tanstack/db": "0.9.0",
     "@tanstack/react-db": "0.3.8",
