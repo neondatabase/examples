@@ -15,7 +15,7 @@ import { ChatApp } from "./ChatApp";
 
 const root = createRoot(document.getElementById("root")!);
 
-// Neon Auth's sign-in, sign-up and sign-out views, on /auth/*. There's no account view.
+// The Managed Better Auth sign-in, sign-up and sign-out views, on /auth/*. There's no account view.
 // They navigate with full page loads, so signing out also drops the collection's rows
 if (location.pathname.startsWith("/auth/")) {
   root.render(

@@ -1,6 +1,6 @@
 {
   "name": "with-realtime-guides-chat-react",
-  "description": "The chat app from the Neon Realtime guides: React, Neon Auth, live queries, a TanStack DB inbox, Hono and Drizzle.",
+  "description": "The chat app from the Neon Realtime guides: React, Managed Better Auth, live queries, a TanStack DB inbox, Hono and Drizzle.",
   "private": true,
   "type": "module",
   "scripts": {

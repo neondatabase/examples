@@ -6,7 +6,7 @@
 
 # Realtime guides chat app
 
-The chat app that runs through the [Neon Realtime guides](https://neon.com/docs/realtime/guides/queries). This is the runnable app the guides' snippets come from, and it adds the Vite config, env loading and dev server around them. Users sign in with Neon Auth and read the channels they belong to. A Hono API verifies the Neon Auth JWT, seals Drizzle live queries that join through channel membership, and writes each batch of messages in one SQL statement that returns its txid. In React, one view binds a sealed query per channel with `useLiveQuery` and `useOptimistic`. The other syncs every channel into a TanStack DB collection and writes through it. Each file names the guide section it comes from.
+The chat app that runs through the [Neon Realtime guides](https://neon.com/docs/realtime/guides/queries). This is the runnable app the guides' snippets come from, and it adds the Vite config, env loading and dev server around them. Users sign in with Neon's [Managed Better Auth](https://neon.com/docs/auth/overview) and read the channels they belong to. A Hono API verifies the Managed Better Auth JWT, seals Drizzle live queries that join through channel membership, and writes each batch of messages in one SQL statement that returns its txid. In React, one view binds a sealed query per channel with `useLiveQuery` and `useOptimistic`. The other syncs every channel into a TanStack DB collection and writes through it. Each file names the guide section it comes from.
 
 ## Set up
 
@@ -27,7 +27,7 @@ Link the directory to your project:
 neon link
 ```
 
-`neon link` may warn that it couldn't pull the env vars, because Neon Auth and Realtime aren't enabled on the branch yet. `neon deploy` enables them below.
+`neon link` may warn that it couldn't pull the env vars, because Managed Better Auth and Realtime aren't enabled on the branch yet. `neon deploy` enables them below.
 
 Install the dependencies:
 
@@ -35,7 +35,7 @@ Install the dependencies:
 npm install
 ```
 
-Deploy the `neon.ts` policy. It enables Neon Auth and Realtime on the branch, and allows `http://localhost:5173` to open Realtime connections. The deploy waits for both, then writes the env vars that `.env.example` lists to `.env.local`. The app reads `DATABASE_URL`, `NEON_AUTH_BASE_URL`, `NEON_REALTIME_URL` and `NEON_REALTIME_SECRET`:
+Deploy the `neon.ts` policy. It enables Managed Better Auth and Realtime on the branch, and allows `http://localhost:5173` to open Realtime connections. The deploy waits for both, then writes the env vars that `.env.example` lists to `.env.local`. The app reads `DATABASE_URL`, `NEON_AUTH_BASE_URL`, `NEON_REALTIME_URL` and `NEON_REALTIME_SECRET`:
 
 ```bash
 neon deploy
@@ -77,13 +77,13 @@ neon psql -- -c "INSERT INTO messages (id, channel_id, author_id, body) VALUES (
 
 ## Deploy
 
-`neon deploy` only applies `neon.ts` here: it enables Neon Auth and Realtime and writes `.env.local`. Neon doesn't host this frontend, so the app runs locally with `npm run dev`. `neon dev` doesn't apply either, because `neon.ts` declares no functions.
+`neon deploy` only applies `neon.ts` here: it enables Managed Better Auth and Realtime and writes `.env.local`. Neon doesn't host this frontend, so the app runs locally with `npm run dev`. `neon dev` doesn't apply either, because `neon.ts` declares no functions.
 
-For a hosted version, run the Hono API on Neon Functions and host the SPA on Vercel, as the [server-sent events example](https://github.com/neondatabase/examples/tree/main/with-server-sent-events-function) does. Then add the deployed origin to `allowedOrigins` in `neon.ts` and to Neon Auth's [trusted domains](https://neon.com/docs/auth/guides/configure-domains).
+For a hosted version, run the Hono API on Neon Functions and host the SPA on Vercel, as the [server-sent events example](https://github.com/neondatabase/examples/tree/main/with-server-sent-events-function) does. Then add the deployed origin to `allowedOrigins` in `neon.ts` and to the Managed Better Auth [trusted domains](https://neon.com/docs/auth/guides/configure-domains).
 
 ## Try it with two users
 
-Tabs in one browser window share Neon Auth's session cookie, so they're the same user. Use two browser sessions: a normal window and a private window.
+Tabs in one browser window share the Managed Better Auth session cookie, so they're the same user. Use two browser sessions: a normal window and a private window.
 
 1. Open <http://localhost:5173> in the normal window. It sends you to the sign-in page. Sign up a user.
 2. Open the same URL in the private window and sign up a second user.
