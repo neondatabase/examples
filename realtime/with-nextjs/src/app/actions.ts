@@ -2,20 +2,20 @@
 
 import { eq, sql } from "drizzle-orm";
 
-import { db } from "@/db";
-import { realtime } from "@/realtime";
+import { getDb } from "@/db";
+import { getRealtime } from "@/realtime";
 import { todos } from "@/schema";
 import { selectTodos } from "@/todos";
 
 export async function refreshTodosQuery() {
-  return realtime.seal({ query: selectTodos() });
+  return getRealtime().seal({ query: selectTodos() });
 }
 
 export async function createTodo(titleInput: string) {
   const title = titleInput.trim();
   if (!title || title.length > 200) throw new Error("Invalid todo title");
 
-  const [todo] = await db
+  const [todo] = await getDb()
     .insert(todos)
     .values({ title })
     .returning({
@@ -27,7 +27,7 @@ export async function createTodo(titleInput: string) {
 }
 
 export async function setTodoCompleted(id: number, completed: boolean) {
-  const [updated] = await db
+  const [updated] = await getDb()
     .update(todos)
     .set({ completed })
     .where(eq(todos.id, id))
@@ -37,7 +37,7 @@ export async function setTodoCompleted(id: number, completed: boolean) {
 }
 
 export async function deleteTodo(id: number) {
-  const [deleted] = await db
+  const [deleted] = await getDb()
     .delete(todos)
     .where(eq(todos.id, id))
     .returning({ txid: sql<string>`pg_current_xact_id()::text` });

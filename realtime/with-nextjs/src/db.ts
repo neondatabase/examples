@@ -3,22 +3,19 @@ import "server-only";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-import { env } from "./env";
+import { getEnv } from "./env";
 
 const globalDatabase = globalThis as typeof globalThis & {
   realtimeTodoPool?: Pool;
 };
 
-export const pool =
-  globalDatabase.realtimeTodoPool ??
-  new Pool({
-    connectionString: env.postgres.databaseUrl,
+let database: ReturnType<typeof drizzle> | undefined;
+
+export function getDb() {
+  const pool = (globalDatabase.realtimeTodoPool ??= new Pool({
+    connectionString: getEnv().databaseUrl,
     max: 5,
     min: 1,
-  });
-
-if (process.env.NODE_ENV !== "production") {
-  globalDatabase.realtimeTodoPool = pool;
+  }));
+  return (database ??= drizzle(pool));
 }
-
-export const db = drizzle(pool);

@@ -3,10 +3,15 @@ import "server-only";
 import { createRealtime } from "@neon/realtime/server";
 import { drizzleAdapter } from "@neon/realtime-drizzle";
 
-import { env, postgresDatabaseName } from "./env";
+import { getEnv } from "./env";
 
-export const realtime = createRealtime({
-  secret: env.realtime.secret,
-  db: postgresDatabaseName,
-  adapter: drizzleAdapter(),
-});
+let realtime: ReturnType<typeof createRealtime> | undefined;
+
+export function getRealtime() {
+  const env = getEnv();
+  return (realtime ??= createRealtime({
+    secret: env.realtimeSecret,
+    db: env.databaseName,
+    adapter: drizzleAdapter(),
+  }));
+}
