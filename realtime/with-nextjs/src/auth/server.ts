@@ -20,7 +20,7 @@ export function getAuth() {
  */
 export async function getUser(pageUserId?: string) {
   const { data, error } = await getAuth().getSession(); // returns { data, error }; doesn't throw on HTTP errors
-  // If Neon Auth can't be reached, treat the request as signed out.
+  // If Managed Better Auth can't be reached, treat the request as signed out.
   if (error) console.warn("[auth] getSession failed", error.code);
   const user = data?.user ?? null;
   return pageUserId === undefined || user?.id === pageUserId ? user : null;

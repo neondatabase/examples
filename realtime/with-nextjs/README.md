@@ -6,7 +6,7 @@
 
 # Realtime Next.js app
 
-A full-stack Next.js app with server-side rendering, live reactivity and optimistic mutations, using [Neon Auth](https://neon.com/docs/auth/overview), [Neon Realtime](https://neon.com/docs/realtime/overview) and [Kysely](https://kysely.dev).
+A full-stack Next.js app with server-side rendering, live reactivity and optimistic mutations, using Neon's [Managed Better Auth](https://neon.com/docs/auth/overview), [Neon Realtime](https://neon.com/docs/realtime/overview) and [Kysely](https://kysely.dev).
 
 The server renders each user's todos, the browser keeps the same query live over Realtime, and writes show at once, then stay pending until Postgres confirms them.
 
@@ -25,13 +25,13 @@ neon login
 neon link
 ```
 
-Apply `neon.ts` to the linked branch. `neon deploy` enables Neon Auth and Realtime, then writes `DATABASE_URL`, `NEON_AUTH_BASE_URL`, `NEON_REALTIME_URL` and `NEON_REALTIME_SECRET` to `.env.local` (plus `NEON_AUTH_JWKS_URL`, which this app doesn't use). It doesn't host the app.
+Apply `neon.ts` to the linked branch. `neon deploy` enables Managed Better Auth and Realtime, then writes `DATABASE_URL`, `NEON_AUTH_BASE_URL`, `NEON_REALTIME_URL` and `NEON_REALTIME_SECRET` to `.env.local` (plus `NEON_AUTH_JWKS_URL`, which this app doesn't use). It doesn't host the app.
 
 ```bash
 neon deploy
 ```
 
-Append a cookie secret to `.env.local`. Neon Auth uses it to sign the session cache cookie, and the pull doesn't write it. Run this once:
+Append a cookie secret to `.env.local`. Managed Better Auth uses it to sign the session cache cookie, and the pull doesn't write it. Run this once:
 
 ```bash
 printf '\nNEON_AUTH_COOKIE_SECRET=%s\n' "$(openssl rand -base64 32)" >> .env.local
@@ -129,30 +129,30 @@ The [SSR](https://neon.com/docs/realtime/guides/ssr), [reactivity](https://neon.
 
 - Realtime has no row-level security. Users are kept apart only by the `WHERE user_id = …` that the server puts in the sealed query after checking the session, and by `AND user_id = …` on every write. `user_id` never comes from the browser. The page sends the user id it was loaded for, but the server only compares it with the session's. See [authorization](https://neon.com/docs/realtime/guides/queries#authorization).
 - `src/proxy.ts` isn't the security boundary. It only redirects page loads. `<Todos/>`, every Server Action and the renewal route call `getUser()` themselves.
-- If Neon Auth can't be reached, `getUser()` treats the request as signed out.
+- If Managed Better Auth can't be reached, `getUser()` treats the request as signed out.
 - A different signed-in user counts as signed out. If another tab signs in as someone else, this page's next write or renewal gets `UNAUTHENTICATED` and the page leaves.
 - Signing in, signing out and leaving all end with a full page load of `/` (`src/auth/provider.tsx`, `src/auth/user-menu.tsx`, `src/auth/session-lost.ts`). It drops the browser's Realtime client and the previous user's rows. Then `src/proxy.ts` sends a signed-out visitor to sign-in, and a different user lands on their own list.
-- The Neon Auth UI provider and its styles load only on the auth pages (`src/app/(auth)/layout.tsx`). The todos page has a hand-built Sign out button.
+- The Managed Better Auth UI provider and its styles load only on the auth pages (`src/app/(auth)/layout.tsx`). The todos page has a hand-built Sign out button.
 - `NEON_REALTIME_SECRET` and `NEON_AUTH_COOKIE_SECRET` stay on the server (`import "server-only"`). The browser gets sealed queries and the public WebSocket URL, passed as a prop.
-- A user whose session is revoked elsewhere can keep seeing live updates for up to about 6 minutes: up to 5 minutes of Neon Auth's session cookie cache, plus the sealed query's 60 seconds.
+- A user whose session is revoked elsewhere can keep seeing live updates for up to about 6 minutes: up to 5 minutes of the Managed Better Auth session cookie cache, plus the sealed query's 60 seconds.
 
 ## Project layout
 
 ```
 realtime/with-nextjs/
-├── neon.ts                              # Neon policy: Neon Auth, Realtime allowedOrigins
+├── neon.ts                              # Neon policy: Managed Better Auth, Realtime allowedOrigins
 ├── .env.example                         # Every variable, and where it comes from
 ├── scripts/
 │   └── migrate.mts                      # Kysely migrations: creates realtime_next_todos
 └── src/
-    ├── proxy.ts                         # Neon Auth middleware: HTTP redirect for signed-out loads of /
+    ├── proxy.ts                         # Managed Better Auth middleware: HTTP redirect for signed-out loads of /
     ├── auth/
     │   ├── server.ts                    # getAuth, getUser
     │   ├── client.ts                    # Browser auth client
-    │   ├── provider.tsx                 # Neon Auth UI provider: sign-in ends with a full page load
-    │   ├── auth-ui.css                  # Neon Auth UI styles, for the auth pages only
+    │   ├── provider.tsx                 # Managed Better Auth UI provider: sign-in ends with a full page load
+    │   ├── auth-ui.css                  # Managed Better Auth UI styles, for the auth pages only
     │   ├── auth-page.tsx                # Prebuilt sign-in, sign-up and account pages
-    │   ├── handler.ts                   # Neon Auth API handler
+    │   ├── handler.ts                   # Managed Better Auth API handler
     │   ├── user-menu.tsx                # Email and Sign out button
     │   └── session-lost.ts              # leaveSession, renewOrLeave
     ├── lib/
@@ -172,7 +172,7 @@ realtime/with-nextjs/
         ├── error.tsx                    # Error boundary
         ├── globals.css                  # Tailwind
         ├── (auth)/
-        │   ├── layout.tsx               # Neon Auth UI provider and styles
+        │   ├── layout.tsx               # Managed Better Auth UI provider and styles
         │   ├── auth/[path]/page.tsx     # Route for src/auth/auth-page.tsx
         │   └── api/auth/[...path]/route.ts # Route for src/auth/handler.ts
         └── api/
@@ -185,7 +185,7 @@ realtime/with-nextjs/
 
 - Set `DATABASE_URL`, `NEON_AUTH_BASE_URL`, `NEON_REALTIME_URL`, `NEON_REALTIME_SECRET` and `NEON_AUTH_COOKIE_SECRET` on the host.
 - Add the app's origin to `preview.realtime.allowedOrigins` in `neon.ts`, then run `neon deploy`.
-- Add the domain to Neon Auth's [trusted domains](https://neon.com/docs/auth/guides/configure-domains): `neon neon-auth domain add https://your-app.example.com`.
+- Add the domain to the Managed Better Auth [trusted domains](https://neon.com/docs/auth/guides/configure-domains): `neon neon-auth domain add https://your-app.example.com`.
 - `npm run build` needs no env, so you can build without secrets. `npm start` runs the production server.
 - If the app runs on more than one instance, set the same `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` on each, so a Server Action from one instance works on another.
 
@@ -197,7 +197,7 @@ Set `cacheComponents: true` in `next.config.ts`, and remove `export const dynami
 
 - **Changes from another tab never appear.** The page's origin isn't in `allowedOrigins` in `neon.ts`. Realtime doesn't report this as an error: the query stays `connecting`. Check that Next.js started on port 3000, not 3001 because 3000 was busy. To allow another origin, add it and run `neon deploy`.
 - **`NEON_AUTH_COOKIE_SECRET must be at least 32 characters`.** The secret is missing from `.env.local` or too short. Append it with the `printf` command in [Set up](#set-up), then restart `npm run dev`.
-- **`neon env pull` fails on a new branch.** Neon Auth and Realtime aren't enabled until `neon deploy` applies `neon.ts`. Run `neon deploy` first.
+- **`neon env pull` fails on a new branch.** Managed Better Auth and Realtime aren't enabled until `neon deploy` applies `neon.ts`. Run `neon deploy` first.
 
 ## Known limitations
 

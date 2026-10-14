@@ -1,6 +1,6 @@
 {
   "name": "with-realtime-nextjs",
-  "description": "Full-stack Next.js app with SSR, live reactivity and optimistic mutations, using Neon Auth, Neon Realtime and Kysely.",
+  "description": "Full-stack Next.js app with SSR, live reactivity and optimistic mutations, using Managed Better Auth, Neon Realtime and Kysely.",
   "private": true,
   "scripts": {
     "build": "next build",

@@ -5,7 +5,7 @@ import type { Generated } from "kysely";
 // result-transforming plugin such as CamelCasePlugin would give live rows different keys from server rows.
 export interface TodosTable {
   id: string; // uuid, created in the browser, so the optimistic row and the live row share it
-  user_id: string; // uuid, the Neon Auth user id; only ever set from the session
+  user_id: string; // uuid, the Managed Better Auth user id; only ever set from the session
   title: string;
   completed: Generated<boolean>;
   created_at: Generated<Date>; // timestamptz: pg and the Realtime client both parse it to a Date

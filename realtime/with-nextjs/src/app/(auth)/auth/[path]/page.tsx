@@ -1,4 +1,4 @@
-// Neon Auth's sign-in pages. The code is in src/auth/auth-page.tsx.
+// The Managed Better Auth sign-in pages. The code is in src/auth/auth-page.tsx.
 export { default, generateStaticParams } from "@/auth/auth-page";
 
 // Only the known auth views; anything else is a 404. Remove dynamicParams if you turn on cacheComponents.

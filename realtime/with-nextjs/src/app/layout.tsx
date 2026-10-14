@@ -6,7 +6,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Neon Realtime Todos",
   description:
-    "A per-user todo list: server-rendered, live across tabs, with optimistic updates. Built on Neon Auth and Neon Realtime.",
+    "A per-user todo list: server-rendered, live across tabs, with optimistic updates. Built on Neon's Managed Better Auth and Neon Realtime.",
 };
 
 export default function RootLayout({
