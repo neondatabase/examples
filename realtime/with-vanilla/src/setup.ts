@@ -4,16 +4,16 @@ import { pool } from "./db.js";
 
 try {
   await pool.query(`
-    create table if not exists realtime_todos (
-      id serial primary key,
-      title text not null,
-      completed boolean not null default false
+    CREATE TABLE IF NOT EXISTS realtime_todos (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      completed BOOLEAN NOT NULL DEFAULT FALSE
     )
   `);
   await pool.query(`
-    insert into realtime_todos (title)
-    select 'Open this app in another tab'
-    where not exists (select 1 from realtime_todos)
+    INSERT INTO realtime_todos (title)
+    SELECT 'Open this app in another tab'
+    WHERE NOT EXISTS (SELECT 1 FROM realtime_todos)
   `);
   console.log("Realtime todo table is ready.");
 } finally {

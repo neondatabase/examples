@@ -25,7 +25,7 @@ const realtime = createRealtime({
 });
 
 const selectTodos = () =>
-  rawSql<Todo>("select id, title, completed from realtime_todos order by id");
+  rawSql<Todo>("SELECT id, title, completed FROM realtime_todos ORDER BY id");
 
 const server = createServer(async (request, response) => {
   try {
@@ -54,9 +54,9 @@ const server = createServer(async (request, response) => {
       }
 
       const { rows } = await pool.query<CreateTodoResponse>(
-        `insert into realtime_todos (title)
-         values ($1)
-         returning id, pg_current_xact_id()::text as txid`,
+        `INSERT INTO realtime_todos (title)
+         VALUES ($1)
+         RETURNING id, pg_current_xact_id()::text AS txid`,
         [title],
       );
       const todo = rows[0];
@@ -67,10 +67,10 @@ const server = createServer(async (request, response) => {
     const match = url.pathname.match(/^\/api\/todos\/(\d+)$/);
     if (match && request.method === "PATCH") {
       const { rows } = await pool.query<MutationResponse>(
-        `update realtime_todos
-            set completed = not completed
-          where id = $1
-          returning pg_current_xact_id()::text as txid`,
+        `UPDATE realtime_todos
+            SET completed = NOT completed
+          WHERE id = $1
+          RETURNING pg_current_xact_id()::text AS txid`,
         [Number(match[1])],
       );
       const result = rows[0];
@@ -81,9 +81,9 @@ const server = createServer(async (request, response) => {
 
     if (match && request.method === "DELETE") {
       const { rows } = await pool.query<MutationResponse>(
-        `delete from realtime_todos
-          where id = $1
-          returning pg_current_xact_id()::text as txid`,
+        `DELETE FROM realtime_todos
+          WHERE id = $1
+          RETURNING pg_current_xact_id()::text AS txid`,
         [Number(match[1])],
       );
       const result = rows[0];
@@ -106,7 +106,8 @@ const server = createServer(async (request, response) => {
   }
 });
 
-await pool.query("select 1");
+// Fail fast if the database is unreachable instead of accepting requests first.
+await pool.query("SELECT 1");
 
 const port = Number(process.env.PORT ?? 3001);
 const host = process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1";
