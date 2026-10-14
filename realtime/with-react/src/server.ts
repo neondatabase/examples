@@ -23,15 +23,10 @@ type MutationResponse =
   | { readonly kind: "committed"; readonly txid: string }
   | { readonly kind: "unchanged" };
 
-type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+const txid = sql<string>`pg_current_xact_id()::text`;
 
-// Must run inside the write transaction, so it returns that transaction's id
-async function currentTxId(tx: Transaction): Promise<string> {
-  const result = await tx.execute<{ txid: string }>(
-    sql`select pg_current_xact_id()::text as txid`,
-  );
-  return result.rows[0]!.txid;
-}
+const mutationResponse = (row?: { txid: string }): MutationResponse =>
+  row ? { kind: "committed", txid: row.txid } : { kind: "unchanged" };
 
 const selectTodos = () =>
   db
@@ -69,13 +64,11 @@ const app = new Hono()
   // https://neon.com/docs/realtime/guides/queries#authorization
   .post("/api/todos", zValidator("json", createTodoInput), async (c) => {
     const { id, title } = c.req.valid("json");
-    const result = await db.transaction(
-      async (tx): Promise<MutationResponse> => {
-        await tx.insert(todos).values({ id, title });
-        return { kind: "committed", txid: await currentTxId(tx) };
-      },
-    );
-    return c.json(result, 201);
+    const [created] = await db
+      .insert(todos)
+      .values({ id, title })
+      .returning({ txid });
+    return c.json(mutationResponse(created), 201);
   })
   .patch(
     "/api/todos/:id",
@@ -84,35 +77,21 @@ const app = new Hono()
     async (c) => {
       const { id } = c.req.valid("param");
       const { completed } = c.req.valid("json");
-      const result = await db.transaction(
-        async (tx): Promise<MutationResponse> => {
-          const updated = await tx
-            .update(todos)
-            .set({ completed })
-            .where(eq(todos.id, id))
-            .returning({ id: todos.id });
-          // No row matched, for example because another tab deleted the todo.
-          // Nothing changed, so there's no txid for the client to wait for.
-          if (updated.length === 0) return { kind: "unchanged" };
-          return { kind: "committed", txid: await currentTxId(tx) };
-        },
-      );
-      return c.json(result);
+      const [updated] = await db
+        .update(todos)
+        .set({ completed })
+        .where(eq(todos.id, id))
+        .returning({ txid });
+      return c.json(mutationResponse(updated));
     },
   )
   .delete("/api/todos/:id", zValidator("param", todoParams), async (c) => {
     const { id } = c.req.valid("param");
-    const result = await db.transaction(
-      async (tx): Promise<MutationResponse> => {
-        const deleted = await tx
-          .delete(todos)
-          .where(eq(todos.id, id))
-          .returning({ id: todos.id });
-        if (deleted.length === 0) return { kind: "unchanged" };
-        return { kind: "committed", txid: await currentTxId(tx) };
-      },
-    );
-    return c.json(result);
+    const [deleted] = await db
+      .delete(todos)
+      .where(eq(todos.id, id))
+      .returning({ txid });
+    return c.json(mutationResponse(deleted));
   });
 
 export type AppType = typeof app;
