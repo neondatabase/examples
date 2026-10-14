@@ -132,12 +132,6 @@ vercel env add VITE_FUNCTION_URL production   # the deployed function URL (https
 vercel deploy --prod
 ```
 
-Lock the function down to your deployed origin by setting `WEB_ORIGIN` on the function:
-
-```bash
-neon deploy --env <(echo "WEB_ORIGIN=https://<your-app>.vercel.app")
-```
-
 ## How it works
 
 - **SSE on Neon Functions.** Neon Functions are long-running Node.js handlers, so the function holds each `GET /events` connection open and streams new values down it. A comment heartbeat every 25s keeps otherwise-idle streams from being closed.

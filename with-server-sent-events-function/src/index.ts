@@ -4,10 +4,6 @@ import { eq, sql } from 'drizzle-orm';
 import { getDb } from './db/client';
 import { counters } from './db/schema';
 
-// The browser talks to this function directly (cross-origin), so allow the
-// SPA's origin. Defaults to "*" for the demo; set WEB_ORIGIN to lock it down.
-const WEB_ORIGIN = process.env.WEB_ORIGIN ?? '*';
-
 const db = getDb();
 
 const COUNTER_ID = 1;
@@ -92,7 +88,8 @@ const heartbeat = setInterval(() => {
 heartbeat.unref?.();
 
 const app = new Hono();
-app.use('*', cors({ origin: WEB_ORIGIN }));
+// The SPA calls this function cross-origin from wherever it is hosted.
+app.use('*', cors());
 
 app.get('/', (c) =>
   c.text('Neon SSE counter — GET /count, POST /increment, GET /events (SSE)'),
@@ -125,7 +122,7 @@ app.get('/events', async (c) => {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
       Connection: 'keep-alive',
-      'Access-Control-Allow-Origin': WEB_ORIGIN,
+      'Access-Control-Allow-Origin': '*',
     },
   });
 });
