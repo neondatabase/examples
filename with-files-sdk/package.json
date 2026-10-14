@@ -7,7 +7,7 @@
     "check": "tsc --noEmit",
     "db:push": "drizzle-kit push",
     "dev": "neon dev",
-    "deploy": "neon deploy --env .env.local",
+    "deploy": "neon deploy",
     "upload": "tsx src/upload.ts",
     "endpoint": "neon functions get ingest"
   },

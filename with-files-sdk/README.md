@@ -63,19 +63,11 @@ npm install
 neon link
 ```
 
-`neon link` pulls your branch-scoped environment variables — including `DATABASE_URL` and the `AWS_*` object-storage credentials — into `.env.local`.
-
-## Apply the schema
-
-Push the Drizzle schema to your Neon database:
-
-```bash
-npm run db:push
-```
+The bucket and trigger don't exist yet, so `neon link` reports that it can't pull env vars. The next step writes them.
 
 ## Provision the bucket, Function, and trigger
 
-`neon deploy --env .env.local` applies `neon.ts`. That creates the `assets` bucket, deploys the Function, and creates the `on-upload` storage trigger when Function Triggers is available on the project.
+`neon deploy` applies `neon.ts`. That creates the `assets` bucket, deploys the Function, and creates the `on-upload` storage trigger when Function Triggers is available on the project. It then writes `DATABASE_URL` and the `AWS_*` object-storage credentials into `.env.local`.
 
 ```bash
 npm run deploy
@@ -111,6 +103,14 @@ If `neon deploy` returns 404 `function triggers not available for this project`,
 
 ```bash
 neon functions deploy ingest --src src/index.ts
+```
+
+## Apply the schema
+
+Push the Drizzle schema to your Neon database:
+
+```bash
+npm run db:push
 ```
 
 ## Run the upload script
