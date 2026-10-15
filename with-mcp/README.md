@@ -39,14 +39,12 @@ npx degit neondatabase/examples/with-mcp ./with-mcp
 cd with-mcp
 ```
 
-## Install and authenticate the Neon CLI
+## Install and update the Neon CLI to latest
 
 ```bash
-npm i -g neon
+npm i -g neon@latest
 neon login
 ```
-
-Use Neon CLI 4.20 or newer so `neon.ts` can declare top-level `functions`.
 
 ## Install dependencies
 
