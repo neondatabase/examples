@@ -1,0 +1,53 @@
+@import "tailwindcss";
+@import "@neondatabase/auth-ui/tailwind";
+
+@layer components {
+  .guide-view {
+    @apply rounded-xl border border-emerald-950/10 p-5 dark:border-zinc-800;
+  }
+  .guide-view h2 {
+    @apply text-lg font-bold;
+  }
+  .guide-view > p {
+    @apply mb-4 text-sm text-zinc-600 dark:text-zinc-400;
+  }
+  .guide-view form {
+    @apply flex gap-2;
+  }
+  .guide-view input {
+    @apply min-w-0 flex-1 rounded-xl border border-emerald-950/20 bg-white px-3.5 py-3 text-emerald-950 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100;
+  }
+  .guide-view button {
+    @apply cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 disabled:cursor-default disabled:opacity-50;
+  }
+  .guide-view form button {
+    @apply rounded-xl bg-emerald-500 px-4 py-3 font-bold text-emerald-950 hover:bg-emerald-400;
+  }
+  .guide-view ul {
+    @apply my-5;
+  }
+  .guide-view li {
+    @apply flex items-center gap-3 border-b border-emerald-950/10 py-3.5 dark:border-zinc-800;
+  }
+  .guide-view li[aria-busy="true"] {
+    @apply opacity-60;
+  }
+  .guide-view li button {
+    @apply p-2 text-xs font-medium text-zinc-500 hover:text-emerald-700 dark:text-zinc-400 dark:hover:text-emerald-400;
+  }
+  .guide-view li button:first-of-type {
+    @apply ml-auto;
+  }
+  .guide-view time {
+    @apply text-xs text-zinc-500 tabular-nums;
+  }
+  .guide-view [role="status"] {
+    @apply h-5 text-xs leading-5 text-zinc-500 dark:text-zinc-400;
+  }
+  .guide-view [role="status"] + ul {
+    @apply mt-0;
+  }
+  .guide-view [role="alert"] {
+    @apply mt-4 rounded-xl bg-red-50 p-3 text-red-700 dark:bg-red-950 dark:text-red-300;
+  }
+}
