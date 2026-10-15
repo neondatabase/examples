@@ -28,8 +28,14 @@ The Neon function slug is `discord`. The `/api/interactions` path is handled by 
 ## Requirements
 
 - Node.js 24 recommended
-- Neon CLI 4.20 or newer, authenticated (`neon me`)
 - A Discord application with a bot token
+
+## Install and update the Neon CLI to latest
+
+```bash
+npm i -g neon@latest
+neon login
+```
 
 ## Environment
 

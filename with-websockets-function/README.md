@@ -46,17 +46,15 @@ npx degit neondatabase/examples/with-websockets-function ./with-websockets-funct
 cd with-websockets-function
 ```
 
-## Install and authenticate the CLIs
+## Install and update the Neon CLI to latest
 
 The Neon CLI provisions and deploys the function; the [Vercel CLI](https://vercel.com/docs/cli) is the recommended way to deploy and configure the Next.js app.
 
 ```bash
-npm i -g neon vercel
+npm i -g neon@latest vercel
 neon login
 vercel login
 ```
-
-Use Neon CLI 4.20 or newer so `neon.ts` can declare top-level `functions`.
 
 ## Install dependencies
 
