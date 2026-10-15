@@ -1,0 +1,4 @@
+/* Loaded only on the auth pages, by src/app/(auth)/layout.tsx. source(none): globals.css already has the
+   app's classes, so this sheet adds only auth-ui's. */
+@import "tailwindcss" source(none);
+@import "@neondatabase/auth-ui/tailwind";

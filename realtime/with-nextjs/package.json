@@ -1,0 +1,44 @@
+{
+  "name": "with-realtime-nextjs",
+  "description": "Full-stack Next.js app with SSR, live reactivity and optimistic mutations, using Managed Better Auth, Neon Realtime and Kysely.",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.mts",
+    "db:setup": "npm run db:migrate",
+    "dev": "next dev",
+    "fmt": "prettier --write .",
+    "start": "next start",
+    "typecheck": "next typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "@neon/config": "^1.9.1",
+    "@neon/env": "^1.6.1",
+    "@neon/realtime": "^0.1.0",
+    "@neon/realtime-kysely": "^0.1.0",
+    "@neon/realtime-react": "^0.1.0",
+    "@neondatabase/auth": "0.6.0-beta",
+    "@neondatabase/auth-ui": "0.4.0-beta",
+    "kysely": "^0.29.6",
+    "next": "16.3.8",
+    "pg": "^8.21.0",
+    "pg-connection-string": "^2.14.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^24.10.1",
+    "@types/pg": "^8.15.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}
