@@ -1,6 +1,7 @@
 "use client";
 
 import { createRealtimeClient } from "@neon/realtime/client";
+import { drizzleParsers } from "@neon/realtime-drizzle/client";
 // @neon/realtime-react's build has no "use client" directive: import it only from client modules.
 import { RealtimeProvider } from "@neon/realtime-react";
 import { type ReactNode, useState } from "react";
@@ -17,7 +18,10 @@ export function RealtimeRoot({
   // would close the client for good). StrictMode's dev double mount closes the first socket while it is still
   // connecting, so the dev console logs "WebSocket is closed before the connection is established" (a package
   // gap, harmless).
-  // No parsers: the client's defaults match node-postgres, which Kysely's PostgresDialect uses on the server.
-  const [client] = useState(() => createRealtimeClient({ url }));
+  // drizzleParsers make the browser parse live rows the way Drizzle parses server rows, so created_at
+  // stays a Date and completed a boolean (todo-list.tsx reads both).
+  const [client] = useState(() =>
+    createRealtimeClient({ url, parsers: { ...drizzleParsers } }),
+  );
   return <RealtimeProvider client={client}>{children}</RealtimeProvider>;
 }

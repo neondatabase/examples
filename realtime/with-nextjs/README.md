@@ -6,7 +6,7 @@
 
 # Realtime Next.js app
 
-A full-stack Next.js app with server-side rendering, live reactivity and optimistic mutations, using Neon's [Managed Better Auth](https://neon.com/docs/auth/overview), [Neon Realtime](https://neon.com/docs/realtime/overview) and [Kysely](https://kysely.dev).
+A full-stack Next.js app with server-side rendering, live reactivity and optimistic mutations, using Neon's [Managed Better Auth](https://neon.com/docs/auth/overview), [Neon Realtime](https://neon.com/docs/realtime/overview) and [Drizzle](https://orm.drizzle.team).
 
 The server renders each user's todos, the browser keeps the same query live over Realtime, and writes show at once, then stay pending until Postgres confirms them.
 
@@ -37,7 +37,7 @@ Append a cookie secret to `.env.local`. Managed Better Auth uses it to sign the 
 printf '\nNEON_AUTH_COOKIE_SECRET=%s\n' "$(openssl rand -base64 32)" >> .env.local
 ```
 
-Create the `realtime_next_todos` table, then start the app. `db:setup` runs Kysely's migrator from `scripts/migrate.mts`:
+Create the `realtime_next_todos` table, then start the app. `db:setup` runs `drizzle-kit push`, which applies `src/lib/schema.ts` to the linked branch:
 
 ```bash
 npm run db:setup
@@ -82,7 +82,7 @@ The [SSR](https://neon.com/docs/realtime/guides/ssr), [reactivity](https://neon.
   }
   ```
 
-- **Kysely.** `src/lib/realtime.ts` passes `kyselyAdapter()` to `createRealtime`. It compiles the query builder to SQL and never executes it. The server read runs the same builder with `.execute()`. Live rows use PostgreSQL's result column names as keys, so aliases work but `CamelCasePlugin` doesn't: Kysely would type camelCase keys while the live rows stay snake_case. The browser needs no parsers, because the Realtime client's defaults match `pg`, which Kysely's `PostgresDialect` uses. To change the schema, append a migration to `scripts/migrate.mts`.
+- **Drizzle.** `src/lib/realtime.ts` passes `drizzleAdapter()` to `createRealtime`. It compiles the query builder to SQL and never executes it. The server read awaits the same builder. Live rows use PostgreSQL's result column names as keys, so `src/lib/schema.ts` declares snake_case columns to match. The browser passes `drizzleParsers` from `@neon/realtime-drizzle/client` to `createRealtimeClient`, so live rows parse the way Drizzle parses server rows: `created_at` stays a `Date` and `completed` a boolean. To change the schema, edit `src/lib/schema.ts` and run `npm run db:push`.
 - **Keeping the subscription alive across re-renders.** [`useLiveQuery`](https://neon.com/docs/realtime/guides/reactivity#uselivequery) restarts its subscription when it gets a new sealed-query object, and that rejects every pending `awaitTxId()`. A server re-render sends one even when the query hasn't changed: `router.refresh()`, a Server Action that revalidates or sets a cookie, or navigating to `/` from `/`. So the example follows three rules:
   1. `src/app/todo-list.tsx` keeps the first sealed query it gets (`useState(sealedQuery)`). Renewals go through `refreshQuery`, not new props.
   2. `<RealtimeRoot>` is keyed on `sealedQuery.queryFingerprint`, so a different query (a deploy that changed the SQL) remounts the list.
@@ -142,8 +142,7 @@ The [SSR](https://neon.com/docs/realtime/guides/ssr), [reactivity](https://neon.
 realtime/with-nextjs/
 ├── neon.ts                              # Neon policy: Managed Better Auth, Realtime allowedOrigins
 ├── .env.example                         # Every variable, and where it comes from
-├── scripts/
-│   └── migrate.mts                      # Kysely migrations: creates realtime_next_todos
+├── drizzle.config.ts                    # drizzle-kit push config; preloads .env.local
 └── src/
     ├── proxy.ts                         # Managed Better Auth middleware: HTTP redirect for signed-out loads of /
     ├── auth/
@@ -157,8 +156,9 @@ realtime/with-nextjs/
     │   └── session-lost.ts              # leaveSession, renewOrLeave
     ├── lib/
     │   ├── env.ts                       # Lazy, validated server env; database name from DATABASE_URL
-    │   ├── schema.ts                    # Kysely table types
-    │   ├── db.ts                        # Lazy pg pool + Kysely
+    │   ├── load-env.ts                  # Preloads .env.local for drizzle-kit (CLI only)
+    │   ├── schema.ts                    # Drizzle table: realtime_next_todos
+    │   ├── db.ts                        # Lazy pg pool + Drizzle
     │   ├── realtime.ts                  # Lazy Realtime server, seals queries
     │   └── todos.ts                     # The one live query: loadTodos, sealTodos, TodoRow
     └── app/

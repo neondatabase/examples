@@ -170,11 +170,11 @@ templates:
       subdir: realtime/with-react
   - id: realtime-nextjs
     title: "Realtime Next.js app"
-    description: "A full-stack Next.js app with server-side rendering, live reactivity and optimistic mutations, using Neon Auth, Neon Realtime and Kysely."
+    description: "A full-stack Next.js app with server-side rendering, live reactivity and optimistic mutations, using Neon Auth, Neon Realtime and Drizzle."
     tools:
       - Next.js
       - React
-      - Kysely
+      - Drizzle
     services:
       - Postgres
       - Neon Auth
@@ -204,6 +204,23 @@ templates:
       repo: examples
       ref: main
       subdir: realtime/with-tanstack
+  - id: realtime-kysely
+    title: "Realtime Kysely app"
+    description: "A framework-free TypeScript todo app using Neon Realtime and Kysely."
+    tools:
+      - TypeScript
+      - Kysely
+    services:
+      - Postgres
+      - Realtime
+    requires:
+      - database
+      - realtime
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: realtime/with-kysely
   - id: discord-bot-http
     title: "Discord bot"
     description: "A Discord interactions bot hosted on Neon Functions, with slash commands, embeds, Components v2 buttons, user profiles, and command usage tracking in Lakebase Postgres."
