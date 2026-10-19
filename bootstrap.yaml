@@ -168,6 +168,22 @@ templates:
       repo: examples
       ref: main
       subdir: realtime/with-react
+  - id: realtime-react-native
+    title: "Realtime React Native app"
+    description: "A cross-platform React Native todo app using Neon Realtime, Expo, Hono RPC, and Drizzle."
+    tools:
+      - React Native
+      - Expo
+      - Hono
+      - Drizzle
+    services:
+      - Postgres
+      - Realtime
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: realtime/with-react-native
   - id: realtime-nextjs
     title: "Realtime Next.js app"
     description: "A full-stack Next.js app with server-side rendering, live reactivity and optimistic mutations, using Neon Auth, Neon Realtime and Kysely."
