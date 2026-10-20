@@ -19,7 +19,7 @@ export default function Page() {
         <p className="mb-7 max-w-xl leading-relaxed text-zinc-600 dark:text-zinc-400">
           This list is server-rendered and belongs to you. Open it in two tabs:
           changes appear here immediately and arrive in the other tab through a
-          typed live Kysely query.
+          typed live query.
         </p>
 
         <Suspense fallback={<TodosSkeleton />}>
