@@ -14,6 +14,7 @@ A good place to start:
 
 - [`neon-getting-started/`](./neon-getting-started) - a Next.js + Drizzle + Neon scaffold built for use with coding agents.
 - [`ai/`](./ai) - RAG, semantic search, hybrid search, and chatbot starters using pgvector on Neon.
+- [`realtime/`](./realtime) - managed Neon Realtime todo demos with raw SQL, React, Drizzle, Kysely, Next.js, and TanStack Start.
 - [`bots/`](./bots) - Discord, Telegram, and WhatsApp bots hosted on Neon Functions, with commands, interactive UI, user profiles, and usage tracking in Lakebase Postgres.
 - [`registry/`](./registry) - the templates `neon functions new` scaffolds from. See its [CONTRIBUTING.md](./registry/CONTRIBUTING.md) to add one.
 
