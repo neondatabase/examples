@@ -12,6 +12,7 @@
     "typecheck": "tsc -p tsconfig.client.json --noEmit && tsc -p tsconfig.server.json --noEmit"
   },
   "dependencies": {
+    "@neon/config": "^1.9.1",
     "@neon/env": "^1.5.3",
     "@neon/realtime": "^0.1.0",
     "@neon/realtime-kysely": "^0.1.0",
