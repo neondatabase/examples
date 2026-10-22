@@ -9,6 +9,13 @@
 			"title": "Basic function",
 			"description": "A minimal Neon Function with a JSON response.",
 			"path": "basic/template.json"
+		},
+		{
+			"id": "context-dev",
+			"provider": "Context.dev",
+			"title": "Context.dev web data",
+			"description": "Search the web and news, read pages, answer questions, and retrieve brand data with Context.dev.",
+			"path": "context-dev/template.json"
 		}
 	]
 }
