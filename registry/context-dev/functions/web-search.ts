@@ -76,12 +76,13 @@ function getErrorResponse(error: unknown): Response {
 	const details = error.error as
 		| { error_code?: string; request_id?: string }
 		| undefined;
-	const status =
+	const upstreamStatus =
 		error.status && error.status >= 400 && error.status <= 599
 			? error.status
 			: 502;
+	const status = upstreamStatus === 401 ? 502 : upstreamStatus;
 	const message =
-		status === 401
+		upstreamStatus === 401
 			? "Context.dev API key was rejected"
 			: status === 402
 				? "Context.dev credits exhausted"
