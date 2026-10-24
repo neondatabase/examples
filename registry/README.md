@@ -14,14 +14,14 @@ neon functions new basic        # scaffold one into the current project
 Listing works like `neon bootstrap`. neon.com serves the catalog from `main` through a cache that
 refreshes about once an hour:
 
-| URL | What it is |
+| URL | File here |
 | --- | --- |
-| `https://neon.com/functions/registry/registry.json` | Index (`registry.json` in this folder) |
-| `https://neon.com/functions/registry/schemas/registry.schema.json` | Shape of the index |
-| `https://neon.com/functions/registry/schemas/template.schema.json` | Shape of each `template.json` |
+| `https://neon.com/functions/registry/registry.json` | `registry.json` |
+| `https://neon.com/functions/registry/schemas/registry.schema.json` | `schemas/registry.schema.json` |
+| `https://neon.com/functions/registry/schemas/template.schema.json` | `schemas/template.schema.json` |
 
-The schemas are not in this repo. `$schema` in `registry.json` and each `template.json` must point
-at those neon.com URLs.
+`$schema` in `registry.json` and each `template.json` must point at those neon.com URLs. The
+website serves the schema files from this folder.
 
 When neon.com is unreachable, the CLI falls back to
 `raw.githubusercontent.com/neondatabase/examples/main/registry/registry.json`.
