@@ -10,9 +10,6 @@ into people's projects, so only reviewed content should land on `main`.
 
 ```
 registry.json                # the index the CLI reads first
-schemas/
-  registry.schema.json       # shape of registry.json
-  template.schema.json       # shape of each template.json
 <template-id>/
   template.json              # metadata, no inline source
   functions/
@@ -152,8 +149,10 @@ neon functions new <id> -y --dir /tmp/<id> --no-add-to-config --no-install
 The command prints a `neon dev --source …` line for each function it created. Run those commands
 and call each route or function once.
 
-The `$schema` field gives editor completion from the JSON Schemas, but the CLI's parser is what
-actually decides. A template that passes the schema but fails the commands above is not ready.
+The `$schema` field must be the neon.com hosted schema
+(`https://neon.com/functions/registry/schemas/template.schema.json`). It gives editor completion;
+the CLI's parser is what actually decides. A template that passes the schema but fails the
+commands above is not ready.
 
 ## Review checklist
 
@@ -167,12 +166,14 @@ actually decides. A template that passes the schema but fails the commands above
 
 ## Changing the schema
 
-The format is enforced in two places that must agree: the Neon CLI's parser
-(`REGISTRY_CONTRACT` in `packages/cli/src/functions/registry.ts` in
-[neondatabase/neon-pkgs](https://github.com/neondatabase/neon-pkgs)) and the JSON Schemas. The
-canonical schemas live next to that parser, in `packages/cli/src/functions/schemas/`, where a test
-checks them against it. `schemas/` here is the published copy that neon.com serves.
+Do not add JSON Schemas to this repo. Use the neon.com hosted files:
 
-Change the CLI first, then copy its schemas here unchanged. A field the published CLI does not know
-about is either ignored or makes the template invalid for every user on that version, so do not
-use a new field in a template until a CLI release that understands it is out.
+- `https://neon.com/functions/registry/schemas/registry.schema.json`
+- `https://neon.com/functions/registry/schemas/template.schema.json`
+
+The format is enforced by the Neon CLI's parser (`REGISTRY_CONTRACT` in
+`packages/cli/src/functions/registry.ts` in
+[neondatabase/neon-pkgs](https://github.com/neondatabase/neon-pkgs)). Change the CLI first. A field
+the published CLI does not know about is either ignored or makes the template invalid for every
+user on that version, so do not use a new field in a template until a CLI release that understands
+it is out.
