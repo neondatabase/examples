@@ -20,6 +20,9 @@ refreshes about once an hour:
 | `https://neon.com/functions/registry/schemas/registry.schema.json` | `schemas/registry.schema.json` |
 | `https://neon.com/functions/registry/schemas/template.schema.json` | `schemas/template.schema.json` |
 
+`$schema` in `registry.json` and each `template.json` must point at those neon.com URLs. The
+website serves the schema files from this folder.
+
 When neon.com is unreachable, the CLI falls back to
 `raw.githubusercontent.com/neondatabase/examples/main/registry/registry.json`.
 

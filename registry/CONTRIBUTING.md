@@ -11,8 +11,8 @@ into people's projects, so only reviewed content should land on `main`.
 ```
 registry.json                # the index the CLI reads first
 schemas/
-  registry.schema.json       # shape of registry.json
-  template.schema.json       # shape of each template.json
+  registry.schema.json       # shape of registry.json; neon.com serves this
+  template.schema.json       # shape of each template.json; neon.com serves this
 <template-id>/
   template.json              # metadata, no inline source
   functions/
@@ -114,12 +114,13 @@ Append to `templates` in `registry.json`:
 	"title": "Send email with SendGrid",
 	"description": "Send transactional email through the SendGrid v3 API.",
 	"path": "sendgrid/template.json",
-	"logo": "https://example.com/sendgrid.svg"
+	"logo": "https://example.com/sendgrid.svg",
+	"website": "https://example.com/"
 }
 ```
 
-`id`, `title`, and `description` should match `template.json`. `logo` is optional display metadata:
-an absolute `https://` URL that the CLI never fetches or writes.
+`id`, `title`, and `description` should match `template.json`. `logo` and `website` are optional
+display metadata: absolute `https://` URLs that the CLI never fetches or writes.
 
 An entry that fails validation is dropped from the listing without an error, so check that your
 template shows up (see below). Do not add generated archives. The CLI builds what it needs from
@@ -152,8 +153,10 @@ neon functions new <id> -y --dir /tmp/<id> --no-add-to-config --no-install
 The command prints a `neon dev --source …` line for each function it created. Run those commands
 and call each route or function once.
 
-The `$schema` field gives editor completion from the JSON Schemas, but the CLI's parser is what
-actually decides. A template that passes the schema but fails the commands above is not ready.
+The `$schema` field must be the neon.com URL
+(`https://neon.com/functions/registry/schemas/template.schema.json`), which is served from
+`schemas/` in this folder. It gives editor completion; the CLI's parser is what actually decides.
+A template that passes the schema but fails the commands above is not ready.
 
 ## Review checklist
 
@@ -167,12 +170,13 @@ actually decides. A template that passes the schema but fails the commands above
 
 ## Changing the schema
 
-The format is enforced in two places that must agree: the Neon CLI's parser
-(`REGISTRY_CONTRACT` in `packages/cli/src/functions/registry.ts` in
-[neondatabase/neon-pkgs](https://github.com/neondatabase/neon-pkgs)) and the JSON Schemas. The
-canonical schemas live next to that parser, in `packages/cli/src/functions/schemas/`, where a test
-checks them against it. `schemas/` here is the published copy that neon.com serves.
+The format is enforced by the Neon CLI's parser (`REGISTRY_CONTRACT` in
+`packages/cli/src/functions/registry.ts` in
+[neondatabase/neon-pkgs](https://github.com/neondatabase/neon-pkgs)) and the JSON Schemas in
+`schemas/` here, which neon.com serves at `https://neon.com/functions/registry/schemas/`. Keep them
+in agreement.
 
-Change the CLI first, then copy its schemas here unchanged. A field the published CLI does not know
-about is either ignored or makes the template invalid for every user on that version, so do not
-use a new field in a template until a CLI release that understands it is out.
+Change the CLI first for fields the parser uses. A field the published CLI does not know about is
+either ignored or makes the template invalid for every user on that version, so do not use a new
+field in a template until a CLI release that understands it is out. Display-only index fields
+(`logo`, `website`) may land here; the CLI never fetches them.
