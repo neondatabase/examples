@@ -18,6 +18,13 @@
 			"path": "context-dev/template.json",
 			"logo": "https://www.context.dev/logo.svg",
 			"website": "https://www.context.dev/"
+		},
+		{
+			"id": "image-analysis",
+			"provider": "Neon",
+			"title": "Image analysis with AI Gateway",
+			"description": "Describe an uploaded image with structured details using a vision model on Neon AI Gateway.",
+			"path": "image-analysis/template.json"
 		}
 	]
 }
