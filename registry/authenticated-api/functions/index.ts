@@ -9,7 +9,7 @@ const jwksUrl = process.env.NEON_AUTH_JWKS_URL;
 
 if (!authUrl || !jwksUrl) {
 	throw new Error(
-		"Managed Better Auth is not configured. Set auth: true in neon.ts, run `neon deploy`, then pull the injected variables with `neon env pull`.",
+		"Managed Better Auth is not configured. Set auth: true in neon.ts or enable auth in the Neon dashboard."
 	);
 }
 
