@@ -18,6 +18,13 @@
 			"path": "context-dev/template.json",
 			"logo": "https://www.context.dev/logo.svg",
 			"website": "https://www.context.dev/"
+		},
+		{
+			"id": "authenticated-api",
+			"provider": "Neon",
+			"title": "Authenticated API with Hono and Managed Better Auth",
+			"description": "A protected Hono API that validates the caller's identity and gates access.",
+			"path": "authenticated-api/template.json"
 		}
 	]
 }
