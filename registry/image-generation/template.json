@@ -1,0 +1,14 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "image-generation",
+	"provider": "Neon",
+	"title": "AI image generation API",
+	"description": "Generate an image with AI Gateway and store it in Object Storage",
+	"layout": "router",
+	"dependencies": [
+		"@aws-sdk/client-s3@3.1156.0",
+		"@aws-sdk/s3-request-presigner@3.1156.0",
+		"@neon/ai-sdk-provider@1.1.0",
+		"ai@7.0.150"
+	]
+}

@@ -18,6 +18,13 @@
 			"path": "context-dev/template.json",
 			"logo": "https://www.context.dev/logo.svg",
 			"website": "https://www.context.dev/"
+		},
+		{
+			"id": "image-generation",
+			"provider": "Neon",
+			"title": "AI image generation API",
+			"description": "Generate an image with AI Gateway, store it in Object Storage, and return a presigned URL.",
+			"path": "image-generation/template.json"
 		}
 	]
 }
