@@ -17,6 +17,13 @@
 			"description": "Search the web and news, read pages, answer questions, and retrieve brand data with Context.dev.",
 			"path": "context-dev/template.json",
 			"logo": "https://www.context.dev/logo.svg"
+		},
+		{
+			"id": "rest-api-postgres",
+			"provider": "Neon",
+			"title": "REST API with Hono and Postgres",
+			"description": "A CRUD REST API on Neon Functions with Hono, backed by Lakebase Postgres.",
+			"path": "rest-api-postgres/template.json"
 		}
 	]
 }
