@@ -16,7 +16,8 @@
 			"title": "Context.dev web data",
 			"description": "Search the web and news, read pages, answer questions, and retrieve brand data with Context.dev.",
 			"path": "context-dev/template.json",
-			"logo": "https://www.context.dev/logo.svg"
+			"logo": "https://www.context.dev/logo.svg",
+			"website": "https://www.context.dev/"
 		},
 		{
 			"id": "rest-api-postgres",

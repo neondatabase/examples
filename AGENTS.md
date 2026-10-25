@@ -4,7 +4,7 @@ Example applications and starter templates for Neon. Each subdirectory is a self
 
 `bootstrap.yaml` is the catalog `neon bootstrap` copies from. Those templates must not vendor agent skills.
 
-`registry/` is the Function Registry `neon functions new` reads. neon.com caches `registry.json` and the schemas at `https://neon.com/functions/registry/`; installing a template extracts `registry/<id>/` from the GitHub tarball, like `neon bootstrap`. Its rules are in [registry/CONTRIBUTING.md](./registry/CONTRIBUTING.md); `schemas/` there is a copy of the canonical schemas in neondatabase/neon-pkgs, so don't edit it by hand.
+`registry/` is the Function Registry `neon functions new` reads. neon.com caches `registry.json` and the schemas from this folder at `https://neon.com/functions/registry/`; installing a template extracts `registry/<id>/` from the GitHub tarball, like `neon bootstrap`. Its rules are in [registry/CONTRIBUTING.md](./registry/CONTRIBUTING.md). Point `$schema` at the neon.com URLs, which are served from `registry/schemas/`.
 
 Contributor and agent rules live in [CONTRIBUTING.md](./CONTRIBUTING.md). Read that before adding or editing an example.
 
