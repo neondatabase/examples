@@ -18,6 +18,13 @@
 			"path": "context-dev/template.json",
 			"logo": "https://www.context.dev/logo.svg",
 			"website": "https://www.context.dev/"
+		},
+		{
+			"id": "mcp-postgres",
+			"provider": "Neon",
+			"title": "MCP server backed by Postgres",
+			"description": "A Hono MCP server exposing create, list, update, and delete tools backed by a Postgres database.",
+			"path": "mcp-postgres/template.json"
 		}
 	]
 }
