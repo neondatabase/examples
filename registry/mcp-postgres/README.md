@@ -91,10 +91,10 @@ mcporter call "http://localhost:8787/mcp.create_todo" --allow-http \
 ```bash
 npx add-mcp http://localhost:8787/mcp \
   --header "Authorization: Bearer $MCP_API_KEY" \
-  --name mcp-postgres -a cursor -g
+  --name mcp-postgres -a cursor
 ```
 
-`add-mcp` writes the token into the client config. `-g` keeps that file in your user directory instead of the project, so the secret does not land in git.
+`add-mcp` writes the token into the client config.
 
 ## Deploy
 
@@ -113,7 +113,7 @@ Then connect a client to `https://<function-url>/mcp` with the same bearer token
 ```bash
 npx add-mcp https://<function-url>/mcp \
   --header "Authorization: Bearer $MCP_API_KEY" \
-  --name mcp-postgres -a cursor -g
+  --name mcp-postgres -a cursor
 ```
 
 A Neon Function URL is public. This template gates `/mcp` with a static bearer token.
