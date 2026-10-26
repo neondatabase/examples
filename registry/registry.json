@@ -18,6 +18,15 @@
 			"path": "context-dev/template.json",
 			"logo": "https://www.context.dev/logo.svg",
 			"website": "https://www.context.dev/"
+		},
+		{
+			"id": "telegram-bot",
+			"provider": "Telegram",
+			"title": "Telegram AI chat bot",
+			"description": "Telegram bot with Neon Functions, AI Gateway, and Postgres for message storage.",
+			"path": "telegram-bot/template.json",
+			"logo": "https://telegram.org/img/t_logo.svg",
+			"website": "https://telegram.org/"
 		}
 	]
 }
