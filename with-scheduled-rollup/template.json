@@ -1,0 +1,34 @@
+{
+  "id": "scheduled-rollup",
+  "title": "Scheduled rollup",
+  "description": "Daily event totals on Neon Functions and Postgres, recomputed by a Neon cron trigger.",
+  "version": "0.1.0",
+  "services": [
+    "Postgres",
+    "Functions"
+  ],
+  "requires": [
+    "database",
+    "functions"
+  ],
+  "inputs": [
+    {
+      "name": "ROLLUP_API_KEY",
+      "description": "Bearer token your backend sends to record events and read totals.",
+      "secret": true,
+      "generate": "token"
+    },
+    {
+      "name": "ROLLUP_CRON",
+      "description": "When the rollup runs, as a cron expression in UTC.",
+      "default": "5 0 * * *"
+    }
+  ],
+  "outputs": [
+    {
+      "label": "Rollup API",
+      "function": "rollup",
+      "usage": "curl -X POST $URL/v1/events -H \"Authorization: Bearer $ROLLUP_API_KEY\" -H 'Content-Type: application/json' -d '{}'"
+    }
+  ]
+}

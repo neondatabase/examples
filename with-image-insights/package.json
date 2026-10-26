@@ -1,0 +1,23 @@
+{
+  "name": "with-image-insights",
+  "description": "Summaries and categories for uploaded images, from a Neon Storage trigger and AI Gateway vision.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "deploy": "neon deploy --env .env.local",
+    "migrate": "node scripts/migrate.ts",
+    "endpoint": "neon functions get insights"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1152.0",
+    "@neon/config": "^1.9.4",
+    "@neon/functions": "^0.11.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.11.10",
+    "typescript": "^6.0.2"
+  }
+}
