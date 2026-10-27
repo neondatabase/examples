@@ -1,5 +1,6 @@
 "use client";
 
+import { getSafeRedirectTo } from "@better-auth-ui/core";
 import { QueryClientProvider } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,11 +20,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
         authClient={authClient}
         emailAndPassword={{ requireEmailVerification: false }}
         navigate={({ to, replace }) => {
+          // Better Auth UI passes ?redirectTo= from the URL through here after sign-in.
+          const target = getSafeRedirectTo(to, window.location.origin);
           // Signing in lands on "/": load it fresh, so the server renders the new session and this
           // sheet's styles don't carry over to the todos page.
-          if (to === "/") return window.location.assign(to);
-          if (replace) router.replace(to);
-          else router.push(to);
+          if (target === "/") return window.location.assign(target);
+          if (replace) router.replace(target);
+          else router.push(target);
         }}
         Link={Link}
         redirectTo="/"

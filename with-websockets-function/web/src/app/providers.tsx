@@ -1,5 +1,6 @@
 "use client";
 
+import { getSafeRedirectTo } from "@better-auth-ui/core";
 import { QueryClientProvider } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,9 +20,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <AuthProvider
           authClient={authClient}
           emailAndPassword={{ requireEmailVerification: false }}
-          navigate={({ to, replace }) =>
-            replace ? router.replace(to) : router.push(to)
-          }
+          navigate={({ to, replace }) => {
+            // Better Auth UI passes ?redirectTo= from the URL through here after sign-in.
+            const target = getSafeRedirectTo(to, window.location.origin);
+            if (replace) router.replace(target);
+            else router.push(target);
+          }}
           Link={Link}
           redirectTo="/"
         >

@@ -1,3 +1,4 @@
+import { getSafeRedirectTo } from "@better-auth-ui/core";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Link, getRouteApi, useRouter } from "@tanstack/react-router";
 import { type ComponentProps, useState } from "react";
@@ -25,10 +26,13 @@ export function AuthPage() {
         authClient={authClient}
         emailAndPassword={{ requireEmailVerification: false }}
         navigate={({ to, replace }) => {
+          // Better Auth UI passes ?redirectTo= from the URL through here after
+          // sign-in.
+          const target = getSafeRedirectTo(to, window.location.origin);
           // Signing in lands on "/": load it fresh, so the server renders the
           // new session and this route's stylesheet doesn't carry over.
-          if (to === "/") return window.location.assign(to);
-          void router.navigate({ href: to, replace });
+          if (target === "/") return window.location.assign(target);
+          void router.navigate({ href: target, replace });
         }}
         Link={RouterLink}
         redirectTo="/"

@@ -5,6 +5,7 @@ import "./style.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RealtimeProvider } from "@neon/realtime-react";
+import { getSafeRedirectTo } from "@better-auth-ui/core";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ComponentProps, ReactNode } from "react";
 
@@ -28,9 +29,12 @@ function AuthUI({ children }: { children: ReactNode }) {
       <AuthProvider
         authClient={authClient}
         emailAndPassword={{ requireEmailVerification: false }}
-        navigate={({ to, replace }) =>
-          replace ? location.replace(to) : location.assign(to)
-        }
+        navigate={({ to, replace }) => {
+          // Better Auth UI passes ?redirectTo= from the URL through here after sign-in
+          const target = getSafeRedirectTo(to, location.origin);
+          if (replace) location.replace(target);
+          else location.assign(target);
+        }}
         Link={PageLink}
         redirectTo="/"
       >
