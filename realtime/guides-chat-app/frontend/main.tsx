@@ -30,8 +30,13 @@ function AuthUI({ children }: { children: ReactNode }) {
         authClient={authClient}
         emailAndPassword={{ requireEmailVerification: false }}
         navigate={({ to, replace }) => {
-          // Better Auth UI passes ?redirectTo= from the URL through here after sign-in
-          const target = getSafeRedirectTo(to, location.origin);
+          // Better Auth UI passes ?redirectTo= from the URL through here after sign-in. getSafeRedirectTo
+          // can still return "//host" (for "/a/..//host"), so the result is checked against the origin.
+          const path = getSafeRedirectTo(to, location.origin);
+          const target =
+            new URL(path, location.origin).origin === location.origin
+              ? path
+              : "/";
           if (replace) location.replace(target);
           else location.assign(target);
         }}

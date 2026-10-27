@@ -26,9 +26,14 @@ export function AuthPage() {
         authClient={authClient}
         emailAndPassword={{ requireEmailVerification: false }}
         navigate={({ to, replace }) => {
-          // Better Auth UI passes ?redirectTo= from the URL through here after
-          // sign-in.
-          const target = getSafeRedirectTo(to, window.location.origin);
+          // Better Auth UI passes ?redirectTo= from the URL through here after sign-in. getSafeRedirectTo
+          // can still return "//host" (for "/a/..//host"), so the result is checked against the origin.
+          const path = getSafeRedirectTo(to, window.location.origin);
+          const target =
+            new URL(path, window.location.origin).origin ===
+            window.location.origin
+              ? path
+              : "/";
           // Signing in lands on "/": load it fresh, so the server renders the
           // new session and this route's stylesheet doesn't carry over.
           if (target === "/") return window.location.assign(target);
