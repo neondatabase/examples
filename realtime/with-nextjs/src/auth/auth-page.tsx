@@ -1,8 +1,9 @@
-import { AuthView } from "@neondatabase/auth-ui";
-import { authViewPaths } from "@neondatabase/auth-ui/server";
+import { viewPaths } from "@better-auth-ui/core";
+
+import { Auth } from "@/components/auth/auth";
 
 export function generateStaticParams() {
-  return Object.values(authViewPaths).map((path) => ({ path }));
+  return Object.values(viewPaths.auth).map((path) => ({ path }));
 }
 
 export default async function AuthPage({
@@ -13,8 +14,7 @@ export default async function AuthPage({
   const { path } = await params;
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
-      {/* Without `redirectTo` here, the auth UI reads an unchecked `?redirectTo=` from the URL. */}
-      <AuthView path={path} redirectTo="/" />
+      <Auth path={path} />
     </main>
   );
 }
