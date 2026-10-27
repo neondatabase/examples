@@ -28,7 +28,7 @@
     "@tanstack/react-db": "0.5.5",
     "@tanstack/react-form": "^1.33.5",
     "@tanstack/react-query": "^5.104.5",
-    "better-auth": "1.7.6",
+    "better-auth": "1.7.12",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.0",
     "date-fns": "^4.4.0",
@@ -67,11 +67,13 @@
     "@neon/realtime-tanstack": {
       "@tanstack/db": "0.12.1"
     },
-    "better-auth": "1.7.6",
-    "@better-auth/core": "1.7.6",
-    "better-call": "1.4.0",
-    "@better-auth/api-key": "1.7.6",
-    "@better-auth/passkey": "1.7.6"
+    "better-auth": "1.7.12",
+    "@better-auth/core": "1.7.12",
+    "@better-auth/oauth-provider": "1.7.12",
+    "better-call": "1.4.4",
+    "@better-auth/utils": "0.5.0",
+    "@better-auth/api-key": "1.7.12",
+    "@better-auth/passkey": "1.7.12"
   },
   "engines": {
     "node": ">=22"

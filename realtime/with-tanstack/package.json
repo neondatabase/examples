@@ -69,10 +69,12 @@
     "@neon/realtime-tanstack": {
       "@tanstack/db": "$@tanstack/db"
     },
-    "better-auth": "1.7.6",
-    "@better-auth/core": "1.7.6",
-    "better-call": "1.4.0",
-    "@better-auth/api-key": "1.7.6",
-    "@better-auth/passkey": "1.7.6"
+    "better-auth": "1.7.12",
+    "@better-auth/core": "1.7.12",
+    "@better-auth/oauth-provider": "1.7.12",
+    "better-call": "1.4.4",
+    "@better-auth/utils": "0.5.0",
+    "@better-auth/api-key": "1.7.12",
+    "@better-auth/passkey": "1.7.12"
   }
 }

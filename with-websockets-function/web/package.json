@@ -16,7 +16,7 @@
     "@tanstack/react-form": "^1.33.5",
     "@tanstack/react-query": "^5.104.5",
     "@vercel/functions": "^2.0.0",
-    "better-auth": "1.7.6",
+    "better-auth": "1.7.12",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cn": "^0.5.0",
@@ -45,10 +45,12 @@
     "typescript": "^5"
   },
   "overrides": {
-    "better-auth": "1.7.6",
-    "@better-auth/core": "1.7.6",
-    "better-call": "1.4.0",
-    "@better-auth/api-key": "1.7.6",
-    "@better-auth/passkey": "1.7.6"
+    "better-auth": "1.7.12",
+    "@better-auth/core": "1.7.12",
+    "@better-auth/oauth-provider": "1.7.12",
+    "better-call": "1.4.4",
+    "@better-auth/utils": "0.5.0",
+    "@better-auth/api-key": "1.7.12",
+    "@better-auth/passkey": "1.7.12"
   }
 }
