@@ -5,26 +5,58 @@ import "./style.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RealtimeProvider } from "@neon/realtime-react";
-import { AuthView, NeonAuthUIProvider } from "@neondatabase/auth-ui";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ComponentProps, ReactNode } from "react";
 
 import { fetchSealedInbox, joinChannels } from "./api";
 import { authClient } from "./auth";
 import { client } from "./client";
 import { createMessagesCollection } from "./collections";
 import { ChatApp } from "./ChatApp";
+import { Auth } from "./components/auth/auth";
+import { AuthProvider } from "./components/auth/auth-provider";
+import { Toaster } from "./components/ui/sonner";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 const root = createRoot(document.getElementById("root")!);
+const queryClient = new QueryClient();
 
-// The Managed Better Auth sign-in, sign-up and sign-out views, on /auth/*. There's no account view.
-// They navigate with full page loads, so signing out also drops the collection's rows
+// Better Auth UI's provider. Every navigation is a full page load, so signing out also drops the collection's rows
+function AuthUI({ children }: { children: ReactNode }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider
+        authClient={authClient}
+        emailAndPassword={{ requireEmailVerification: false }}
+        navigate={({ to, replace }) =>
+          replace ? location.replace(to) : location.assign(to)
+        }
+        Link={PageLink}
+        redirectTo="/"
+      >
+        <TooltipProvider>{children}</TooltipProvider>
+        <Toaster />
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
+
+function PageLink({
+  to: _to,
+  ...props
+}: { href: string; to?: string } & ComponentProps<"a">) {
+  return <a {...props} />;
+}
+
+// The sign-in, sign-up and sign-out views, on /auth/*. There's no settings view
 if (location.pathname.startsWith("/auth/")) {
   root.render(
     <StrictMode>
-      <NeonAuthUIProvider authClient={authClient} account={false}>
+      <AuthUI>
         <main className="flex min-h-screen items-center justify-center bg-emerald-50 p-4 dark:bg-zinc-950">
-          <AuthView pathname={location.pathname} />
+          <Auth path={location.pathname.slice("/auth/".length)} />
         </main>
-      </NeonAuthUIProvider>
+      </AuthUI>
     </StrictMode>,
   );
 } else {
@@ -39,10 +71,10 @@ if (location.pathname.startsWith("/auth/")) {
       await fetchSealedInbox(),
     );
 
-    // NeonAuthUIProvider serves ChatApp's UserButton, and ChatApp renders both of the guides' views
+    // AuthUI serves ChatApp's UserButton, and ChatApp renders both of the guides' views
     root.render(
       <StrictMode>
-        <NeonAuthUIProvider authClient={authClient} account={false}>
+        <AuthUI>
           <RealtimeProvider client={client}>
             <ChatApp
               channels={channels}
@@ -50,7 +82,7 @@ if (location.pathname.startsWith("/auth/")) {
               userId={session.user.id}
             />
           </RealtimeProvider>
-        </NeonAuthUIProvider>
+        </AuthUI>
       </StrictMode>,
     );
   }

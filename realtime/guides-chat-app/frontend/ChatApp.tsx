@@ -1,5 +1,5 @@
 // The app shell. Pick a channel and see it through both of the guides' React views
-import { UserButton } from "@neondatabase/auth-ui";
+import { UserButton } from "./components/auth/user/user-button";
 import { useState } from "react";
 
 import type { joinChannels } from "./api";
@@ -29,7 +29,7 @@ export function ChatApp({ channels, messagesCollection, userId }: Props) {
               Guides chat
             </h1>
           </div>
-          <UserButton size="icon" />
+          <UserButton size="icon" hideSettings />
         </header>
 
         <p className="mb-7 max-w-xl leading-relaxed text-zinc-600 dark:text-zinc-400">

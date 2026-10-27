@@ -35,7 +35,7 @@ with-websockets-function/
     ├── .env.example        # Web environment variables
     └── src/
         ├── app/            # login page, chat page, /api/auth, /api/messages
-        ├── components/     # chat + shadcn/ui
+        ├── components/     # chat, Better Auth UI and shadcn/ui
         └── lib/auth/       # Neon Auth client + server
 ```
 
