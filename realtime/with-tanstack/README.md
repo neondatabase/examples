@@ -11,7 +11,7 @@ A per-user todo app built with [TanStack Start](https://tanstack.com/start), [Ta
 - **SSR.** The first HTML already contains the signed-in user's todos.
 - **Live.** In the browser, a TanStack DB live query reads a collection that Realtime keeps in sync with Postgres.
 - **Optimistic writes.** Changes apply at once. A server function writes them to Postgres, and the change is confirmed when its transaction comes back over Realtime.
-- **Auth.** Managed Better Auth, through a small TanStack Start adapter that ships with the example, and Neon's prebuilt sign-in UI.
+- **Auth.** Managed Better Auth, through a small TanStack Start adapter that ships with the example, and [Better Auth UI](https://better-auth-ui.com)'s shadcn/ui sign-in components.
 
 ## Project structure
 
@@ -31,12 +31,15 @@ my-app/
     ├── todos.schemas.ts       # zod input schemas for writes
     ├── todos.functions.ts     # Server functions: load, refresh, create, update, delete
     ├── todos.collection.ts    # todosCollection(userId, query)
+    ├── components/            # Better Auth UI and shadcn/ui components (shadcn CLI)
+    ├── lib/                   # cn() and Better Auth UI helpers (shadcn CLI)
     ├── auth/
     │   ├── auth.server.ts     # Managed Better Auth server, wired to Start's request and cookies
     │   ├── auth.functions.ts  # sessionMiddleware, requireUser, getSessionUser
     │   ├── client.ts          # Browser auth client
     │   ├── handler.server.ts  # Proxy to Managed Better Auth
-    │   ├── auth-page.tsx      # Neon's AuthView (sign-in, sign-up, ...)
+    │   ├── auth-page.tsx      # Better Auth UI's <Auth> (sign-in, sign-up, ...)
+    │   ├── auth-ui.css        # shadcn theme for the auth route only
     │   ├── user-menu.tsx      # Email and Sign out button
     │   └── session-lost.ts    # Full page load when the session is gone
     └── routes/
@@ -126,13 +129,13 @@ The `Todo` type is inferred from the `selectTodos` Drizzle query. The sealed que
 
 ## The Managed Better Auth adapter
 
-Managed Better Auth has no official TanStack Start adapter yet, so the example ships a small one on `@neondatabase/auth/server`:
+Managed Better Auth has no official TanStack Start adapter yet, so the example ships a small one on `@neon/auth/server`:
 
 - `src/auth/auth.server.ts` creates the auth server, wired to Start's request and `setCookie`.
 - `src/auth/auth.functions.ts` has `sessionMiddleware`, `requireUser` and the `getSessionUser` server function.
 - `src/auth/handler.server.ts` proxies `/api/auth/*` to Managed Better Auth, through the route in `src/routes/api/auth/$.ts`.
 
-The sign-in UI is Neon's prebuilt `AuthView` in `src/auth/auth-page.tsx`. It and its route, `src/routes/auth/$path.tsx`, are the only files that import `@neondatabase/auth-ui` and its CSS. Leaving that route is always a full page load, so the auth UI's styles don't reach the todos page. The Sign out button in `src/auth/user-menu.tsx` is hand-built for the same reason. Both auth packages are beta and pinned exactly. Replace `src/auth/` when an official adapter or `@neon/auth` ships.
+The sign-in UI is Better Auth UI's `<Auth>` in `src/auth/auth-page.tsx`, with the components it copies into `src/components/` (`npx shadcn add @better-auth-ui/auth`). It and its route, `src/routes/auth/$path.tsx`, are the only files that load them and `src/auth/auth-ui.css`. Leaving that route is always a full page load, so the auth UI's styles don't reach the todos page. The Sign out button in `src/auth/user-menu.tsx` is hand-built for the same reason. `@neon/auth` pins Better Auth exactly, and the `overrides` in `package.json` hold Better Auth UI's peer plugins to the same version, so npm installs one copy. Replace `src/auth/` when an official adapter ships.
 
 ## Security
 

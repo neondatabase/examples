@@ -1,12 +1,12 @@
 import {
   createAuthServer,
   extractNeonAuthCookies,
-} from "@neondatabase/auth/server";
+} from "@neon/auth/server";
 import { getRequest, setCookie } from "@tanstack/react-start/server";
 
 import { authCookieSecret, env } from "../env.server";
 
-// The only importer of `@neondatabase/auth/server`: a small Managed Better Auth
+// The only importer of `@neon/auth/server`: a small Managed Better Auth
 // adapter for TanStack Start. Shared by the server functions and the
 // `/api/auth` proxy.
 export const authConfig = {

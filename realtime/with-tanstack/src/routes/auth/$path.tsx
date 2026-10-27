@@ -1,4 +1,4 @@
-import authCss from "@neondatabase/auth-ui/css?url";
+import authCss from "../../auth/auth-ui.css?url";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 import { AuthPage } from "../../auth/auth-page";
