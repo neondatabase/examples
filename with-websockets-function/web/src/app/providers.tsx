@@ -22,13 +22,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
           emailAndPassword={{ requireEmailVerification: false }}
           navigate={({ to, replace }) => {
             // Better Auth UI passes ?redirectTo= from the URL through here after sign-in. getSafeRedirectTo
-            // can still return "//host" (for "/a/..//host"), so the result is checked against the origin.
+            // can still return "//host" (for "/a/..//host"), which a browser treats as another site.
             const path = getSafeRedirectTo(to, window.location.origin);
-            const target =
-              new URL(path, window.location.origin).origin ===
-              window.location.origin
-                ? path
-                : "/";
+            const target = path.startsWith("//") ? "/" : path;
             if (replace) router.replace(target);
             else router.push(target);
           }}
