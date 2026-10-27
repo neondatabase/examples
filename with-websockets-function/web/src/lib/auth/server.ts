@@ -1,4 +1,4 @@
-import { createNeonAuth } from "@neondatabase/auth/next/server";
+import { createNeonAuth } from "@neon/auth/next/server";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
