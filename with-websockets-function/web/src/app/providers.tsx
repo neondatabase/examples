@@ -3,6 +3,7 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,19 +13,22 @@ import { getQueryClient } from "@/lib/query-client";
 export function Providers({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   return (
-    <QueryClientProvider client={getQueryClient()}>
-      <AuthProvider
-        authClient={authClient}
-        emailAndPassword={{ requireEmailVerification: false }}
-        navigate={({ to, replace }) =>
-          replace ? router.replace(to) : router.push(to)
-        }
-        Link={Link}
-        redirectTo="/"
-      >
-        <TooltipProvider>{children}</TooltipProvider>
-        <Toaster />
-      </AuthProvider>
-    </QueryClientProvider>
+    // Sets the `.dark` class that globals.css keys the dark theme on.
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <QueryClientProvider client={getQueryClient()}>
+        <AuthProvider
+          authClient={authClient}
+          emailAndPassword={{ requireEmailVerification: false }}
+          navigate={({ to, replace }) =>
+            replace ? router.replace(to) : router.push(to)
+          }
+          Link={Link}
+          redirectTo="/"
+        >
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster />
+        </AuthProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

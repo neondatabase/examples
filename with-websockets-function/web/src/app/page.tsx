@@ -1,13 +1,23 @@
 "use client";
 
 import { useSession } from "@better-auth-ui/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { UserButton } from "@/components/auth/user/user-button";
 import { Chat } from "@/components/chat";
 import { authClient } from "@/lib/auth/client";
 
 export default function Home() {
-  // proxy.ts redirects signed-out requests, so a missing session here is still loading.
-  const { data: session } = useSession(authClient);
+  const router = useRouter();
+  const { data: session, isFetching } = useSession(authClient);
+
+  // proxy.ts redirects signed-out page loads. This covers a session that ends while the page is open.
+  // Waiting for the refetch matters right after sign-in, when the cached result is still signed out.
+  const signedOut = !session && !isFetching;
+  useEffect(() => {
+    if (signedOut) router.replace("/auth/sign-in");
+  }, [signedOut, router]);
+
   if (!session) return null;
 
   const userName = session.user.name || session.user.email;
