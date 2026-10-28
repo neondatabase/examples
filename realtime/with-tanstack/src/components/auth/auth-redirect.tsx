@@ -35,7 +35,8 @@ export function AuthRedirect({ className }: AuthRedirectProps) {
       `${basePaths.auth}/${viewPaths.auth.signIn}`
     )
 
-    window.location.replace(action.to)
+    // getAuthRedirectAction can return "//host" for "/a/..//host", which a browser treats as another site.
+    window.location.replace(action.to.startsWith("//") ? "/" : action.to)
   }, [basePaths.auth, isPending, session, viewPaths.auth.signIn])
 
   return <Spinner className={cn("mx-auto my-auto", className)} />
