@@ -1,5 +1,5 @@
-import { createClient } from '@neondatabase/neon-js'
-import { BetterAuthReactAdapter } from '@neondatabase/neon-js/auth/react/adapters'
+import { createClient } from '@neon/neon-js'
+import { BetterAuthReactAdapter } from '@neon/neon-js/auth/react/adapters'
 
 /**
  * The Neon Auth client, the only piece of neon-js this app uses.
@@ -10,7 +10,7 @@ import { BetterAuthReactAdapter } from '@neondatabase/neon-js/auth/react/adapter
  * write goes through a server function / API route that verifies this client's JWT
  * and scopes the query to the user (see src/lib/server, src/routes/api).
  *
- * `authClient` (= client.auth) is what the UI provider and `useSession` use, and
+ * `authClient` (= client.auth) is what `useSession` uses, and
  * what src/lib/auth-token reads the session JWT from.
  */
 const NEON_URL = import.meta.env.VITE_NEON_URL as string
