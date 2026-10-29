@@ -137,6 +137,8 @@ Managed Better Auth has no official TanStack Start adapter yet, so the example s
 
 The sign-in UI is Better Auth UI's `<Auth>` in `src/auth/auth-page.tsx`, with the components it copies into `src/components/` (`npx shadcn add @better-auth-ui/auth`). It and its route, `src/routes/auth/$path.tsx`, are the only files that load them and `src/auth/auth-ui.css`. Leaving that route is always a full page load, so the auth UI's styles don't reach the todos page. The Sign out button in `src/auth/user-menu.tsx` is hand-built for the same reason. `@neon/auth` pins Better Auth exactly, and the `overrides` in `package.json` hold Better Auth UI's peer plugins to the same version, so npm installs one copy. Replace `src/auth/` when an official adapter ships.
 
+The auth components are vendored from the Better Auth UI shadcn registry. `src/components/auth/auth-redirect.tsx` carries a local patch that rejects redirect targets normalizing to `//host`: upstream `getSafeRedirectTo` in `@better-auth-ui/core` 1.7.30 can return `//host` for inputs like `/a/..//host`, which a browser treats as another site. After re-running `npx shadcn add @better-auth-ui/auth`, re-apply that patch until it's fixed upstream.
+
 ## Security
 
 - `NEON_REALTIME_SECRET` and `NEON_AUTH_COOKIE_SECRET` stay on the server. The browser gets sealed queries and the public WebSocket URL.

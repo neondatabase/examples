@@ -143,6 +143,10 @@ These files hold the guides' other versions of the same code. The app doesn't im
 | `frontend/raw-messages.ts`               | [Subscribing to queries: Listen for changes](https://neon.com/docs/realtime/guides/subscribing#listen-for-changes)                                                                                                                              | Typechecked only. A `materialize: false` subscription that keeps rows by `rowId` with `onUpdate`.                                                                                                  |
 | `frontend/optimistic-messages.ts`        | [Optimistic mutations: Without a framework](https://neon.com/docs/realtime/guides/mutations#without-a-framework)                                                                                                                                | Typechecked only. `optimisticMessages()` takes the subscription from `frontend/app.ts` and a render function, in place of `subscription.onChange(render)`.                                         |
 
+## Updating the auth UI components
+
+The auth components are vendored from the Better Auth UI shadcn registry. `frontend/components/auth/auth-redirect.tsx` carries a local patch that rejects redirect targets normalizing to `//host`: upstream `getSafeRedirectTo` in `@better-auth-ui/core` 1.7.30 can return `//host` for inputs like `/a/..//host`, which a browser treats as another site. After re-running `npx shadcn add …`, re-apply that patch until it's fixed upstream.
+
 ## Not included
 
 - Server-side rendering, Next.js and TanStack Start. The [Server-side rendering guide](https://neon.com/docs/realtime/guides/ssr) covers them, with the [Next.js](https://neon.com/docs/realtime/examples/nextjs) and [TanStack](https://neon.com/docs/realtime/examples/tanstack) examples.

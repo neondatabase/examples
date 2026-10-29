@@ -181,6 +181,10 @@ realtime/with-nextjs/
             └── todos/live-query/route.ts # POST: renew the sealed query
 ```
 
+## Updating the auth UI components
+
+The auth components are vendored from the Better Auth UI shadcn registry. `src/components/auth/auth-redirect.tsx` carries a local patch that rejects redirect targets normalizing to `//host`: upstream `getSafeRedirectTo` in `@better-auth-ui/core` 1.7.30 can return `//host` for inputs like `/a/..//host`, which a browser treats as another site. After re-running `npx shadcn add @better-auth-ui/auth`, re-apply that patch until it's fixed upstream.
+
 ## Deploy
 
 `neon deploy` doesn't host the app. To run it on your own Node host:
