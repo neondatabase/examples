@@ -61,7 +61,7 @@ curl -X DELETE http://localhost:8787/todos/1
 | `PATCH` | `/todos/:id` | `{ "title"?: string, "completed"?: boolean }` | The updated todo, or `404` |
 | `DELETE` | `/todos/:id` | — | `204`, or `404` |
 
-Any other path or method returns `404`.
+A non-numeric `:id`, a body that isn't a JSON object, an empty `title`, or a non-boolean `completed` returns `400`. Any other path or method returns `404`.
 
 ## Deploy
 
