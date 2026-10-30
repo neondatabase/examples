@@ -1,0 +1,10 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "basic",
+	"provider": "Neon",
+	"title": "Basic function",
+	"description": "A minimal Neon Function with a JSON response.",
+	"layout": "router",
+	"dependencies": [],
+	"environment": []
+}

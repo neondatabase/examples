@@ -30,14 +30,12 @@ npx degit neondatabase/examples/with-mastra ./with-mastra
 cd with-mastra
 ```
 
-## Install and authenticate the Neon CLI
+## Install and update the Neon CLI to latest
 
 ```bash
-npm i -g neon
+npm i -g neon@latest
 neon login
 ```
-
-Use Neon CLI 4.20 or newer so `neon.ts` can declare top-level `functions` and `aiGateway`.
 
 ## Install dependencies
 
@@ -52,8 +50,6 @@ Link (or create) a Neon project by running the `link` command from the workspace
 ```bash
 neon link
 ```
-
-If you let your agent drive this, add `--agent` to skip interactive mode.
 
 > The Neon AI Gateway is a Preview feature. Link to a project/region where AI Gateway early access is enabled, otherwise `neon dev` / `neon deploy` can't mint the gateway credentials.
 

@@ -16,6 +16,7 @@ A good place to start:
 - [`ai/`](./ai) - RAG, semantic search, hybrid search, and chatbot starters using pgvector on Neon.
 - [`bots/`](./bots) - Discord, Telegram, and WhatsApp bots hosted on Neon Functions, with commands, interactive UI, user profiles, and usage tracking in Lakebase Postgres.
 - [`with-hybrid-search-api/`](./with-hybrid-search-api) - document CRUD and hybrid retrieval combining vector search with BM25-ranked full-text search on Neon Functions.
+- [`registry/`](./registry) - the templates `neon functions new` scaffolds from. See its [CONTRIBUTING.md](./registry/CONTRIBUTING.md) to add one.
 
 ## What is Neon?
 

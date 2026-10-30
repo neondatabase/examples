@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Realtime todos</title>
+  </head>
+  <body>
+    <main
+      class="min-h-screen bg-emerald-50 px-4 py-18 text-emerald-950 dark:bg-zinc-950 dark:text-zinc-100"
+    >
+      <div class="mx-auto w-full max-w-2xl">
+        <header class="flex items-end justify-between gap-6">
+          <div>
+            <p
+              class="m-0 text-xs font-extrabold tracking-[0.08em] text-emerald-700 uppercase dark:text-emerald-400"
+            >
+              Neon Realtime
+            </p>
+            <h1
+              class="mt-1 mb-3 text-4xl font-bold tracking-[-0.04em] sm:text-5xl"
+            >
+              Shared todos
+            </h1>
+          </div>
+          <output id="status" class="mb-4.5 text-[13px] text-zinc-500">
+            connecting
+          </output>
+        </header>
+
+        <p
+          class="mb-7 max-w-xl leading-relaxed text-zinc-600 dark:text-zinc-400"
+        >
+          Open this page in two tabs. Changes appear here immediately and arrive
+          in the other tab through a live SQL query.
+        </p>
+
+        <form id="new-todo" class="flex gap-2">
+          <input
+            aria-label="Todo title"
+            class="min-w-0 flex-1 rounded-xl border border-emerald-950/20 bg-white px-3.5 py-3 text-emerald-950 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            id="title"
+            maxlength="200"
+            name="title"
+            placeholder="What needs doing?"
+            required
+          />
+          <button
+            class="cursor-pointer rounded-xl bg-emerald-500 px-4 py-3 font-bold text-emerald-950 hover:bg-emerald-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
+            type="submit"
+          >
+            Add item
+          </button>
+        </form>
+
+        <p
+          id="error"
+          class="mt-4 rounded-xl bg-red-50 p-3 text-red-700 dark:bg-red-950 dark:text-red-300"
+          hidden
+        ></p>
+        <ul id="todos" aria-live="polite" class="my-5 list-none p-0"></ul>
+      </div>
+    </main>
+    <script type="module" src="/web/src/main.ts"></script>
+  </body>
+</html>

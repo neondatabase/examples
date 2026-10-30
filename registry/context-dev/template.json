@@ -1,0 +1,61 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "context-dev",
+	"provider": "Context.dev",
+	"title": "Context.dev web data",
+	"description": "Search the web and news, read pages, answer questions, and retrieve brand data with Context.dev.",
+	"layout": "router",
+	"dependencies": ["context.dev@3.14.1"],
+	"environment": [
+		{
+			"name": "CONTEXT_DEV_API_KEY",
+			"description": "Context.dev API key with data:execute access. Keep this server-side."
+		},
+		{
+			"name": "CONTEXT_FUNCTION_TOKEN",
+			"description": "Random token (at least 32 characters) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public."
+		}
+	],
+	"operations": [
+		{
+			"id": "web-search",
+			"title": "Search the web",
+			"description": "POST a query and optional numResults (1-10) to find current source URLs.",
+			"source": "functions/web-search.ts",
+			"route": "/web-search",
+			"recommended": true
+		},
+		{
+			"id": "web-scrape",
+			"title": "Read a web page",
+			"description": "POST an HTTP(S) URL to return up to 50,000 characters of Markdown and source metadata.",
+			"source": "functions/web-scrape.ts",
+			"route": "/web-scrape",
+			"recommended": true
+		},
+		{
+			"id": "web-answers",
+			"title": "Answer a web question",
+			"description": "POST a task for a sourced answer; fast mode by default, ultra mode optional.",
+			"source": "functions/web-answers.ts",
+			"route": "/web-answers",
+			"recommended": false
+		},
+		{
+			"id": "brand-retrieve",
+			"title": "Retrieve a brand",
+			"description": "POST a domain to get company identity, logo, colors, and social links.",
+			"source": "functions/brand-retrieve.ts",
+			"route": "/brand-retrieve",
+			"recommended": false
+		},
+		{
+			"id": "news-search",
+			"title": "Search news",
+			"description": "POST a query or company domain to find articles, with an optional cursor for the next page.",
+			"source": "functions/news-search.ts",
+			"route": "/news-search",
+			"recommended": false
+		}
+	]
+}

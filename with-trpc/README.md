@@ -44,14 +44,12 @@ npx degit neondatabase/examples/with-trpc ./with-trpc
 cd with-trpc
 ```
 
-## Install and authenticate the Neon CLI
+## Install and update the Neon CLI to latest
 
 ```bash
-npm i -g neon
+npm i -g neon@latest
 neon login
 ```
-
-Use Neon CLI 4.20 or newer so `neon.ts` can declare top-level `functions`.
 
 ## Install dependencies
 
@@ -66,8 +64,6 @@ Link (or create) a Neon project by running the `link` command from the workspace
 ```bash
 neon link
 ```
-
-If you let your agent drive this, add `--agent` to skip interactive mode.
 
 `neon link` pulls your branch-scoped environment variables including `DATABASE_URL` into `.env.local`. You can also find your connection string in the [Neon Console](https://console.neon.tech).
 

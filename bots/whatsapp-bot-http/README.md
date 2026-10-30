@@ -48,14 +48,12 @@ npx degit neondatabase/examples/bots/whatsapp-bot-http ./whatsapp-bot-http
 cd whatsapp-bot-http
 ```
 
-## Install and authenticate the Neon CLI
+## Install and update the Neon CLI to latest
 
 ```bash
-npm i -g neon
+npm i -g neon@latest
 neon login
 ```
-
-Use Neon CLI 4.20 or newer so `neon.ts` can declare top-level `functions`.
 
 ## Install dependencies
 
@@ -71,8 +69,6 @@ Copy `.env.example` to `.env.local`, then link (or create) a Neon project from t
 cp .env.example .env.local
 neon link
 ```
-
-If you let your agent drive this, add `--agent` to skip interactive mode.
 
 ## Configure WhatsApp
 

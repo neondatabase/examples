@@ -1,0 +1,73 @@
+{
+  "name": "with-realtime-tanstack",
+  "description": "Per-user SSR TanStack Start and TanStack DB app using Neon Realtime, Managed Better Auth and Drizzle ORM.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build && tsc --noEmit",
+    "db:push": "drizzle-kit push",
+    "db:setup": "npm run db:push",
+    "dev": "vite dev",
+    "fmt": "prettier --write .",
+    "start": "node --env-file-if-exists=.env.local .output/server/index.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.9.0",
+    "@better-auth-ui/core": "^1.7.30",
+    "@better-auth-ui/react": "^1.7.30",
+    "@neon/auth": "^0.8.1",
+    "@neon/config": "^1.9.1",
+    "@neon/env": "^1.5.3",
+    "@neon/realtime": "^0.1.0",
+    "@neon/realtime-drizzle": "^0.1.0",
+    "@neon/realtime-tanstack": "^0.1.0",
+    "@standard-schema/spec": "^1.1.0",
+    "@tanstack/db": "0.12.1",
+    "@tanstack/react-db": "0.5.5",
+    "@tanstack/react-form": "^1.33.5",
+    "@tanstack/react-query": "^5.104.5",
+    "@tanstack/react-router": "1.170.41",
+    "@tanstack/react-router-with-db": "0.1.0",
+    "@tanstack/react-start": "1.168.60",
+    "@tanstack/router-core": "1.171.34",
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.5.0",
+    "date-fns": "^4.4.0",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.45.2",
+    "lucide-react": "^1.60.0",
+    "next-themes": "^0.4.6",
+    "pg": "^8.21.0",
+    "pg-connection-string": "^2.14.1",
+    "react": "19.3.0",
+    "react-day-picker": "^10.0.2",
+    "react-dom": "19.3.0",
+    "shadcn": "^4.22.1",
+    "sonner": "^2.0.8",
+    "tw-animate-css": "^1.4.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^24.10.1",
+    "@types/pg": "^8.15.6",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "6.1.2",
+    "drizzle-kit": "^0.31.6",
+    "nitro": "^3.0.260903-beta",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vite": "8.3.3"
+  },
+  "engines": {
+    "node": ">=22.9"
+  },
+  "overrides": {
+    "@neon/realtime-tanstack": {
+      "@tanstack/db": "$@tanstack/db"
+    }
+  }
+}

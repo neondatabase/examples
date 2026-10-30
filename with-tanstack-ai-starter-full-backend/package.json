@@ -20,11 +20,10 @@
   },
   "dependencies": {
     "@huggingface/transformers": "^3.7.6",
-    "@neondatabase/auth-ui": "^0.3.0-beta",
-    "@neondatabase/neon-js": "^0.7.0-beta",
+    "@neon/neon-js": "^0.10.1",
     "@neondatabase/serverless": "^1.1.0",
     "@tanstack/react-router": "^1.170.0",
-    "@tanstack/react-start": "^1.168.0",
+    "@tanstack/react-start": "^1.169.0",
     "@vladmandic/human": "^3.3.6",
     "aws4fetch": "^1.0.20",
     "drizzle-orm": "^0.45.2",

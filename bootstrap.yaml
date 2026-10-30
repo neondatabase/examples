@@ -104,7 +104,7 @@ templates:
       ref: main
       subdir: with-mcp
   - id: realtime-chat
-    title: "Realtime chat"
+    title: "WebSocket chat"
     description: "A Next.js + Neon Auth chat over WebSockets to a Hono server, with messages stored in Lakebase Postgres via Drizzle."
     tools:
       - Next.js
@@ -118,9 +118,9 @@ templates:
       owner: neondatabase
       repo: examples
       ref: main
-      subdir: with-realtime-chat
+      subdir: with-websockets-function
   - id: realtime-sse
-    title: "Realtime counter"
+    title: "SSE counter"
     description: "A TanStack Router SPA with a shared counter over server-sent events (SSE) from a Hono server on Neon Functions, stored in Lakebase Postgres via Drizzle."
     tools:
       - TanStack Router
@@ -132,7 +132,111 @@ templates:
       owner: neondatabase
       repo: examples
       ref: main
-      subdir: with-realtime-sse
+      subdir: with-server-sent-events-function
+  - id: realtime-guides-chat-app
+    title: "Realtime guides chat app"
+    description: "The chat app from the Neon Realtime guides: a React + Neon Auth chat with live queries and optimistic writes, a TanStack DB inbox, and a Hono API over Lakebase Postgres via Drizzle."
+    tools:
+      - React
+      - Hono
+      - Drizzle
+    services:
+      - Postgres
+      - Realtime
+      - Neon Auth
+    requires:
+      - database
+      - auth
+      - realtime
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: realtime/guides-chat-app
+  - id: realtime-react
+    title: "Realtime React app"
+    description: "A fully typed React todo app using Neon Realtime, Hono RPC, and Drizzle."
+    tools:
+      - React
+      - Hono
+      - Drizzle
+    services:
+      - Postgres
+      - Realtime
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: realtime/with-react
+  - id: realtime-nextjs
+    title: "Realtime Next.js app"
+    description: "A full-stack Next.js app with server-side rendering, live reactivity and optimistic mutations, using Neon Auth, Neon Realtime and Drizzle."
+    tools:
+      - Next.js
+      - React
+      - Drizzle
+    services:
+      - Postgres
+      - Neon Auth
+      - Realtime
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: realtime/with-nextjs
+  - id: realtime-tanstack
+    title: "Realtime TanStack DB app"
+    description: "A per-user SSR todo app using TanStack Start, TanStack DB, Neon Realtime, Neon Auth, and Drizzle, with optimistic writes synced live across tabs."
+    tools:
+      - TanStack Start
+      - TanStack DB
+      - Drizzle
+    services:
+      - Postgres
+      - Realtime
+      - Neon Auth
+    requires:
+      - database
+      - realtime
+      - auth
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: realtime/with-tanstack
+  - id: realtime-kysely
+    title: "Realtime Kysely app"
+    description: "A framework-free TypeScript todo app using Neon Realtime and Kysely."
+    tools:
+      - TypeScript
+      - Kysely
+    services:
+      - Postgres
+      - Realtime
+    requires:
+      - database
+      - realtime
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: realtime/with-kysely
+  - id: realtime-vanilla
+    title: "Realtime vanilla TypeScript app"
+    description: "A framework-free TypeScript todo app using Neon Realtime and raw SQL."
+    tools:
+      - TypeScript
+    services:
+      - Postgres
+      - Realtime
+    requires:
+      - database
+      - realtime
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: realtime/with-vanilla
   - id: discord-bot-http
     title: "Discord bot"
     description: "A Discord interactions bot hosted on Neon Functions, with slash commands, embeds, Components v2 buttons, user profiles, and command usage tracking in Lakebase Postgres."

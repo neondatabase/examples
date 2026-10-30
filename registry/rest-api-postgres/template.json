@@ -1,0 +1,15 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "rest-api-postgres",
+	"provider": "Neon",
+	"title": "REST API with Hono and Postgres",
+	"description": "A CRUD REST API on Neon Functions with Hono, backed by Lakebase Postgres.",
+	"layout": "router",
+	"dependencies": [
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"hono@4.13.13",
+		"pg@8.23.1"
+	],
+	"environment": []
+}

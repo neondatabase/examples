@@ -4,6 +4,8 @@ Example applications and starter templates for Neon. Each subdirectory is a self
 
 `bootstrap.yaml` is the catalog `neon bootstrap` copies from. Those templates must not vendor agent skills.
 
+`registry/` is the Function Registry `neon functions new` reads. neon.com caches `registry.json` and the schemas from this folder at `https://neon.com/functions/registry/`; installing a template extracts `registry/<id>/` from the GitHub tarball, like `neon bootstrap`. Its rules are in [registry/CONTRIBUTING.md](./registry/CONTRIBUTING.md). Point `$schema` at the neon.com URLs, which are served from `registry/schemas/`.
+
 Contributor and agent rules live in [CONTRIBUTING.md](./CONTRIBUTING.md). Read that before adding or editing an example.
 
 ## Env files
@@ -39,9 +41,10 @@ Then, in the scaffolded directory:
 
 1. `neon link`
 2. `neon env pull`. Vars must land in `.env.local` when `.env` is absent.
-3. Add any extra keys the README requires to `.env.local`. Ask the developer for third-party secrets (Discord, Telegram, and so on). If they cannot provide them, go as far as Neon env allows and say what you could not deploy.
-4. `neon dev`. Exercise a documented request, then stop.
-5. `neon deploy`, or the template's deploy script (`neon deploy --env .env.local`)
+3. If `neon.ts` turns on services (Realtime, Auth), `neon deploy` now: a pull before deploy has no Realtime or Auth vars. They must land in `.env.local`; if not, `neon env pull` again.
+4. Add any extra keys the README requires to `.env.local`. Ask the developer for third-party secrets (Discord, Telegram, and so on). If they cannot provide them, go as far as Neon env allows and say what you could not deploy.
+5. `neon dev`, or the template's own dev script if it has no Functions (`neon dev` only serves Functions). Exercise a documented request, then stop.
+6. `neon deploy`, or the template's deploy script (`neon deploy --env .env.local`). Without Functions it hosts nothing; say so.
 
 Read the full command output. A warning, a missing env file, a prompt that should not appear, a step that only works after copying `.env.example` to `.env`, or a failed command is a finding. Fix it in the template or report it.
 

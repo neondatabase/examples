@@ -1,7 +1,5 @@
-import { NeonAuthUIProvider } from '@neondatabase/auth-ui'
-import { createRootRoute, HeadContent, Scripts, useRouter } from '@tanstack/react-router'
+import { createRootRoute, HeadContent, Scripts } from '@tanstack/react-router'
 import { css as fontCss, preloads as fontPreloads } from 'virtual:vite-font'
-import { authClient } from '@/lib/neon'
 import appCss from '../styles.css?url'
 
 const SITE_URL = 'https://with-tanstack-ai-starter-full-backend.vercel.app'
@@ -33,15 +31,6 @@ export const Route = createRootRoute({
   shellComponent: RootDocument,
 })
 
-function AuthProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
-  return (
-    <NeonAuthUIProvider authClient={authClient} navigate={(to: string) => router.navigate({ to })} replace={(to: string) => router.navigate({ to, replace: true })} redirectTo="/">
-      {children}
-    </NeonAuthUIProvider>
-  )
-}
-
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -51,7 +40,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <style dangerouslySetInnerHTML={{ __html: fontCss }} />
       </head>
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        {children}
         <Scripts />
       </body>
     </html>
