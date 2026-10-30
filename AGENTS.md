@@ -40,7 +40,7 @@ cd ./smoke-<id>
 Then, in the scaffolded directory:
 
 1. `npm install`, plus `npm install --prefix <dir>` for each nested app the README installs (such as `web/`). Every `neon` command below loads `neon.ts`, which imports `@neon/config`, so they all fail with `Cannot find module '@neon/config/v1'` until this runs.
-2. `neon link` with a new project. If `neon.ts` declares Auth, Realtime, a bucket or a trigger, the new branch doesn't have them yet: the pull inside `neon link` warns that the branch does not have them and writes nothing, and `neon env pull` exits 1 with the same message. Without those, the vars land in `.env.local` now.
+2. `neon link` with a new project. If `neon.ts` declares Auth, Realtime or a bucket, the new branch doesn't have them yet: the pull inside `neon link` warns that the branch does not have them and writes nothing, and `neon env pull` exits 1 with the same message. Without those, the vars land in `.env.local` now.
 3. Add any extra keys the README requires to `.env.local`. Ask the developer for third-party secrets (Discord, Telegram, and so on). A `neon.ts` that reads them from `process.env` throws until they are set, which blocks `neon dev` and `neon deploy`. If the developer cannot provide them, go as far as Neon env allows and say what you could not deploy.
 4. `neon deploy`, or the template's deploy script (`neon deploy --env .env.local`). It provisions what `neon.ts` declares, then pulls: the vars must land in `.env.local` when `.env` is absent. `neon env pull` must now succeed and rewrite the same file.
 5. `neon dev`, or the template's own dev script if it has no Functions (`neon dev` only serves Functions). Exercise a documented request, then stop.
