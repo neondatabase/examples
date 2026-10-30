@@ -15,7 +15,7 @@
     "@base-ui/react": "^1.9.0",
     "@better-auth-ui/core": "^1.7.30",
     "@better-auth-ui/react": "^1.7.30",
-    "@neon/auth": "0.8.0",
+    "@neon/auth": "^0.8.1",
     "@neon/config": "^1.9.1",
     "@neon/env": "^1.6.1",
     "@neon/realtime": "^0.1.0",
@@ -55,14 +55,5 @@
   },
   "engines": {
     "node": ">=22.18"
-  },
-  "overrides": {
-    "better-auth": "1.7.12",
-    "@better-auth/core": "1.7.12",
-    "@better-auth/oauth-provider": "1.7.12",
-    "better-call": "1.4.4",
-    "@better-auth/utils": "0.5.0",
-    "@better-auth/api-key": "1.7.12",
-    "@better-auth/passkey": "1.7.12"
   }
 }
