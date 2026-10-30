@@ -25,6 +25,13 @@
 			"title": "Image analysis with AI Gateway",
 			"description": "Describe an uploaded image with structured details using a vision model on Neon AI Gateway.",
 			"path": "image-analysis/template.json"
+		},
+		{
+			"id": "mcp-postgres",
+			"provider": "Neon",
+			"title": "MCP server backed by Postgres",
+			"description": "A Hono MCP server exposing create, list, update, and delete tools backed by a Postgres database.",
+			"path": "mcp-postgres/template.json"
 		}
 	]
 }
