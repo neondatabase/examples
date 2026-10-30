@@ -1,0 +1,29 @@
+{
+  "id": "queue",
+  "title": "Job queue",
+  "description": "A durable job queue on Neon Functions and Postgres: enqueue, claim, acknowledge and retry jobs over HTTP.",
+  "version": "0.1.0",
+  "services": [
+    "Postgres",
+    "Functions"
+  ],
+  "requires": [
+    "database",
+    "functions"
+  ],
+  "inputs": [
+    {
+      "name": "QUEUE_API_KEY",
+      "description": "Bearer token your backend sends to the queue API.",
+      "secret": true,
+      "generate": "token"
+    }
+  ],
+  "outputs": [
+    {
+      "label": "Queue API",
+      "function": "queue",
+      "usage": "curl -X POST $URL/v1/jobs -H \"Authorization: Bearer $QUEUE_API_KEY\" -H 'Idempotency-Key: first' -H 'Content-Type: application/json' -d '{\"queue\":\"emails\",\"payload\":{}}'"
+    }
+  ]
+}

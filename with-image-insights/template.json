@@ -1,0 +1,38 @@
+{
+  "id": "image-insights",
+  "title": "Image insights",
+  "description": "Summaries and categories for uploaded images, from a Neon Storage trigger and AI Gateway vision.",
+  "version": "0.1.0",
+  "services": [
+    "Postgres",
+    "Functions",
+    "Object Storage",
+    "AI Gateway"
+  ],
+  "requires": [
+    "database",
+    "functions",
+    "object-storage",
+    "ai-gateway"
+  ],
+  "inputs": [
+    {
+      "name": "INSIGHTS_API_KEY",
+      "description": "Bearer token your backend sends to upload images and read results.",
+      "secret": true,
+      "generate": "token"
+    },
+    {
+      "name": "IMAGE_MODEL",
+      "description": "AI Gateway vision model.",
+      "default": "claude-haiku-4-5"
+    }
+  ],
+  "outputs": [
+    {
+      "label": "Image insights API",
+      "function": "insights",
+      "usage": "curl -X POST $URL/v1/images -H \"Authorization: Bearer $INSIGHTS_API_KEY\" -H 'Content-Type: image/png' --data-binary @photo.png"
+    }
+  ]
+}

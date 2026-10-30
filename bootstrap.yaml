@@ -297,3 +297,44 @@ templates:
       repo: examples
       ref: main
       subdir: with-trpc
+  - id: queue
+    title: "Job queue"
+    description: "A durable job queue on Neon Functions and Lakebase Postgres — enqueue, claim, acknowledge, and retry jobs over HTTP, with leases, idempotent enqueue, and dead-lettering."
+    tools:
+      - TypeScript
+    services:
+      - Postgres
+      - Functions
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: with-queue
+  - id: scheduled-rollup
+    title: "Scheduled rollup"
+    description: "Daily event totals on Neon Functions and Lakebase Postgres, recomputed by a neon.ts cron trigger so repeated or missed runs can't double-count."
+    tools:
+      - TypeScript
+    services:
+      - Postgres
+      - Functions
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: with-scheduled-rollup
+  - id: image-insights
+    title: "Image insights"
+    description: "Summaries and categories for uploaded images: a Neon Object Storage trigger runs a Function that asks an AI Gateway vision model and stores the result in Lakebase Postgres."
+    tools:
+      - TypeScript
+    services:
+      - Postgres
+      - Functions
+      - Object Storage
+      - AI Gateway
+    source:
+      owner: neondatabase
+      repo: examples
+      ref: main
+      subdir: with-image-insights

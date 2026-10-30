@@ -1,0 +1,22 @@
+{
+  "name": "with-scheduled-rollup",
+  "description": "Daily event totals on Neon Functions and Postgres, recomputed by a Neon cron trigger.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "deploy": "neon deploy --env .env.local",
+    "migrate": "node scripts/migrate.ts",
+    "endpoint": "neon functions get rollup"
+  },
+  "dependencies": {
+    "@neon/config": "^1.9.4",
+    "@neon/functions": "^0.11.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.11.10",
+    "typescript": "^6.0.2"
+  }
+}
