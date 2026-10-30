@@ -23,6 +23,10 @@ async function initDB() {
       content text NOT NULL
     )
   `);
+	await db.query(`
+    CREATE INDEX IF NOT EXISTS telegram_messages_chat_id_id_idx
+      ON telegram_messages (chat_id, id)
+  `);
 }
 
 async function reply(chatId: number, text: string) {
@@ -91,7 +95,19 @@ export default {
 						secret_token: secret,
 					}),
 				});
-				await response.json();
+				const result = (await response.json().catch(() => null)) as {
+					ok?: boolean;
+					description?: string;
+				} | null;
+				if (!response.ok || !result?.ok) {
+					return Response.json(
+						{
+							error: "Telegram rejected the webhook",
+							detail: result?.description ?? `HTTP ${response.status}`,
+						},
+						{ status: 502 },
+					);
+				}
 			}
 
 			return Response.json({ ok: true, message: "Webhook set" });
@@ -123,8 +139,10 @@ export default {
 
 			return Response.json({ ok: true });
 		} catch (error) {
+			// Acknowledge anyway: Telegram retries non-2xx responses, which would
+			// call the model again and store the conversation twice.
 			console.error("Webhook error:", error);
-			return Response.json({ error: "Failed to process message" }, { status: 502 });
+			return Response.json({ ok: false });
 		}
 	},
 };

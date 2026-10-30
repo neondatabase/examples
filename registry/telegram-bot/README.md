@@ -36,7 +36,7 @@ neon config add ai-gateway
 
 Or set `aiGateway: true` in `neon.ts`. AI Gateway requires a paid Neon plan with prepaid credits and a project in a supported region. See [AI Gateway get started](https://neon.com/docs/ai-gateway/get-started).
 
-`neon link` writes `DATABASE_URL` to `.env.local`. When you open the function URL in a browser or send it a `GET` request, the function creates the `telegram_messages` table and its index, then registers the webhook with Telegram so the bot can receive messages. The function URL is printed by `neon deploy`.
+`neon link` writes `DATABASE_URL` to `.env.local`. When you open the function URL in a browser or send it a `GET` request, the function creates the `telegram_messages` table and its index, then registers the webhook with Telegram so the bot can receive messages. If Telegram rejects the request, for example because the bot token is wrong, the function returns `502` with Telegram's error message. The function URL is printed by `neon deploy`.
 
 ## Deploy
 
