@@ -35,12 +35,10 @@
 		},
 		{
 			"id": "telegram-bot",
-			"provider": "Telegram",
+			"provider": "Neon",
 			"title": "Telegram AI chat bot",
 			"description": "Telegram bot with Neon Functions, AI Gateway, and Postgres for message storage.",
-			"path": "telegram-bot/template.json",
-			"logo": "https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg",
-			"website": "https://telegram.org/"
+			"path": "telegram-bot/template.json"
 		},
 		{
 			"id": "rest-api-postgres",
