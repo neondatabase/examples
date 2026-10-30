@@ -1,0 +1,45 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "tanstack-ai",
+	"provider": "TanStack",
+	"title": "TanStack AI on AI Gateway",
+	"description": "Streaming chat with tool calling, structured extraction, and summaries with TanStack AI on Neon AI Gateway.",
+	"layout": "router",
+	"dependencies": [
+		"@tanstack/ai@1.0.0",
+		"@tanstack/ai-neon@0.1.0",
+		"zod@4.6.7"
+	],
+	"environment": [
+		{
+			"name": "TANSTACK_AI_FUNCTION_TOKEN",
+			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public."
+		}
+	],
+	"operations": [
+		{
+			"id": "chat",
+			"title": "Stream a chat",
+			"description": "POST the AG-UI body that useChat sends to stream a reply over SSE, with a sample server tool.",
+			"source": "functions/chat.ts",
+			"route": "/chat",
+			"recommended": true
+		},
+		{
+			"id": "extract",
+			"title": "Extract structured data",
+			"description": "POST text to get a typed JSON object validated against a Zod schema.",
+			"source": "functions/extract.ts",
+			"route": "/extract",
+			"recommended": true
+		},
+		{
+			"id": "summarize",
+			"title": "Summarize text",
+			"description": "POST text and an optional style and maxLength to get a summary.",
+			"source": "functions/summarize.ts",
+			"route": "/summarize",
+			"recommended": false
+		}
+	]
+}

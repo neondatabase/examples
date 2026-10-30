@@ -62,6 +62,15 @@
 			"title": "Authenticated API with Hono and Managed Better Auth",
 			"description": "A protected Hono API that validates the caller's identity and gates access.",
 			"path": "authenticated-api/template.json"
+		},
+		{
+			"id": "tanstack-ai",
+			"provider": "TanStack",
+			"title": "TanStack AI on AI Gateway",
+			"description": "Streaming chat with tool calling, structured extraction, and summaries with TanStack AI on Neon AI Gateway.",
+			"path": "tanstack-ai/template.json",
+			"logo": "https://cdn.jsdelivr.net/gh/TanStack/tanstack.com@f24f323ba7ef981c7e1914e8aef1f161999da908/public/images/logos/logo-color-100.png",
+			"website": "https://tanstack.com/ai"
 		}
 	]
 }
