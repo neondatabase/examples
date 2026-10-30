@@ -23,7 +23,7 @@ function Auth() {
     setBusy(true)
     try {
       const res = isSignup ? await authClient.signUp.email({ name: name || email.split('@')[0], email, password }) : await authClient.signIn.email({ email, password })
-      if ((res as any)?.error) throw new Error((res as any).error.message || 'Authentication failed')
+      if (res.error) throw new Error(res.error.message || 'Authentication failed')
       router.navigate({ to: '/' })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed')
@@ -35,12 +35,12 @@ function Auth() {
   // Google OAuth via Neon Auth (enabled with shared keys in the Neon console, so
   // no client secret is needed in the app). signIn.social redirects the browser
   // to Google and back to callbackURL, so code after the await usually does not
-  // run. `social` is not yet in the beta neon-js auth types, hence the cast.
+  // run.
   const googleLogin = async () => {
     setError('')
     setBusy(true)
     try {
-      await (authClient.signIn as any).social({ provider: 'google', callbackURL: `${window.location.origin}/` })
+      await authClient.signIn.social({ provider: 'google', callbackURL: `${window.location.origin}/` })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Google sign-in failed')
       setBusy(false)
@@ -52,7 +52,7 @@ function Auth() {
     setBusy(true)
     try {
       const res = await authClient.signIn.email({ email: DEMO_EMAIL, password: DEMO_PASSWORD })
-      if ((res as any)?.error) throw new Error((res as any).error.message || 'Demo sign-in failed')
+      if (res.error) throw new Error(res.error.message || 'Demo sign-in failed')
       router.navigate({ to: '/' })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Demo sign-in failed')

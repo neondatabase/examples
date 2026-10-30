@@ -15,14 +15,6 @@ import { BetterAuthReactAdapter } from '@neon/neon-js/auth/react/adapters'
  */
 const NEON_URL = import.meta.env.VITE_NEON_URL as string
 
-// The neon-js auth types are still beta and lag the runtime in a couple of
-// places (the adapter builder-vs-impl shape, `fetchOptions`, and `useSession`
-// typed as an atom rather than a hook). The usage below is correct and verified
-// end to end. These narrow casts keep `tsc` green until the types catch up.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const clientOptions: any = { auth: { adapter: BetterAuthReactAdapter() }, fetchOptions: { credentials: 'include' } }
-const client = createClient(NEON_URL, clientOptions)
+const client = createClient(NEON_URL, { auth: { adapter: BetterAuthReactAdapter() } })
 
-export const authClient = client.auth as typeof client.auth & {
-  useSession: () => { data: { user?: { email?: string; name?: string } } | null }
-}
+export const authClient = client.auth
