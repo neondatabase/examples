@@ -10,17 +10,15 @@ export default defineConfig({
     if (!branch.exists) { return { ttl: "7d" }; }
     return {};
   },
-  preview: {
-    functions: {
-      stripe: {
-        name: "Stripe webhooks",
-        source: "src/index.ts",
-        env: {
-          STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || "",
-        },
-        dev: {
-          port: 8787,
-        },
+  functions: {
+    stripe: {
+      name: "Stripe webhooks",
+      source: "src/index.ts",
+      env: {
+        STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || "",
+      },
+      dev: {
+        port: 8787,
       },
     },
   },

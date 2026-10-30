@@ -70,13 +70,21 @@ Link (or create) a Neon project by running the `link` command from the workspace
 neon link
 ```
 
-For non-interactive use (e.g., CI or an AI agent), add `--agent` to skip interactive mode.
+For non-interactive use (e.g., CI or an AI agent), pass `-y` to skip prompts, or pass the target explicitly: `neon link --project-id <project-id>` for an existing project, or `neon link --org-id <org-id> --project-name <name> --region-id aws-us-east-2` to create one.
 
 `neon link` pulls your branch-scoped environment variables (including `DATABASE_URL`) into `.env.local`. You can also find your connection string in the [Neon Console](https://console.neon.tech).
 
 ## Configure Stripe
 
-`neon link` already wrote `.env.local` with your branch env. Add the Stripe signing secret to that same file (see `.env.example` for the format):
+`neon link` already wrote `.env.local` with your branch env. Add the Stripe signing secret to that same file (see `.env.example` for the format). The function won't start without it.
+
+For local dev, print the signing secret that the [Stripe CLI](https://stripe.com/docs/stripe-cli) uses for forwarded events:
+
+```bash
+stripe listen --print-secret
+```
+
+Add it to `.env.local`:
 
 ```env
 STRIPE_WEBHOOK_SECRET=whsec_...
@@ -96,13 +104,13 @@ npm run db:push
 neon dev
 ```
 
-In another terminal, forward Stripe events with the [Stripe CLI](https://stripe.com/docs/stripe-cli):
+In another terminal, forward Stripe events to the local function:
 
 ```bash
 stripe listen --forward-to localhost:8787/webhooks/stripe
 ```
 
-Copy the `whsec_…` secret that `stripe listen` prints into `.env.local` as `STRIPE_WEBHOOK_SECRET`, restart `neon dev`, then trigger a test event:
+The `whsec_…` secret it prints should match the one in `.env.local`. In a third terminal, trigger test events:
 
 ```bash
 stripe trigger customer.created
@@ -119,11 +127,10 @@ SELECT id, customer_id, status FROM subscriptions ORDER BY updated_at DESC LIMIT
 
 ## Deploy to Neon Functions
 
-`neon deploy` deploys to the **currently checked-out branch** (see `.neon`). Check with:
+`neon deploy` deploys to the Neon branch pinned in `.neon` (the `branch` field). To see your project's branches:
 
 ```bash
-git branch --show-current   # local git branch
-neon branches list          # Neon branches
+neon branches list
 ```
 
 Deploying to a dev/feature branch first is recommended. For a "production" deploy: `neon checkout production` (this also rewrites `DATABASE_URL` in `.env.local`).
@@ -285,7 +292,8 @@ Expect a `customer.subscription.deleted` (or `.updated` with `cancel_at_period_e
 | Deliveries show 400 "invalid signature" | Secret mismatch: the deployed `STRIPE_WEBHOOK_SECRET` doesn't match the endpoint's signing secret. Update `.env.local` and **redeploy** (step 2 of testing). |
 | Deliveries show 400 "missing stripe-signature header" | Wrong path: URL must end in `/webhooks/stripe`. |
 | Deliveries show 500 | Function DB error: check it deployed to the branch whose schema you pushed (`npm run db:push` against the same branch). Stripe will retry 500s automatically. |
-| Trigger says "succeeded" but no rows | You deployed before setting the secret (step 2 of testing), or you're inspecting a different Neon branch/schema than the function's `DATABASE_URL`. |
+| `neon dev` fails with "STRIPE_WEBHOOK_SECRET is required.", or the deployed function returns 502 `function_load_failed` ("STRIPE_WEBHOOK_SECRET is missing") | The secret wasn't set. Add it to `.env.local`, then restart `neon dev` or redeploy. |
+| Trigger says "succeeded" but no rows | You're inspecting a different Neon branch/schema than the function's `DATABASE_URL`. Check the `branch` field in `.neon`. |
 
 ## Notes
 

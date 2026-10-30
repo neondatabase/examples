@@ -17,10 +17,11 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPTransport } from "@hono/mcp";
+import { attachDatabasePool } from "@neon/functions";
 import { contacts } from "./db/schema";
 
-// One pool per isolate, reused across requests.
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5 });
+attachDatabasePool(pool);
 const db = drizzle(pool);
 
 const mcpServer = new McpServer({ name: "contacts", version: "1.0.0" });
@@ -52,8 +53,15 @@ mcpServer.registerTool(
     inputSchema: { id: z.number().int().positive() },
   },
   async ({ id }) => {
-    const [row] = await db.delete(contacts).where(eq(contacts.id, id)).returning();
-    return { content: [{ type: "text", text: JSON.stringify(row ?? { error: "not found" }) }] };
+    const [row] = await db
+      .delete(contacts)
+      .where(eq(contacts.id, id))
+      .returning();
+    return {
+      content: [
+        { type: "text", text: JSON.stringify(row ?? { error: "not found" }) },
+      ],
+    };
   },
 );
 
@@ -81,7 +89,7 @@ Key points:
 > [!WARNING]
 > A Neon Function has a **public HTTPS URL — anyone can reach it.** An unauthenticated MCP server hands every caller your tools (and the database behind them). Authenticate at the top of the handler before touching the transport, exactly as for [any client-facing function](../SKILL.md#functions-as-an-agent-backend-nextjs-and-similar-frameworks).
 
-[Better Auth](https://better-auth.com) (self-hostable, runs alongside your app) is a good fit, and it covers both common shapes. **Better Auth is evolving quickly** — the MCP plugin is moving out of `better-auth/plugins` into its own `@better-auth/mcp` package (built on the OAuth Provider plugin), which renames `withMcpAuth` → `requireMcpAuth` and `createMcpAuthClient` → `createMcpResourceClient`. Verify the current package and import paths against the [Better Auth MCP docs](https://better-auth.com/docs/plugins/mcp) before wiring it up.
+[Better Auth](https://better-auth.com) covers both common MCP shapes when you need an OAuth authorization server or API keys. Managed Auth does not. Keep existing app login (Clerk, Managed Auth, or Better Auth) unless the user asked to migrate it. Confirm the **installed** Better Auth version before copying imports: the MCP plugin is moving out of `better-auth/plugins` into `@better-auth/mcp` (`withMcpAuth` → `requireMcpAuth`, `createMcpAuthClient` → `createMcpResourceClient`). Docs: https://better-auth.com/docs/plugins/mcp
 
 ### Option 1 — OAuth via the Better Auth MCP plugin (best for third-party clients)
 
@@ -124,7 +132,8 @@ Either way it's one check at the top of the `/mcp` route — reject anything tha
 ```typescript
 app.all("/mcp", async (c) => {
   const auth = c.req.header("authorization");
-  if (!(await isValidApiKey(auth))) return c.json({ error: "unauthorized" }, 401); // your check
+  if (!(await isValidApiKey(auth)))
+    return c.json({ error: "unauthorized" }, 401);
   if (!mcpServer.isConnected()) await mcpServer.connect(transport);
   return transport.handleRequest(c);
 });

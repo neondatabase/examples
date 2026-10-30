@@ -5,25 +5,25 @@
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon/SKILL.md",
-      "computedHash": "f51065e397e6865a234c98a4688b23859fa7744cc0434d95d35dd4e8183fcc31"
+      "computedHash": "3df8be402d08df1506ba7ff1962dd935e07100d75e38a3dd6feb886760e05817"
     },
     "neon-functions": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-functions/SKILL.md",
-      "computedHash": "4e5314bb70a96ca144a4bf82cc625e4a4652c05ef0511a3d560ce2f5a017f2f3"
+      "computedHash": "f9b65d683393a698eadec764aa723178c3297a83f5476706b526ae8101538b7e"
     },
     "neon-postgres": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-postgres/SKILL.md",
-      "computedHash": "d4c284e055236b2a3ea1eaaa7dbcf832918ffad5e2745d8c938fa5b5c671e9a3"
+      "computedHash": "3c09fbeadf705429a831b7321e535a43655bddf733438b8ffa5dae2537dd6efc"
     },
     "neon-postgres-branches": {
       "source": "neondatabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/neon-postgres-branches/SKILL.md",
-      "computedHash": "39a27a390d91bb944c604f9b703aae62fec265ff492ca749bcb9345c6759346b"
+      "computedHash": "d6b7ecfc52508c57bd3c8572a7cd0c582c256e36731124eb8598e8b24780ab1d"
     },
     "stripe-best-practices": {
       "source": "docs.stripe.com",

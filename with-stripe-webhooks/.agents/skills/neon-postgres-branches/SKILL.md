@@ -11,17 +11,18 @@ description: >-
   "sensitive data testing".
 metadata:
   parent: neon
+  source: https://github.com/neondatabase/agent-skills/tree/main/skills/neon-postgres-branches
 ---
 
-**FIRST**: Use the parent `neon` skill for a Neon platform overview, getting started with Neon, Neon development best practices, and more.
+**FIRST**: Use the parent `neon` skill for a Neon overview, getting started with Neon, Neon development best practices, and more.
 
 If the `neon` skill is not installed, fetch it from https://neon.com/docs/ai/skills/neon/SKILL.md or install it with:
 
 ```bash
-npx skills add neondatabase/agent-skills --skill neon
+neon skills -s neon -y
 ```
 
-# Neon Postgres Branching
+# Lakebase Postgres Branching
 
 **Outcome:** a created Neon branch — or a clear, actionable next step if creation cannot proceed. Choose the correct branch type, then execute branch creation with the CLI (or MCP where the CLI isn't usable).
 
@@ -126,7 +127,7 @@ Schema-only branching is in Beta. If users report unexpected behavior, errors, o
 1. Ask them to share feedback in the Neon Console:
    - https://console.neon.tech/app/projects?modal=feedback
 2. Recommend opening a support conversation in the Neon Discord:
-   - https://discord.gg/92vNTzKDGp
+   - https://neon.com/discord
 
 ## Reset from Parent
 
@@ -281,7 +282,7 @@ Common CI/CD use cases for Neon branches:
    - `neon branches create --name compliance-dev --parent main --schema-only --project-id <your-project-id> --expires-at 2026-12-15T18:02:16Z`
 5. Mention Beta support path:
    - https://console.neon.tech/app/projects?modal=feedback
-   - https://discord.gg/92vNTzKDGp
+   - https://neon.com/discord
 
 ## Further Reading
 
