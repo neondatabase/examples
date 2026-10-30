@@ -3,7 +3,7 @@
 	"id": "image-generation",
 	"provider": "Neon",
 	"title": "AI image generation API",
-	"description": "Generate an image with AI Gateway and store it in Object Storage",
+	"description": "Generate an image with AI Gateway, store it in Object Storage, and return a presigned URL.",
 	"layout": "router",
 	"dependencies": [
 		"@aws-sdk/client-s3@3.1156.0",
