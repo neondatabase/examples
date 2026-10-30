@@ -1,0 +1,13 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "image-analysis",
+	"provider": "Neon",
+	"title": "Image analysis with AI Gateway",
+	"description": "Describe an uploaded image with structured details using a vision model on Neon AI Gateway.",
+	"layout": "router",
+	"dependencies": [
+		"@neon/ai-sdk-provider@1.1.0",
+		"ai@7.0.150",
+		"zod@4.6.7"
+	]
+}
