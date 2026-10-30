@@ -30,7 +30,7 @@ export default function Home() {
             Signed in as {userName}
           </p>
         </div>
-        <UserButton size="icon" hideSettings />
+        <UserButton size="icon" align="end" hideSettings />
       </header>
       <Chat userName={userName} />
     </main>
