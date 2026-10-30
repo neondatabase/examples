@@ -81,7 +81,7 @@ npm run deploy
 npm run endpoint
 ```
 
-Repeat the requests above using the returned `invocation_url` as `BASE_URL`.
+Repeat the requests above using the Function URL printed by `npm run endpoint` as `BASE_URL`.
 
 ## Checks
 
