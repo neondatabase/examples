@@ -39,7 +39,7 @@ function toCard(r: Record<string, unknown>): Card {
 /** Recent photos (newest first) with an exact total, for the library grid. */
 export const listPhotos = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
-  .inputValidator((d: { offset: number; limit: number }) => d)
+  .validator((d: { offset: number; limit: number }) => d)
   .handler(async ({ data, context }): Promise<{ cards: Card[]; total: number }> => {
     const uid = context.userId
     const rows = await db
@@ -60,7 +60,7 @@ export const listPhotos = createServerFn({ method: 'POST' })
 /** Rank the owner's photos by cosine distance to a CLIP query vector (text or image). */
 export const searchPhotos = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
-  .inputValidator((d: { embedding: number[]; limit?: number }) => d)
+  .validator((d: { embedding: number[]; limit?: number }) => d)
   .handler(async ({ data, context }): Promise<Card[]> => {
     const uid = context.userId
     const q = toVector(data.embedding)
@@ -78,7 +78,7 @@ export const searchPhotos = createServerFn({ method: 'POST' })
 /** Find-similar: the owner's other photos nearest to one of their photos. */
 export const neighbors = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
-  .inputValidator((d: { photoId: string; limit?: number }) => d)
+  .validator((d: { photoId: string; limit?: number }) => d)
   .handler(async ({ data, context }): Promise<{ source: { url: string } | null; cards: Card[] }> => {
     const uid = context.userId
     const limit = data.limit ?? 48
@@ -103,7 +103,7 @@ export const neighbors = createServerFn({ method: 'POST' })
 /** Every photo containing a face in one person's cluster (newest first). */
 export const personPhotos = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
-  .inputValidator((d: { personId: string; limit?: number }) => d)
+  .validator((d: { personId: string; limit?: number }) => d)
   .handler(async ({ data, context }): Promise<Card[]> => {
     const uid = context.userId
     const rows = await db
@@ -120,7 +120,7 @@ export const personPhotos = createServerFn({ method: 'POST' })
 /** Identity search: rank the owner's photos by nearest face to a query descriptor. */
 export const faceSearch = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
-  .inputValidator((d: { embedding: number[]; limit?: number }) => d)
+  .validator((d: { embedding: number[]; limit?: number }) => d)
   .handler(async ({ data, context }): Promise<Card[]> => {
     const uid = context.userId
     if (!Array.isArray(data.embedding) || data.embedding.length !== 1024) throw new Error('expected a 1024-d face embedding')
@@ -141,7 +141,7 @@ export const faceSearch = createServerFn({ method: 'POST' })
 /** A page of face groups (circles), most recently photographed first, with an exact total. */
 export const listPeople = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
-  .inputValidator((d: { offset: number; limit: number }) => d)
+  .validator((d: { offset: number; limit: number }) => d)
   .handler(async ({ data, context }): Promise<{ people: Person[]; total: number }> => {
     const uid = context.userId
     const rows = await db

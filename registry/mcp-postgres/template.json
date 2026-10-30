@@ -1,0 +1,22 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "mcp-postgres",
+	"provider": "Neon",
+	"title": "MCP server backed by Postgres",
+	"description": "A Hono MCP server exposing create, list, update, and delete tools backed by a Postgres database.",
+	"layout": "router",
+	"dependencies": [
+		"@modelcontextprotocol/server@2.3.1",
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"hono@4.13.14",
+		"pg@8.23.1",
+		"zod@4.6.7"
+	],
+	"environment": [
+		{
+			"name": "MCP_API_KEY",
+			"description": "Random token (for example, from openssl rand -hex 32) that MCP clients send as Authorization: Bearer <token>; required because the function URL is public."
+		}
+	]
+}
