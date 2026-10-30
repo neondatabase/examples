@@ -28,10 +28,10 @@ If `neon link` needs an org or project and cannot prompt, ask which org to use a
 
 ### Flow
 
-Use a throwaway directory outside this repository. Pass `--no-link` so `neon link` is a real step, and skip git / agent setup so the smoke is the app flow:
+Use a throwaway directory outside this repository. Pass `--no-link` and `--no-install` so linking and installing are real steps, and skip git / agent setup so the smoke is the app flow:
 
 ```bash
-neon bootstrap ./smoke-<id> --template <id> --no-link --no-git --no-agent-setup
+neon bootstrap ./smoke-<id> --template <id> --no-link --no-install --no-git --no-agent-setup
 cd ./smoke-<id>
 ```
 
@@ -39,12 +39,12 @@ cd ./smoke-<id>
 
 Then, in the scaffolded directory:
 
-1. `neon link`
-2. `neon env pull`. Vars must land in `.env.local` when `.env` is absent.
-3. If `neon.ts` turns on services (Realtime, Auth), `neon deploy` now: a pull before deploy has no Realtime or Auth vars. They must land in `.env.local`; if not, `neon env pull` again.
-4. Add any extra keys the README requires to `.env.local`. Ask the developer for third-party secrets (Discord, Telegram, and so on). If they cannot provide them, go as far as Neon env allows and say what you could not deploy.
+1. `npm install`, plus `npm install --prefix <dir>` for each nested app the README installs (such as `web/`). Every `neon` command below loads `neon.ts`, which imports `@neon/config`, so they all fail with `Cannot find module '@neon/config/v1'` until this runs.
+2. `neon link` with a new project. If `neon.ts` declares Auth, Realtime, a bucket or a trigger, the new branch doesn't have them yet: the pull inside `neon link` warns that the branch does not have them and writes nothing, and `neon env pull` exits 1 with the same message. Without those, the vars land in `.env.local` now.
+3. Add any extra keys the README requires to `.env.local`. Ask the developer for third-party secrets (Discord, Telegram, and so on). A `neon.ts` that reads them from `process.env` throws until they are set, which blocks `neon dev` and `neon deploy`. If the developer cannot provide them, go as far as Neon env allows and say what you could not deploy.
+4. `neon deploy`, or the template's deploy script (`neon deploy --env .env.local`). It provisions what `neon.ts` declares, then pulls: the vars must land in `.env.local` when `.env` is absent. `neon env pull` must now succeed and rewrite the same file.
 5. `neon dev`, or the template's own dev script if it has no Functions (`neon dev` only serves Functions). Exercise a documented request, then stop.
-6. `neon deploy`, or the template's deploy script (`neon deploy --env .env.local`). Without Functions it hosts nothing; say so.
+6. Exercise the same request against the deployed Function (`neon functions get <name>` prints its URL). Without Functions it hosts nothing; say so.
 
 Read the full command output. A warning, a missing env file, a prompt that should not appear, a step that only works after copying `.env.example` to `.env`, or a failed command is a finding. Fix it in the template or report it.
 
