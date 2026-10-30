@@ -48,6 +48,13 @@
 			"title": "REST API with Hono and Postgres",
 			"description": "A CRUD REST API on Neon Functions with Hono, backed by Lakebase Postgres.",
 			"path": "rest-api-postgres/template.json"
+		},
+		{
+			"id": "image-generation",
+			"provider": "Neon",
+			"title": "AI image generation API",
+			"description": "Generate an image with AI Gateway, store it in Object Storage, and return a presigned URL.",
+			"path": "image-generation/template.json"
 		}
 	]
 }
