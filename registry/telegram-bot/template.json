@@ -1,0 +1,25 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "telegram-bot",
+	"provider": "Telegram",
+	"title": "Telegram AI chat bot",
+	"description": "Telegram bot with Neon Functions, AI Gateway, and Postgres for message storage.",
+	"layout": "router",
+	"dependencies": [
+		"@neon/ai-sdk-provider@1.1.0",
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"ai@7.0.150",
+		"pg@8.23.1"
+	],
+	"environment": [
+		{
+			"name": "TELEGRAM_BOT_TOKEN",
+			"description": "Bot token from @BotFather; used to reply to messages."
+		},
+		{
+			"name": "TELEGRAM_WEBHOOK_SECRET",
+			"description": "Random secret (letters, digits, _ and -) used to verify that incoming requests are from Telegram."
+		}
+	]
+}
