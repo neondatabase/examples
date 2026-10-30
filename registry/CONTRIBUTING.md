@@ -15,6 +15,7 @@ schemas/
   template.schema.json       # shape of each template.json; neon.com serves this
 <template-id>/
   template.json              # metadata, no inline source
+  README.md                  # optional, documents the template in this repo
   functions/
     <operation>.ts           # one module per operation
 ```

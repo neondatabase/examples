@@ -39,7 +39,7 @@ The handler:
 2. Uses an OpenAI/GPT-5 model on the Neon AI Gateway (`gpt-5-mini`) via the `neon()` provider from `@neon/ai-sdk-provider`, with the gateway's built-in `neon.tools.imageGeneration()` tool.
 3. When the model generates an image, the handler uploads the returned JPEG to your bucket and records the prompt + key + size in Postgres, logging a presigned view URL.
 
-> Notes on the gateway's image generation: it's the OpenAI Responses **`image_generation`** built-in tool (GPT-5 models only — there is no separate images endpoint), and the image is returned **inline as base64**. The gateway caps a response at ~640 KB, so this example requests a compressed JPEG (`outputFormat: 'jpeg'`, `quality: 'low'`, `outputCompression`) to stay under it; high-quality/large images can exceed the cap or hit the ~60s gateway timeout.
+> Notes on the gateway's image generation: it's the OpenAI Responses **`image_generation`** built-in tool (OpenAI models only — there is no separate images endpoint), and the image is returned **inline as base64**. The supported image models are `gpt-image-2` (the default), `gpt-image-1.5`, and `gpt-image-1-mini`; pass `model` to `neon.tools.imageGeneration()` to pick another one. Always stream image generation, as this example does with `streamText`: a non-streaming response whose image is over 655,360 bytes fails with 400. The example asks for a low-quality, compressed JPEG to keep generation fast.
 
 ## Clone the repository
 
