@@ -41,6 +41,13 @@
 			"path": "telegram-bot/template.json",
 			"logo": "https://telegram.org/img/t_logo.svg",
 			"website": "https://telegram.org/"
+		},
+		{
+			"id": "rest-api-postgres",
+			"provider": "Neon",
+			"title": "REST API with Hono and Postgres",
+			"description": "A CRUD REST API on Neon Functions with Hono, backed by Lakebase Postgres.",
+			"path": "rest-api-postgres/template.json"
 		}
 	]
 }
