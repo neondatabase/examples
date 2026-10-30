@@ -55,6 +55,13 @@
 			"title": "AI image generation API",
 			"description": "Generate an image with AI Gateway, store it in Object Storage, and return a presigned URL.",
 			"path": "image-generation/template.json"
+		},
+		{
+			"id": "authenticated-api",
+			"provider": "Neon",
+			"title": "Authenticated API with Hono and Managed Better Auth",
+			"description": "A protected Hono API that validates the caller's identity and gates access.",
+			"path": "authenticated-api/template.json"
 		}
 	]
 }
