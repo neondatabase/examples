@@ -8,7 +8,10 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "ES2023",
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "paths": {
+      "@/*": ["./frontend/*"]
+    }
   },
   "include": ["frontend/**/*.ts", "frontend/**/*.tsx"]
 }

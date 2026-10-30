@@ -1,4 +1,4 @@
-import { handleAuthProxyRequest } from "@neondatabase/auth/server";
+import { handleAuthProxyRequest } from "@neon/auth/server";
 
 import { authConfig } from "./auth.server";
 

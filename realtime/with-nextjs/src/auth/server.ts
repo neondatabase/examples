@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createNeonAuth } from "@neondatabase/auth/next/server";
+import { createNeonAuth } from "@neon/auth/next/server";
 
 import { getEnv } from "@/lib/env";
 

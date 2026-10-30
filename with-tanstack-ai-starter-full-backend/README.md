@@ -141,9 +141,8 @@ npm run faces
 - React 19
 - TanStack Start
 - Tailwind CSS v4
-- `@neondatabase/auth-ui`
 - faces via `@vladmandic/human`
-- `@neondatabase/neon-js` (Neon Auth)
+- `@neon/neon-js` (Neon Auth)
 - Drizzle ORM over `@neondatabase/serverless`
 - CLIP and ViT-GPT2 via `@huggingface/transformers`
 - Neon Postgres 18 with `lakebase_vector` & `lakebase_text`

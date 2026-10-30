@@ -1,10 +1,10 @@
-import { AuthView } from "@neondatabase/auth-ui";
-import { authViewPaths } from "@neondatabase/auth-ui/server";
+import { viewPaths } from "@better-auth-ui/core";
+import { Auth } from "@/components/auth/auth";
 
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return Object.values(authViewPaths).map((path) => ({ path }));
+  return Object.values(viewPaths.auth).map((path) => ({ path }));
 }
 
 export default async function AuthPage({
@@ -15,7 +15,7 @@ export default async function AuthPage({
   const { path } = await params;
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
-      <AuthView path={path} />
+      <Auth path={path} />
     </main>
   );
 }

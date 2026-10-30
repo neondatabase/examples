@@ -148,13 +148,15 @@ realtime/with-nextjs/
     ├── auth/
     │   ├── server.ts                    # getAuth, getUser
     │   ├── client.ts                    # Browser auth client
-    │   ├── provider.tsx                 # Managed Better Auth UI provider: sign-in ends with a full page load
-    │   ├── auth-ui.css                  # Managed Better Auth UI styles, for the auth pages only
-    │   ├── auth-page.tsx                # Prebuilt sign-in, sign-up and account pages
+    │   ├── provider.tsx                 # Better Auth UI provider: sign-in ends with a full page load
+    │   ├── auth-ui.css                  # shadcn theme for the auth pages only
+    │   ├── auth-page.tsx                # Sign-in, sign-up and password reset pages
     │   ├── handler.ts                   # Managed Better Auth API handler
     │   ├── user-menu.tsx                # Email and Sign out button
     │   └── session-lost.ts              # leaveSession, renewOrLeave
+    ├── components/                      # Better Auth UI and shadcn/ui components, added with `npx shadcn add @better-auth-ui/auth`
     ├── lib/
+    │   ├── query-client.ts              # TanStack Query client for Better Auth UI
     │   ├── env.ts                       # Lazy, validated server env; database name from DATABASE_URL
     │   ├── load-env.ts                  # Preloads .env.local for drizzle-kit (CLI only)
     │   ├── schema.ts                    # Drizzle table: realtime_next_todos
@@ -172,12 +174,16 @@ realtime/with-nextjs/
         ├── error.tsx                    # Error boundary
         ├── globals.css                  # Tailwind
         ├── (auth)/
-        │   ├── layout.tsx               # Managed Better Auth UI provider and styles
+        │   ├── layout.tsx               # Better Auth UI provider and styles
         │   ├── auth/[path]/page.tsx     # Route for src/auth/auth-page.tsx
         │   └── api/auth/[...path]/route.ts # Route for src/auth/handler.ts
         └── api/
             └── todos/live-query/route.ts # POST: renew the sealed query
 ```
+
+## Updating the auth UI components
+
+The auth components are vendored from the Better Auth UI shadcn registry. `src/components/auth/auth-redirect.tsx` carries a local patch that rejects redirect targets normalizing to `//host`: upstream `getSafeRedirectTo` in `@better-auth-ui/core` 1.7.30 can return `//host` for inputs like `/a/..//host`, which a browser treats as another site. After re-running `npx shadcn add @better-auth-ui/auth`, re-apply that patch until it's fixed upstream.
 
 ## Deploy
 

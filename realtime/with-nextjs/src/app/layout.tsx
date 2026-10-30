@@ -13,10 +13,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
-    // On the auth pages, next-themes (inside NeonAuthUIProvider) runs a pre-hydration script that sets class and
-    // color-scheme on <html> from the saved or system theme, which the server can't know. This suppresses
-    // <html>'s own attributes only.
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body>{children}</body>
     </html>
   );

@@ -1,5 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
+import { fileURLToPath } from "node:url";
 import { defineConfig, loadEnv } from "vite";
 
 export default defineConfig(({ mode }) => {
@@ -7,6 +8,10 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [tailwindcss(), react()],
+    // The `@/` alias from tsconfig.client.json; the Better Auth UI components import through it.
+    resolve: {
+      alias: { "@": fileURLToPath(new URL("./frontend", import.meta.url)) },
+    },
     // The browser's VITE_* copies of the URLs `neon env pull` writes.
     // Only these two are exposed; NEON_REALTIME_SECRET stays on the server.
     define: {
