@@ -1,0 +1,14 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "websocket-live-poll",
+	"provider": "Neon",
+	"title": "Live poll over WebSockets",
+	"description": "Vote over HTTP and watch results update live over a WebSocket, backed by Lakebase Postgres.",
+	"layout": "router",
+	"dependencies": [
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"pg@8.23.1"
+	],
+	"environment": []
+}

@@ -71,6 +71,13 @@
 			"path": "tanstack-ai/template.json",
 			"logo": "https://cdn.jsdelivr.net/gh/TanStack/tanstack.com@f24f323ba7ef981c7e1914e8aef1f161999da908/public/images/logos/logo-color-100.png",
 			"website": "https://tanstack.com/ai"
+		},
+		{
+			"id": "websocket-live-poll",
+			"provider": "Neon",
+			"title": "Live poll over WebSockets",
+			"description": "Vote over HTTP and watch results update live over a WebSocket, backed by Lakebase Postgres.",
+			"path": "websocket-live-poll/template.json"
 		}
 	]
 }
