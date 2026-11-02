@@ -53,6 +53,7 @@ a sibling from the template folder.
 	"provider": "SendGrid",
 	"title": "Send email with SendGrid",
 	"description": "Send transactional email through the SendGrid v3 API.",
+	"categories": ["email"],
 	"layout": "separate",
 	"dependencies": ["@sendgrid/mail@8.1.3"],
 	"environment": [
@@ -75,6 +76,7 @@ a sibling from the template folder.
 | --- | --- | --- |
 | `id` | yes | Lowercase letters, digits and hyphens, starting with a letter or digit. Must match the index entry's `id`; use it as the folder name too. |
 | `title`, `description` | yes | Non-empty. |
+| `categories` | no | Array of listing labels (`lowercase-with-hyphens`). Should match the index entry. Display-only; the CLI does not use it to scaffold. |
 | `provider` | no | Shown in listings. Defaults to `Neon`. |
 | `layout` | yes | `router` or `separate`; see below. |
 | `dependencies` | no | Exact `name@version` pins, scoped packages included. No ranges, no `latest`. The version a reviewer approved is the version that gets installed. |
@@ -115,13 +117,17 @@ Append to `templates` in `registry.json`:
 	"title": "Send email with SendGrid",
 	"description": "Send transactional email through the SendGrid v3 API.",
 	"path": "sendgrid/template.json",
+	"categories": ["email"],
 	"logo": "https://example.com/sendgrid.svg",
 	"website": "https://example.com/"
 }
 ```
 
-`id`, `title`, and `description` should match `template.json`. `logo` and `website` are optional
-display metadata: absolute `https://` URLs that the CLI never fetches or writes.
+`id`, `title`, `description`, and `categories` should match `template.json`. `categories` is a
+required array of lowercase hyphenated strings you can change without a schema edit (`official`,
+`ai`, `bots`, `ai-infrastructure`, and so on). A template can belong to several; listings can gate
+on a value such as `official`. `logo` and `website` are optional display metadata: absolute
+`https://` URLs that the CLI never fetches or writes.
 
 An entry that fails validation is dropped from the listing without an error, so check that your
 template shows up (see below). Do not add generated archives. The CLI builds what it needs from
@@ -180,4 +186,4 @@ in agreement.
 Change the CLI first for fields the parser uses. A field the published CLI does not know about is
 either ignored or makes the template invalid for every user on that version, so do not use a new
 field in a template until a CLI release that understands it is out. Display-only index fields
-(`logo`, `website`) may land here; the CLI never fetches them.
+(`logo`, `website`, `categories`) may land here; the CLI never fetches them.

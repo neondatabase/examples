@@ -4,6 +4,7 @@
 	"provider": "Neon",
 	"title": "Authenticated API with Hono and Managed Better Auth",
 	"description": "A protected Hono API that validates the caller's identity and gates access.",
+	"categories": ["official", "auth"],
 	"layout": "router",
 	"dependencies": ["hono@4.13.13", "jose@6.2.12"],
 	"environment": []
