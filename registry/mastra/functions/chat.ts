@@ -173,27 +173,21 @@ export default {
 
 		// useChat resends the whole conversation, but Memory already holds it and
 		// replays lastMessages, so only the latest user turn onward is new input.
-		// Rebuilt from id, role, and parts: Mastra also reads other message shapes.
+		// Rebuilt from known fields: Mastra also reads other message shapes.
 		const latestTurn = messages
 			.slice(messages.findLastIndex((message) => message.role === "user"))
-			.map(({ id, role, parts }) => ({ id, role, parts }));
-
-		// Mastra fetches file URLs in user messages from the server, so only accept
-		// the data: URLs useChat sends for attached files.
-		const hasOnlyAllowedParts = latestTurn.every(
-			(message) =>
-				message.role !== "user" ||
-				message.parts.every(
-					(part: { type?: unknown; text?: unknown; url?: unknown }) =>
-						(part?.type === "text" && typeof part.text === "string") ||
-						(part?.type === "file" &&
-							typeof part.url === "string" &&
-							part.url.startsWith("data:")),
-				),
-		);
-		if (!hasOnlyAllowedParts) {
+			.map(({ id, role, parts }) => ({
+				id,
+				role,
+				parts: role === "user" ? parts.map(toUserPart) : parts,
+			}));
+		if (
+			latestTurn.some((message) =>
+				message.parts.some((part: unknown) => part === undefined),
+			)
+		) {
 			return errorResponse(
-				"User messages may contain only text parts and file parts with data: URLs",
+				"User messages may contain only text parts and file parts with a data: URL and a mediaType",
 				400,
 			);
 		}
@@ -239,6 +233,33 @@ export default {
 		}
 	},
 };
+
+// Mastra fetches URLs in user message parts from the server, so a user part is
+// rebuilt as text or as a file with the data: URL useChat sends for attachments.
+function toUserPart(part: unknown) {
+	if (!part || typeof part !== "object") return undefined;
+	const { type, text, url, mediaType, filename } = part as Record<
+		string,
+		unknown
+	>;
+	if (type === "text" && typeof text === "string") {
+		return { type, text };
+	}
+	if (
+		type === "file" &&
+		typeof url === "string" &&
+		url.startsWith("data:") &&
+		typeof mediaType === "string"
+	) {
+		return {
+			type,
+			url,
+			mediaType,
+			...(typeof filename === "string" && { filename }),
+		};
+	}
+	return undefined;
+}
 
 function errorResponse(error: string, status: number): Response {
 	return Response.json({ error }, { status, headers: CORS_HEADERS });

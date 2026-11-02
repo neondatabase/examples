@@ -98,7 +98,7 @@ const { messages, sendMessage } = useChat({
 
 `/chat` and `/history` answer CORS preflight requests from any origin, because the bearer token, not the origin, is what grants access.
 
-User messages may contain text parts and file parts. Files must be `data:` URLs, which is how `useChat` sends attached files, because Mastra fetches any other URL from the function.
+User messages may contain text parts and file parts. A file part needs a `mediaType` and a `data:` URL, which is how `useChat` sends attached files, because Mastra fetches any other URL from the function. `/chat` drops every other field of a user message part.
 
 ### History
 
