@@ -112,6 +112,24 @@ test("a transient error is retried and successful Jev results are used", async (
   assert.equal(calls, 2);
 });
 
+test("a permanent error in a later batch restores the entire RRF order", async (t) => {
+  const candidates = Array.from({ length: 17 }, (_, index) => ({
+    ...rows[0]!,
+    id: String(index),
+  }));
+  let calls = 0;
+  gateway(t, (body) =>
+    ++calls === 1
+      ? success(Object.keys(body.questions).map((_, index) => index / 16))
+      : Response.json({ error: { message: "access denied" } }, { status: 403 }),
+  );
+  assert.deepEqual(await rerankResults("branching", candidates, 2), {
+    reranker: "rrf",
+    results: candidates.slice(0, 2),
+  });
+  assert.equal(calls, 2);
+});
+
 test("retry exhaustion propagates rather than falling back", async (t) => {
   const fetch = gateway(t, () =>
     Response.json({ error: { message: "unavailable" } }, { status: 503 }),

@@ -41,6 +41,9 @@ curl -sS -X PUT "$BASE_URL/documents/guide-1" \
   -H "Authorization: Bearer $SEARCH_API_KEY" -H 'Content-Type: application/json' \
   -d '{"content":"Neon branches isolate data and Functions together.","metadata":{"source":"docs","topic":"branching"}}'
 
+# From the project directory, refresh BM25 statistics after the initial load.
+npm run db:refresh
+
 curl -sS -X POST "$BASE_URL/search" \
   -H "Authorization: Bearer $SEARCH_API_KEY" -H 'Content-Type: application/json' \
   -d '{"query":"isolated branches","filter":{"source":"docs"},"limit":5}'
@@ -73,6 +76,7 @@ Jev uses the original query, up to 256 heading characters and 2,000 content char
 - Markdown chunks follow heading sections and preserve code, tables, lists, quotes, and HTML blocks. The target is 4,096 characters; oversized blocks stay intact. YAML/TOML front matter stays in the full document but is excluded from search. Writes with no searchable content or more than 100 chunks return HTTP 400.
 - Documents and queries use `qwen3-embedding-0-6b` with 1024 dimensions. Only query embeddings receive a [Qwen task instruction](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B/blob/main/config_sentence_transformers.json). Changing the model requires re-embedding documents and updating the vector schema.
 - Embeddings use `neon.embeddingModel()` through the AI SDK, with at most 32 inputs and 80,000 characters per batch, sequential calls, two retries, and a shared 30-second deadline per document or query embedding operation. Invalid, non-finite, and all-zero vectors are rejected before storage or search. Embeddings complete before the document transaction starts.
+- The migration creates indexes before the API accepts documents. Run `npm run db:refresh` after the initial load and after bulk document changes: it runs `VACUUM ANALYZE search_chunks` over the unpooled connection, outside a transaction. BM25 corpus statistics refresh at index build or VACUUM time; regular autovacuum maintains them between bulk loads. See [BM25 index maintenance](https://neon.com/docs/extensions/lakebase-text#keep-the-index-accurate). For a large corpus, also rebuild the vector index after loading so its automatic partition layout reflects the data.
 - With highly selective metadata filters, BM25 can return fewer matches than requested: its index candidate cap (`lakebase_bm25.default_limit`, default 1,000) applies before the parent-document filter. Raising the cap can help; BM25 prefilter alone cannot filter metadata on the parent table.
 
 This starter uses one shared service key. Add user authorization and tenant scoping before sharing it across customers.
@@ -88,7 +92,7 @@ npm run endpoint
 
 Repeat the requests above using the Function URL printed by `npm run endpoint` as `BASE_URL`.
 
-The Function slug is `search`. Its configured name also uses `search` to match the name returned by `neon functions get search`; the current deployment API does not propagate a separate display name from `neon.ts`.
+The bootstrap template ID is `hybrid-search-api`; the deployed Function slug and name are `search`. `neon functions get search` looks up that slug in the project and branch saved by `neon link` in `.neon`. The current deployment API does not propagate a separate display name from `neon.ts`.
 
 ## Checks
 

@@ -8,6 +8,7 @@
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "fmt": "prettier --write '**/*' --ignore-unknown",
     "db:setup": "drizzle-kit migrate",
+    "db:refresh": "node --env-file=.env.local --experimental-strip-types scripts/refresh-search.ts",
     "db:generate": "drizzle-kit generate",
     "dev": "neon dev",
     "deploy": "neon deploy --env .env.local",
