@@ -88,6 +88,8 @@ npm run endpoint
 
 Repeat the requests above using the Function URL printed by `npm run endpoint` as `BASE_URL`.
 
+The Function slug is `search`. Its configured name also uses `search` to match the name returned by `neon functions get search`; the current deployment API does not propagate a separate display name from `neon.ts`.
+
 ## Checks
 
 ```bash
