@@ -76,7 +76,7 @@
 			"id": "inngest-workflow",
 			"provider": "Inngest",
 			"title": "Durable workflow with Inngest",
-			"description": "A minimal multi-step workflow with retries and a durable sleep on Neon Functions, backed by Lakebase Postgres.",
+			"description": "A minimal multi-step workflow with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
 			"path": "inngest-workflow/template.json",
 			"logo": "https://raw.githubusercontent.com/inngest/website/refs/heads/main/public/logo.svg",
 			"website": "https://www.inngest.com/"
