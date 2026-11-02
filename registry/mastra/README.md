@@ -77,7 +77,7 @@ curl -N "$URL/chat" \
   }'
 ```
 
-`useChat` resends the whole conversation on every turn. Mastra stores each message once by its id, so the history doesn't duplicate.
+`useChat` resends the whole conversation on every turn. `/chat` passes only the latest turn to the agent, because Memory already stores the thread and replays its last 20 messages, so the history doesn't duplicate and a long thread doesn't grow the prompt.
 
 From a React app with the AI SDK, point `useChat` at the route and restore the thread from `/history`:
 

@@ -147,7 +147,6 @@ export default {
 		const isValidMessages =
 			Array.isArray(messages) &&
 			messages.length > 0 &&
-			messages.length <= 100 &&
 			messages.every(
 				(message) =>
 					message &&
@@ -167,10 +166,16 @@ export default {
 			!isValidTrigger
 		) {
 			return errorResponse(
-				"Provide id (the thread id), resourceId (1-200 characters each), and 1-100 UI messages",
+				"Provide id (the thread id), resourceId (1-200 characters each), and at least one UI message",
 				400,
 			);
 		}
+
+		// useChat resends the whole conversation, but Memory already holds it and
+		// replays lastMessages, so only the latest user turn onward is new input.
+		const latestTurn = messages.slice(
+			messages.findLastIndex((message) => message.role === "user"),
+		);
 
 		try {
 			// Only pass fields the server controls: the rest of params becomes the
@@ -180,7 +185,7 @@ export default {
 				agentId: "assistant",
 				version: "v7",
 				params: {
-					messages: messages as UIMessage[],
+					messages: latestTurn as UIMessage[],
 					trigger: trigger as "submit-message" | "regenerate-message",
 					memory: { thread: id as string, resource: resourceId as string },
 					maxSteps: 5,
