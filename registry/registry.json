@@ -71,6 +71,15 @@
 			"path": "tanstack-ai/template.json",
 			"logo": "https://cdn.jsdelivr.net/gh/TanStack/tanstack.com@f24f323ba7ef981c7e1914e8aef1f161999da908/public/images/logos/logo-color-100.png",
 			"website": "https://tanstack.com/ai"
+		},
+		{
+			"id": "resend-email",
+			"provider": "Resend",
+			"title": "Send email with Resend",
+			"description": "Send transactional email through the Resend API with a caller token.",
+			"path": "resend-email/template.json",
+			"logo": "https://resend.com/favicon.ico",
+			"website": "https://resend.com/"
 		}
 	]
 }
