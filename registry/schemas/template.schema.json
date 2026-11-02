@@ -22,7 +22,7 @@
 				"maxLength": 64,
 				"pattern": "^[a-z0-9][a-z0-9-]*$"
 			},
-			"description": "Display-only listing labels. Should match the index entry. A template can belong to several, e.g. official and bots."
+			"description": "Display-only listing labels. Should match the index entry. A template can belong to several, e.g. first-party and bots."
 		},
 		"layout": {
 			"enum": ["router", "separate"],

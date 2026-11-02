@@ -4,7 +4,7 @@
 	"provider": "Neon",
 	"title": "REST API with Hono and Postgres",
 	"description": "A CRUD REST API on Neon Functions with Hono, backed by Lakebase Postgres.",
-	"categories": ["official", "api"],
+	"categories": ["first-party", "api"],
 	"layout": "router",
 	"dependencies": [
 		"@neon/functions@0.11.0",

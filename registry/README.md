@@ -37,11 +37,11 @@ website deploy. The next `functions new` then sees the new files in the tarball.
 
 Each index entry has a `categories` array, mirrored in its `template.json`. Listings such as the
 templates page on neon.com use it to filter and group; the CLI ignores it. A template can carry
-several: Neon-maintained ones have `official` plus a topical label.
+several: Neon-maintained ones have `first-party` plus a topical label.
 
 | Category | Meaning |
 | --- | --- |
-| `official` | Maintained by Neon. |
+| `first-party` | Maintained by Neon. |
 | `ai` | Uses AI Gateway or an AI framework. |
 | `ai-infrastructure` | Third-party AI data or tooling provider. |
 | `api` | HTTP API backed by Postgres. |

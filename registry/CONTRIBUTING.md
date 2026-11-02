@@ -124,9 +124,9 @@ Append to `templates` in `registry.json`:
 ```
 
 `id`, `title`, `description`, and `categories` should match `template.json`. `categories` is a
-required array of lowercase hyphenated strings you can change without a schema edit (`official`,
+required array of lowercase hyphenated strings you can change without a schema edit (`first-party`,
 `ai`, `bots`, `ai-infrastructure`, and so on). A template can belong to several; listings can gate
-on a value such as `official`. `logo` and `website` are optional display metadata: absolute
+on a value such as `first-party`. `logo` and `website` are optional display metadata: absolute
 `https://` URLs that the CLI never fetches or writes.
 
 An entry that fails validation is dropped from the listing without an error, so check that your
