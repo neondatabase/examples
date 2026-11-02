@@ -8,7 +8,7 @@ export default defineConfig({
   aiGateway: true,
   functions: {
     search: {
-      name: "Hybrid search API",
+      name: "search",
       source: "src/index.ts",
       env: {
         SEARCH_API_KEY: process.env.SEARCH_API_KEY!,

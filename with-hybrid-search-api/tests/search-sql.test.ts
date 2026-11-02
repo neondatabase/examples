@@ -7,7 +7,7 @@ const dialect = new PgDialect();
 const query = "postgres branching";
 const filter = { source: "docs" };
 
-test("keyword SQL excludes zero scores, allows partial matches, and preserves metadata filtering", () => {
+test("BM25-ranked full-text search excludes zero scores, allows partial matches, and preserves metadata filtering", () => {
   const compiled = dialect.sqlToQuery(keywordSearchSql(query, filter, 10));
   // The matching contract must not exclude a document missing one query term.
   assert.doesNotMatch(compiled.sql, /@@|plainto_tsquery/);
@@ -25,11 +25,17 @@ test("keyword SQL excludes zero scores, allows partial matches, and preserves me
   assert.deepEqual(compiled.params, [query, JSON.stringify(filter), query, 10]);
 });
 
-test("hybrid SQL retains both metadata filters, relevance ties, and final cap", () => {
+test("hybrid SQL fuses the deduplicated union into a bounded RRF shortlist", () => {
   const vector = Array(1024).fill(0);
   vector[0] = 1;
   const compiled = dialect.sqlToQuery(
-    hybridSearchSql(vector, query, filter, 40, 60, 10),
+    hybridSearchSql({
+      embedding: vector,
+      query,
+      filter,
+      candidates: 40,
+      rrfK: 60,
+    }),
   );
   assert.doesNotMatch(compiled.sql, /@@|plainto_tsquery/);
   assert.match(
@@ -38,10 +44,14 @@ test("hybrid SQL retains both metadata filters, relevance ties, and final cap", 
   );
   assert.match(compiled.sql, /c.id AS "chunkId"/);
   assert.equal((compiled.sql.match(/WHERE d\.metadata @>/g) ?? []).length, 2);
-  assert.equal(
-    (compiled.sql.match(/FETCH FIRST \$\d+ ROWS WITH TIES/g) ?? []).length,
-    2,
+  assert.equal((compiled.sql.match(/LIMIT \$\d+/g) ?? []).length, 3);
+  assert.doesNotMatch(compiled.sql, /WITH TIES|AS "?rrf_score"?/);
+  assert.match(
+    compiled.sql,
+    /SELECT id FROM vector_ranked\s+UNION\s+SELECT id FROM keyword_ranked/,
   );
+  assert.match(compiled.sql, /FROM candidate_ids candidates/);
+  assert.equal((compiled.sql.match(/RANK\(\) OVER/g) ?? []).length, 2);
   assert.equal(
     compiled.params.filter((value) => value === JSON.stringify(filter)).length,
     2,
@@ -54,6 +64,10 @@ test("hybrid SQL retains both metadata filters, relevance ties, and final cap", 
     /AND[\s\S]*?'search_chunks_text_bm25'::regclass\) < 0/,
   );
   assert.equal(compiled.params.filter((value) => value === query).length, 2);
-  assert.match(compiled.sql, /ORDER BY score DESC, c\.id\s+LIMIT \$\d+/);
-  assert.equal(compiled.params.at(-1), 10);
+  assert.match(
+    compiled.sql,
+    /ORDER BY COALESCE\(1\.0 \/ \(\$\d+ \+ v\.vector_rank\), 0\)\s*\+ COALESCE\(1\.0 \/ \(\$\d+ \+ k\.keyword_rank\), 0\) DESC, c\.id\s+LIMIT \$\d+\s*$/,
+  );
+  assert.equal(compiled.params.filter((value) => value === 40).length, 3);
+  assert.deepEqual(compiled.params.slice(-3), [60, 60, 40]);
 });

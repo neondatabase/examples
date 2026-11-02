@@ -149,7 +149,11 @@ export function parseSearch(value: unknown) {
 }
 
 export function validateVector(value: number[]): number[] {
-  if (value.length !== 1024 || value.some((n) => !Number.isFinite(n))) {
+  if (
+    value.length !== 1024 ||
+    value.some((n) => !Number.isFinite(n)) ||
+    value.every((n) => n === 0)
+  ) {
     throw new Error("Gateway returned an invalid 1024-dimensional embedding");
   }
   return value;

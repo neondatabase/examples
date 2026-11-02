@@ -37,7 +37,8 @@ test("MCP initializes, discovers the read-only search tool and returns shared se
   const inputs: SearchInput[] = [];
   const response = {
     mode: "hybrid",
-    results: [{ id: "guide-1", content: "Neon branches" }],
+    reranker: "jev",
+    results: [{ id: "guide-1", chunkId: 1, content: "Neon branches" }],
   };
   const app = server(async (input) => {
     inputs.push(input);
@@ -61,25 +62,30 @@ test("MCP initializes, discovers the read-only search tool and returns shared se
       "query",
       "rrfK",
     ]);
-    const result = await client.callTool({
-      name: "search_documents",
-      arguments: { query: "  branches  " },
-    });
-    assert.equal(result.isError, undefined);
-    assert.deepEqual(result.structuredContent, response);
-    assert.deepEqual(result.content, [
-      { type: "text", text: JSON.stringify(response) },
-    ]);
-    assert.deepEqual(inputs, [
-      {
+    for (const reranker of ["jev", "rrf"]) {
+      response.reranker = reranker;
+      const result = await client.callTool({
+        name: "search_documents",
+        arguments: { query: "  branches  " },
+      });
+      assert.equal(result.isError, undefined);
+      // Exact payload equality also rejects added scores or probabilities.
+      assert.deepEqual(result.structuredContent, response);
+      assert.deepEqual(result.content, [
+        { type: "text", text: JSON.stringify(response) },
+      ]);
+    }
+    assert.deepEqual(
+      inputs,
+      ["jev", "rrf"].map(() => ({
         query: "branches",
         mode: "hybrid",
         filter: {},
         limit: 10,
         candidates: 40,
         rrfK: 60,
-      },
-    ]);
+      })),
+    );
   } finally {
     await client.close();
   }
@@ -116,7 +122,12 @@ test("MCP shares search validation and forwards modes, filters and tuning option
         candidates: 20,
         rrfK: 30,
       };
-      await client.callTool({ name: "search_documents", arguments: args });
+      const result = await client.callTool({
+        name: "search_documents",
+        arguments: args,
+      });
+      assert.equal(result.isError, undefined);
+      assert.deepEqual(result.structuredContent, { mode, results: [] });
       assert.deepEqual(inputs.at(-1), args);
     }
   } finally {

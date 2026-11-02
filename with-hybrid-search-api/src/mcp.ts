@@ -29,7 +29,7 @@ export function createSearchMcpHandler(
       {
         title: "Search documents",
         description:
-          "Search indexed Markdown documents and return ranked chunks with parent document IDs, heading context and metadata. Use hybrid, vector or keyword mode; limit counts chunks.",
+          "Search indexed Markdown using vector search and BM25-ranked full-text search. Hybrid mode uses Jev reranking with RRF fallback; vector and keyword modes skip reranking. Return ranked chunks with parent document IDs, heading context and metadata; limit counts chunks.",
         inputSchema: searchSchema,
         annotations: {
           readOnlyHint: true,
