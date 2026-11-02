@@ -71,6 +71,15 @@
 			"path": "tanstack-ai/template.json",
 			"logo": "https://cdn.jsdelivr.net/gh/TanStack/tanstack.com@f24f323ba7ef981c7e1914e8aef1f161999da908/public/images/logos/logo-color-100.png",
 			"website": "https://tanstack.com/ai"
+		},
+		{
+			"id": "inngest-workflow",
+			"provider": "Inngest",
+			"title": "Durable workflow with Inngest",
+			"description": "A minimal multi-step workflow with retries and a durable sleep on Neon Functions, backed by Lakebase Postgres.",
+			"path": "inngest-workflow/template.json",
+			"logo": "https://raw.githubusercontent.com/inngest/website/refs/heads/main/public/logo.svg",
+			"website": "https://www.inngest.com/"
 		}
 	]
 }

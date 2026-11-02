@@ -1,0 +1,25 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "inngest-workflow",
+	"provider": "Inngest",
+	"title": "Durable workflow with Inngest",
+	"description": "A minimal multi-step workflow with retries and a durable sleep on Neon Functions, backed by Lakebase Postgres.",
+	"layout": "router",
+	"dependencies": [
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"hono@4.13.13",
+		"inngest@4.26.2",
+		"pg@8.23.1"
+	],
+	"environment": [
+		{
+			"name": "INNGEST_SIGNING_KEY",
+			"description": "Signing key from Inngest Cloud. Inngest uses it to sign requests to /api/inngest; find it under Apps > Sync new app."
+		},
+		{
+			"name": "INNGEST_EVENT_KEY",
+			"description": "Event key from Inngest Cloud. The function uses it to send app/job.created events; find it under Manage > Keys."
+		}
+	]
+}
