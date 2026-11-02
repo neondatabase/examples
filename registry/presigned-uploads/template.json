@@ -1,0 +1,13 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "presigned-uploads",
+	"provider": "Neon",
+	"title": "Presigned uploads with Object Storage",
+	"description": "Create presigned PUT and GET URLs for a Neon Object Storage bucket.",
+	"layout": "router",
+	"dependencies": [
+		"@aws-sdk/client-s3@3.1156.0",
+		"@aws-sdk/s3-request-presigner@3.1156.0"
+	],
+	"environment": []
+}

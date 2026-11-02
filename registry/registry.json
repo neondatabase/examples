@@ -90,6 +90,13 @@
 			"categories": ["ai"],
 			"logo": "https://avatars.githubusercontent.com/u/149120496?s=200&v=4",
 			"website": "https://mastra.ai/"
+		},
+		{
+			"id": "presigned-uploads",
+			"provider": "Neon",
+			"title": "Presigned uploads with Object Storage",
+			"description": "Create presigned PUT and GET URLs for a Neon Object Storage bucket.",
+			"path": "presigned-uploads/template.json"
 		}
 	]
 }
