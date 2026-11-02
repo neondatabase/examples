@@ -173,15 +173,49 @@ export default {
 
 		// useChat resends the whole conversation, but Memory already holds it and
 		// replays lastMessages, so only the latest user turn onward is new input.
-		const latestTurn = messages.slice(
-			messages.findLastIndex((message) => message.role === "user"),
+		// Rebuilt from id, role, and parts: Mastra also reads other message shapes.
+		const latestTurn = messages
+			.slice(messages.findLastIndex((message) => message.role === "user"))
+			.map(({ id, role, parts }) => ({ id, role, parts }));
+
+		// Mastra fetches file URLs in user messages from the server, so only accept
+		// the data: URLs useChat sends for attached files.
+		const hasOnlyAllowedParts = latestTurn.every(
+			(message) =>
+				message.role !== "user" ||
+				message.parts.every(
+					(part: { type?: unknown; text?: unknown; url?: unknown }) =>
+						(part?.type === "text" && typeof part.text === "string") ||
+						(part?.type === "file" &&
+							typeof part.url === "string" &&
+							part.url.startsWith("data:")),
+				),
 		);
+		if (!hasOnlyAllowedParts) {
+			return errorResponse(
+				"User messages may contain only text parts and file parts with data: URLs",
+				400,
+			);
+		}
 
 		try {
 			// A thread that belongs to another resourceId reads as missing, as in /history.
 			const thread = await memory.getThreadById({ threadId: id as string });
 			if (thread && thread.resourceId !== resourceId) {
 				return errorResponse("Thread not found", 404);
+			}
+
+			// Mastra saves messages by id across all threads, so an id taken from
+			// another thread would overwrite that message.
+			const memoryStore = await storage.getStore("memory");
+			if (!memoryStore) {
+				throw new Error("PostgresStore has no memory store");
+			}
+			const { messages: stored } = await memoryStore.listMessagesById({
+				messageIds: latestTurn.map((message) => message.id),
+			});
+			if (stored.some((message) => message.threadId !== id)) {
+				return errorResponse("A message id belongs to another thread", 409);
 			}
 
 			// Only pass fields the server controls: the rest of params becomes the

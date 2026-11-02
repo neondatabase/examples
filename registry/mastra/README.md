@@ -98,6 +98,8 @@ const { messages, sendMessage } = useChat({
 
 `/chat` and `/history` answer CORS preflight requests from any origin, because the bearer token, not the origin, is what grants access.
 
+User messages may contain text parts and file parts. Files must be `data:` URLs, which is how `useChat` sends attached files, because Mastra fetches any other URL from the function.
+
 ### History
 
 ```bash
@@ -155,7 +157,7 @@ SELECT id, "workingMemory" FROM mastra.mastra_resources;
 | `401` | The bearer token is missing or wrong. |
 | `404` | `/chat`: the thread belongs to another `resourceId`. `/history`: no such thread for this `resourceId`. `/review`: no such run. |
 | `405` | The method is not `POST`. |
-| `409` | `/review`: the run is not awaiting review. |
+| `409` | `/chat`: a message id already belongs to another thread. `/review`: the run is not awaiting review. |
 | `502` | The model, database, or workflow failed. The function logs the cause. |
 | `503` | `MASTRA_FUNCTION_TOKEN` is unset or shorter than 32 characters, or `DATABASE_URL` or AI Gateway is missing. |
 
