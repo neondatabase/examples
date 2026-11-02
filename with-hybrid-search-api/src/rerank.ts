@@ -86,7 +86,7 @@ export async function rerankResults<T extends Candidate>(
         model: neon.decisionModel(RERANK_MODEL),
         state: { query },
         questions: questionsFor(batch),
-        maxRetries: 2,
+        maxRetries: 2, // At most three attempts per batch within the shared deadline.
         abortSignal,
       });
       for (const [index, row] of batch.entries()) {

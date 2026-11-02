@@ -1,6 +1,6 @@
 {
   "name": "with-hybrid-search-api",
-  "description": "A document API with vector and BM25 retrieval and Jev reranking on Neon Functions.",
+  "description": "A document API that combines vector search and BM25-ranked full-text search on Neon Functions.",
   "private": true,
   "type": "module",
   "scripts": {

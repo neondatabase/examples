@@ -1,6 +1,6 @@
 # Hybrid search API
 
-A [Hono](https://hono.dev) API on [Neon Functions](https://neon.com/docs/compute/functions/overview) for storing Markdown documents and searching their chunks. It uses Drizzle, [Neon AI Gateway](https://neon.com/docs/ai-gateway/embeddings) embeddings, and [Lakebase Search](https://neon.com/docs/ai/lakebase-search-get-started) for vector search, BM25 keyword search, or hybrid retrieval with [Jev reranking](https://neon.com/docs/ai-gateway/decisions).
+A [Hono](https://hono.dev) API on [Neon Functions](https://neon.com/docs/compute/functions/overview) for storing Markdown documents and searching their chunks. It uses Drizzle, [Neon AI Gateway](https://neon.com/docs/ai-gateway/embeddings) embeddings, and [Lakebase Search](https://neon.com/docs/ai/lakebase-search-get-started) to combine vector search and BM25-ranked full-text search.
 
 ## Setup
 
@@ -41,15 +41,12 @@ curl -sS -X PUT "$BASE_URL/documents/guide-1" \
   -H "Authorization: Bearer $SEARCH_API_KEY" -H 'Content-Type: application/json' \
   -d '{"content":"Neon branches isolate data and Functions together.","metadata":{"source":"docs","topic":"branching"}}'
 
-# From the project directory, refresh BM25 statistics after the initial load.
-npm run db:refresh
-
 curl -sS -X POST "$BASE_URL/search" \
   -H "Authorization: Bearer $SEARCH_API_KEY" -H 'Content-Type: application/json' \
   -d '{"query":"isolated branches","filter":{"source":"docs"},"limit":5}'
 ```
 
-Search defaults to hybrid mode: vector and BM25 retrieval produce an RRF shortlist, then Jev reranks it before the final result limit. Set `mode` to `vector` or `keyword` to use either alone, without reranking; keyword search makes no AI Gateway call.
+Search defaults to hybrid mode, combining vector search and BM25-ranked full-text search, with [Jev reranking](https://neon.com/docs/ai-gateway/decisions) before the final result limit. Set `mode` to `vector` for vector search only, or `keyword` for BM25-ranked full-text search only. Both modes skip reranking; `keyword` mode makes no AI Gateway call.
 
 Results contain chunk content, heading context, metadata, and the parent document `id`. Several hits can belong to one document; `limit` counts chunks. Use `GET /documents/:id` to retrieve the full document.
 
@@ -65,19 +62,21 @@ All endpoints require `Authorization: Bearer <SEARCH_API_KEY>`.
 | `DELETE /documents/:id` | —                                                                                                                                              | Delete the document and all its chunks.                                                          |
 | `POST /search`          | `{ "query": string, "mode"?: "hybrid" \| "vector" \| "keyword", "filter"?: object, "limit"?: number, "candidates"?: number, "rrfK"?: number }` | Return ranked chunks. `filter` matches JSONB metadata fields.                                    |
 
-Search defaults: `limit=10`, `candidates=40` per retriever, `rrfK=60`. Hybrid retrieval includes ties at each retriever's cutoff and takes up to `min(2 * candidates, 80)` chunks in RRF order for Jev. BM25 allows partial query-term matches and excludes zero-score chunks. Invalid input returns HTTP 400.
+Search defaults: `limit=10`, `candidates=40` per retriever, `rrfK=60`. BM25-ranked full-text search allows partial query-term matches and excludes zero-score chunks. Invalid input returns HTTP 400.
+
+In hybrid mode, reciprocal rank fusion (RRF) merges the results of vector search and BM25-ranked full-text search, counting a chunk found by both searches once. It orders a shortlist of up to `min(2 * candidates, 80)` chunks for Jev and supplies the fallback order if reranking fails with a non-retryable error. RRF is this starter's shortlist and fallback strategy; Jev does not require it. Each retriever includes ties at its candidate cutoff, and the final result limit applies after Jev reranking.
 
 Hybrid responses include `reranker: "jev"` or `"rrf"`. With Jev, each result includes `relevanceProbability`; ties retain RRF order. The existing `score` remains the RRF score: use the returned array order. Jev scores answer relevance, not answer completeness, and this starter does not apply a no-answer threshold.
 
-Jev uses the original query, up to 256 heading characters and 2,000 content characters per chunk, with at most 16 candidates and 48,000 serialized UTF-8 bytes per batch. A 15-second deadline covers all reranking batches and retries. Non-retryable errors (including unavailable models, invalid responses, or inputs exceeding the reranking budget) fall back to the RRF shortlist. Retryable errors get up to two retries; exhaustion or timeout returns HTTP 503 rather than silently changing ranking.
+Jev uses the original query, up to 256 heading characters and 2,000 content characters per chunk, with at most 16 candidates and 48,000 serialized UTF-8 bytes per batch. Each batch gets one initial attempt and up to two retries for retryable errors (at most three attempts per batch). A shared 15-second deadline covers all reranking batches and retries, so it can stop attempts earlier. Non-retryable errors (including unavailable models, invalid responses, or inputs exceeding the reranking budget) fall back to the RRF shortlist. Retry exhaustion or timeout returns HTTP 503 rather than silently changing ranking.
 
 ## Notes
 
 - Markdown chunks follow heading sections and preserve code, tables, lists, quotes, and HTML blocks. The target is 4,096 characters; oversized blocks stay intact. YAML/TOML front matter stays in the full document but is excluded from search. Writes with no searchable content or more than 100 chunks return HTTP 400.
 - Documents and queries use `qwen3-embedding-0-6b` with 1024 dimensions. Only query embeddings receive a [Qwen task instruction](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B/blob/main/config_sentence_transformers.json). Changing the model requires re-embedding documents and updating the vector schema.
 - Embeddings use `neon.embeddingModel()` through the AI SDK, with at most 32 inputs and 80,000 characters per batch, sequential calls, two retries, and a shared 30-second deadline per document or query embedding operation. Invalid, non-finite, and all-zero vectors are rejected before storage or search. Embeddings complete before the document transaction starts.
-- The migration creates indexes before the API accepts documents. Run `npm run db:refresh` after the initial load and after bulk document changes: it runs `VACUUM ANALYZE search_chunks` over the unpooled connection, outside a transaction. BM25 corpus statistics refresh at index build or VACUUM time; regular autovacuum maintains them between bulk loads. See [BM25 index maintenance](https://neon.com/docs/extensions/lakebase-text#keep-the-index-accurate). For a large corpus, also rebuild the vector index after loading so its automatic partition layout reflects the data.
-- With highly selective metadata filters, BM25 can return fewer matches than requested: its index candidate cap (`lakebase_bm25.default_limit`, default 1,000) applies before the parent-document filter. Raising the cap can help; BM25 prefilter alone cannot filter metadata on the parent table.
+- A newly built index already has up-to-date statistics for BM25-ranked full-text search. After many document updates or deletes, run `npm run db:refresh` to refresh those statistics with `VACUUM ANALYZE search_chunks` over the unpooled connection, outside a transaction. Regular autovacuum handles routine maintenance. See [full-text index maintenance](https://neon.com/docs/extensions/lakebase-text#keep-the-index-accurate). For a large corpus, also rebuild the vector index after loading so its automatic partition layout reflects the data.
+- With highly selective metadata filters, BM25-ranked full-text search can return fewer matches than requested: its index candidate cap (`lakebase_bm25.default_limit`, default 1,000) applies before the parent-document filter. Raising the cap can help; the full-text index's prefilter alone cannot filter metadata on the parent table.
 
 This starter uses one shared service key. Add user authorization and tenant scoping before sharing it across customers.
 

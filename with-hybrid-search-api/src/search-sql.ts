@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 
-// Lakebase BM25 and RRF have no query-builder equivalents. Every request value
-// is bound through Drizzle's sql template.
+// BM25-ranked full-text search and RRF have no query-builder equivalents.
+// Every request value is bound through Drizzle's sql template.
 // Scalar scoring returns zero for non-matches; filter them under every plan.
 const bm25Score = (query: string) => sql`
   c.search_tsv <@> to_bm25query(to_tsvector('english', ${query}),

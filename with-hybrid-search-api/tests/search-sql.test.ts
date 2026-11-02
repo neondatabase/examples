@@ -7,7 +7,7 @@ const dialect = new PgDialect();
 const query = "postgres branching";
 const filter = { source: "docs" };
 
-test("keyword SQL excludes zero scores, allows partial matches, and preserves metadata filtering", () => {
+test("BM25-ranked full-text search excludes zero scores, allows partial matches, and preserves metadata filtering", () => {
   const compiled = dialect.sqlToQuery(keywordSearchSql(query, filter, 10));
   // The matching contract must not exclude a document missing one query term.
   assert.doesNotMatch(compiled.sql, /@@|plainto_tsquery/);

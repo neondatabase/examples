@@ -11,9 +11,11 @@ const client = new Client({
 });
 try {
   await client.connect();
-  // VACUUM refreshes BM25 corpus statistics and must run outside a transaction.
+  // Refresh BM25-ranked full-text search statistics outside a transaction.
   await client.query("VACUUM ANALYZE public.search_chunks");
-  console.log("Refreshed search_chunks BM25 and planner statistics");
+  console.log(
+    "Refreshed BM25-ranked full-text search and planner statistics for search_chunks",
+  );
 } finally {
   await client.end();
 }
