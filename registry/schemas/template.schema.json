@@ -11,6 +11,19 @@
 		"provider": { "type": "string" },
 		"title": { "type": "string", "minLength": 1 },
 		"description": { "type": "string", "minLength": 1 },
+		"categories": {
+			"type": "array",
+			"minItems": 1,
+			"maxItems": 16,
+			"uniqueItems": true,
+			"items": {
+				"type": "string",
+				"minLength": 1,
+				"maxLength": 64,
+				"pattern": "^[a-z0-9][a-z0-9-]*$"
+			},
+			"description": "Display-only listing labels. Should match the index entry. A template can belong to several, e.g. first-party and bots."
+		},
 		"layout": {
 			"enum": ["router", "separate"],
 			"description": "router generates one function that dispatches on URL path; separate deploys each operation as its own function."

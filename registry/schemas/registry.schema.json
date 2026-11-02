@@ -13,13 +13,26 @@
 			"maxItems": 500,
 			"items": {
 				"type": "object",
-				"required": ["id", "title", "description", "path"],
+				"required": ["id", "title", "description", "path", "categories"],
 				"additionalProperties": false,
 				"properties": {
 					"id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
 					"provider": { "type": "string" },
 					"title": { "type": "string", "minLength": 1 },
 					"description": { "type": "string", "minLength": 1 },
+					"categories": {
+						"type": "array",
+						"minItems": 1,
+						"maxItems": 16,
+						"uniqueItems": true,
+						"items": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 64,
+							"pattern": "^[a-z0-9][a-z0-9-]*$"
+						},
+						"description": "Display-only listing labels. A template can belong to several, e.g. first-party and bots. The CLI never fetches them."
+					},
 					"path": {
 						"type": "string",
 						"maxLength": 255,

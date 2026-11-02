@@ -4,6 +4,7 @@
 	"provider": "Neon",
 	"title": "Image analysis with AI Gateway",
 	"description": "Describe an uploaded image with structured details using a vision model on Neon AI Gateway.",
+	"categories": ["first-party", "ai"],
 	"layout": "router",
 	"dependencies": [
 		"@neon/ai-sdk-provider@1.1.0",
