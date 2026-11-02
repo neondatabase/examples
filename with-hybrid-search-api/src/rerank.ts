@@ -8,42 +8,19 @@ const BATCH_BYTES = 48_000;
 const EXCERPT_CHARS = 2_000;
 
 type Passage = { heading: string; content: string };
-type Candidate = Passage & {
-  chunkId: number;
-  vectorRank: number | null;
-  keywordRank: number | null;
-};
+type Candidate = Passage & { chunkId: number };
 
 type RankingOptions<T extends Candidate> = {
   query: string;
+  /** Shortlist in SQL RRF order, retained for fallback. */
   candidates: readonly T[];
   limit: number;
-  rrfK: number;
 };
 
 type RankingResult<T> = {
   reranker: "jev" | "rrf";
   results: T[];
 };
-
-function rankWithRrf<T extends Candidate>(
-  candidates: readonly T[],
-  k: number,
-  limit: number,
-): T[] {
-  const rankScore = (rank: number | null) =>
-    rank === null ? 0 : 1 / (k + rank);
-  return candidates
-    .map((candidate) => ({
-      candidate,
-      score: rankScore(candidate.vectorRank) + rankScore(candidate.keywordRank),
-    }))
-    .sort(
-      (a, b) => b.score - a.score || a.candidate.chunkId - b.candidate.chunkId,
-    )
-    .slice(0, limit)
-    .map(({ candidate }) => candidate);
-}
 
 function questionsFor(rows: readonly Passage[]) {
   return Object.fromEntries(
@@ -110,7 +87,6 @@ export async function rerankResults<T extends Candidate>({
   query,
   candidates,
   limit,
-  rrfK,
 }: RankingOptions<T>): Promise<RankingResult<T>> {
   if (!candidates.length) return { reranker: "jev", results: [] };
   try {
@@ -158,6 +134,6 @@ export async function rerankResults<T extends Candidate>({
       model: RERANK_MODEL,
       error: error instanceof Error ? error.name : "unknown",
     });
-    return { reranker: "rrf", results: rankWithRrf(candidates, rrfK, limit) };
+    return { reranker: "rrf", results: candidates.slice(0, limit) };
   }
 }

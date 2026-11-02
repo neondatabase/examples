@@ -34,7 +34,8 @@ const rows = [
   },
 ];
 
-const fallback = [rows[1]!, rows[0]!];
+const rrfRows = [rows[1]!, rows[0]!, rows[2]!];
+const fallback = rrfRows.slice(0, 2);
 
 type RequestBody = {
   model: string;
@@ -77,7 +78,7 @@ function success(probabilities: number[]) {
   });
 }
 
-test("Jev ranks the complete union before the final limit and breaks ties by chunk ID", async (t) => {
+test("Jev reranks the SQL shortlist before the final limit and breaks ties by chunk ID", async (t) => {
   gateway(t, (body) => {
     assert.equal(body.model, "typesafeai-jev-1-14-0");
     assert.deepEqual(body.state, { query: "isolated branches" });
@@ -89,7 +90,6 @@ test("Jev ranks the complete union before the final limit and breaks ties by chu
     query: "isolated branches",
     candidates: [rows[0]!, rows[2]!, rows[1]!],
     limit: 2,
-    rrfK: 60,
   });
   assert.equal(result.reranker, "jev");
   assert.deepEqual(
@@ -113,9 +113,8 @@ test("non-retryable model access errors fall back immediately to RRF", async (t)
   );
   const result = await rerankResults({
     query: "branching",
-    candidates: rows,
+    candidates: rrfRows,
     limit: 2,
-    rrfK: 60,
   });
   assert.equal(result.reranker, "rrf");
   assert.deepEqual(result.results, fallback);
@@ -127,34 +126,18 @@ test("non-retryable model access errors fall back immediately to RRF", async (t)
   assert.equal(fetch.mock.callCount(), 1);
 });
 
-test("RRF fallback respects k, missing ranks, and deterministic ties without mutating candidates", async (t) => {
+test("RRF fallback preserves the SQL order and applies only the result limit", async (t) => {
   gateway(t, () =>
     Response.json({ error: { message: "denied" } }, { status: 403 }),
   );
-  const candidates = [
-    { ...rows[0]!, chunkId: 9 },
-    { ...rows[0]!, chunkId: 4, vectorRank: null, keywordRank: 1 },
-    { ...rows[1]!, vectorRank: 4, keywordRank: 4 },
-  ];
-  const before = structuredClone(candidates);
+  const before = structuredClone(rrfRows);
   const result = await rerankResults({
     query: "branching",
-    candidates,
-    limit: 3,
-    rrfK: 1,
+    candidates: rrfRows,
+    limit: 2,
   });
-  assert.deepEqual(result, {
-    reranker: "rrf",
-    results: [candidates[1], candidates[0], candidates[2]],
-  });
-  assert.deepEqual(
-    await rerankResults({ query: "branching", candidates, limit: 3, rrfK: 60 }),
-    {
-      reranker: "rrf",
-      results: [candidates[2], candidates[1], candidates[0]],
-    },
-  );
-  assert.deepEqual(candidates, before);
+  assert.deepEqual(result, { reranker: "rrf", results: fallback });
+  assert.deepEqual(rrfRows, before);
 });
 
 test("a transient error is retried and successful Jev results are used", async (t) => {
@@ -168,7 +151,6 @@ test("a transient error is retried and successful Jev results are used", async (
     query: "branching",
     candidates: rows,
     limit: 1,
-    rrfK: 60,
   });
   assert.equal(result.reranker, "jev");
   assert.equal(result.results[0]!.id, "second");
@@ -180,7 +162,7 @@ test("a permanent error in a later batch restores the entire RRF order", async (
     ...rows[0]!,
     id: String(index),
     chunkId: index,
-    vectorRank: 17 - index,
+    vectorRank: index + 1,
   }));
   let calls = 0;
   gateway(t, (body) =>
@@ -191,13 +173,12 @@ test("a permanent error in a later batch restores the entire RRF order", async (
   assert.deepEqual(
     await rerankResults({
       query: "branching",
-      candidates: candidates,
+      candidates,
       limit: 2,
-      rrfK: 60,
     }),
     {
       reranker: "rrf",
-      results: [candidates[16], candidates[15]],
+      results: candidates.slice(0, 2),
     },
   );
   assert.equal(calls, 2);
@@ -208,7 +189,7 @@ test("retry exhaustion propagates rather than falling back", async (t) => {
     Response.json({ error: { message: "unavailable" } }, { status: 503 }),
   );
   await assert.rejects(
-    rerankResults({ query: "branching", candidates: rows, limit: 2, rrfK: 60 }),
+    rerankResults({ query: "branching", candidates: rrfRows, limit: 2 }),
     isRetryableGatewayError,
   );
   assert.equal(fetch.mock.callCount(), 3);
@@ -225,9 +206,8 @@ test("a non-retryable response after a transient failure falls back to RRF", asy
   assert.deepEqual(
     await rerankResults({
       query: "branching",
-      candidates: rows,
+      candidates: rrfRows,
       limit: 2,
-      rrfK: 60,
     }),
     {
       reranker: "rrf",
@@ -242,7 +222,7 @@ test("a reranking timeout propagates rather than falling back", async (t) => {
     throw new DOMException("deadline", "TimeoutError");
   });
   await assert.rejects(
-    rerankResults({ query: "branching", candidates: rows, limit: 2, rrfK: 60 }),
+    rerankResults({ query: "branching", candidates: rrfRows, limit: 2 }),
     isRetryableGatewayError,
   );
 });
@@ -253,9 +233,8 @@ test("missing or invalid probabilities fall back without returning partial Jev r
   assert.deepEqual(
     await rerankResults({
       query: "branching",
-      candidates: rows,
+      candidates: rrfRows,
       limit: 2,
-      rrfK: 60,
     }),
     {
       reranker: "rrf",
@@ -267,9 +246,8 @@ test("missing or invalid probabilities fall back without returning partial Jev r
     (
       await rerankResults({
         query: "branching",
-        candidates: rows,
+        candidates: rrfRows,
         limit: 2,
-        rrfK: 60,
       })
     ).reranker,
     "rrf",
@@ -311,7 +289,6 @@ test("reranking is bounded, batches candidates, and shares one deadline", async 
     query: "branching",
     candidates: many,
     limit: 2,
-    rrfK: 60,
   });
   for (const call of fetch.mock.calls)
     signals.push((call.arguments[1] as RequestInit).signal!);
@@ -335,7 +312,6 @@ test("empty results skip the gateway and oversized reranking input uses RRF", as
       query: "branching",
       candidates: [],
       limit: 2,
-      rrfK: 60,
     }),
     {
       reranker: "jev",
@@ -346,9 +322,8 @@ test("empty results skip the gateway and oversized reranking input uses RRF", as
     (
       await rerankResults({
         query: "雪".repeat(20_000),
-        candidates: rows,
+        candidates: rrfRows,
         limit: 2,
-        rrfK: 60,
       })
     ).reranker,
     "rrf",

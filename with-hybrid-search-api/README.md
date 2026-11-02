@@ -46,7 +46,7 @@ curl -sS -X POST "$BASE_URL/search" \
   -d '{"query":"isolated branches","filter":{"source":"docs"},"limit":5}'
 ```
 
-Search defaults to hybrid mode, combining vector search and BM25-ranked full-text search, with [Jev reranking](https://neon.com/docs/ai-gateway/decisions) before the final result limit. Set `mode` to `vector` for vector search only, or `keyword` for BM25-ranked full-text search only. Both modes skip reranking; `keyword` mode makes no AI Gateway call.
+Search defaults to hybrid mode, combining vector search and BM25-ranked full-text search, using reciprocal rank fusion (RRF) in SQL to select a shortlist. [Jev](https://neon.com/docs/ai-gateway/decisions) reranks that shortlist before the final result limit. Set `mode` to `vector` for vector search only, or `keyword` for BM25-ranked full-text search only. Both modes skip reranking; `keyword` mode makes no AI Gateway call.
 
 Results contain chunks with heading context, metadata, and the parent document `id`. `limit` counts chunks, so several hits can belong to one document. Use `GET /documents/:id` for the full document.
 
@@ -62,11 +62,11 @@ All endpoints require `Authorization: Bearer <SEARCH_API_KEY>`.
 | `DELETE /documents/:id` | —                                                                                                                                              | Delete the document and all its chunks.                                                          |
 | `POST /search`          | `{ "query": string, "mode"?: "hybrid" \| "vector" \| "keyword", "filter"?: object, "limit"?: number, "candidates"?: number, "rrfK"?: number }` | Return ranked chunks. `filter` matches JSONB metadata fields.                                    |
 
-Search defaults: `limit=10`, `candidates=40` per retriever, and `rrfK=60` for fallback ranking. Invalid input returns HTTP 400.
+Search defaults: `limit=10`, `candidates=40` per retriever and for the fused shortlist, and `rrfK=60` for RRF fusion. Invalid input returns HTTP 400.
 
 Hybrid responses identify the `reranker` as `"jev"` or `"rrf"`. Both return the same result fields without scores or probabilities. Results are ordered from most to least relevant.
 
-Non-retryable Jev errors fall back to reciprocal rank fusion (RRF). Retryable errors get up to two retries per batch within a shared 15-second deadline. Retry exhaustion or timeout returns HTTP 503.
+Non-retryable Jev errors return the shortlist in its RRF order. Retryable errors get up to two retries per batch within a shared 15-second deadline. Retry exhaustion or timeout returns HTTP 503.
 
 ## Notes
 

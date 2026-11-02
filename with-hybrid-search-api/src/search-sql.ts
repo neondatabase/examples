@@ -38,14 +38,16 @@ type HybridSearchOptions = {
   query: string;
   filter: object;
   candidates: number;
+  rrfK: number;
 };
 
-// Bound each retriever before taking their union; no fusion score filters Jev's input.
+// Fuse the bounded retrievers in SQL; Jev reranks the shortlist before the result limit.
 export const hybridSearchSql = ({
   embedding,
   query,
   filter,
   candidates,
+  rrfK,
 }: HybridSearchOptions) => sql`
   WITH vector_candidates AS (
     SELECT c.id, c.embedding <=> ${JSON.stringify(embedding)}::vector AS distance
@@ -83,4 +85,6 @@ export const hybridSearchSql = ({
   JOIN search_documents d ON d.id = c.document_id
   LEFT JOIN vector_ranked v ON v.id = c.id
   LEFT JOIN keyword_ranked k ON k.id = c.id
-  ORDER BY c.id`;
+  ORDER BY COALESCE(1.0 / (${rrfK} + v.vector_rank), 0)
+         + COALESCE(1.0 / (${rrfK} + k.keyword_rank), 0) DESC, c.id
+  LIMIT ${candidates}`;

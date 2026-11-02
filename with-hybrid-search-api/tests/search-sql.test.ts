@@ -25,11 +25,17 @@ test("BM25-ranked full-text search excludes zero scores, allows partial matches,
   assert.deepEqual(compiled.params, [query, JSON.stringify(filter), query, 10]);
 });
 
-test("hybrid SQL returns the bounded deduplicated union without fusion scores or a final cutoff", () => {
+test("hybrid SQL fuses the deduplicated union into a bounded RRF shortlist", () => {
   const vector = Array(1024).fill(0);
   vector[0] = 1;
   const compiled = dialect.sqlToQuery(
-    hybridSearchSql({ embedding: vector, query, filter, candidates: 40 }),
+    hybridSearchSql({
+      embedding: vector,
+      query,
+      filter,
+      candidates: 40,
+      rrfK: 60,
+    }),
   );
   assert.doesNotMatch(compiled.sql, /@@|plainto_tsquery/);
   assert.match(
@@ -38,11 +44,8 @@ test("hybrid SQL returns the bounded deduplicated union without fusion scores or
   );
   assert.match(compiled.sql, /c.id AS "chunkId"/);
   assert.equal((compiled.sql.match(/WHERE d\.metadata @>/g) ?? []).length, 2);
-  assert.equal((compiled.sql.match(/LIMIT \$\d+/g) ?? []).length, 2);
-  assert.doesNotMatch(
-    compiled.sql,
-    /WITH TIES|COALESCE|rrf_score|ORDER BY score DESC/,
-  );
+  assert.equal((compiled.sql.match(/LIMIT \$\d+/g) ?? []).length, 3);
+  assert.doesNotMatch(compiled.sql, /WITH TIES|AS "?rrf_score"?/);
   assert.match(
     compiled.sql,
     /SELECT id FROM vector_ranked\s+UNION\s+SELECT id FROM keyword_ranked/,
@@ -61,7 +64,10 @@ test("hybrid SQL returns the bounded deduplicated union without fusion scores or
     /AND[\s\S]*?'search_chunks_text_bm25'::regclass\) < 0/,
   );
   assert.equal(compiled.params.filter((value) => value === query).length, 2);
-  assert.match(compiled.sql, /ORDER BY c\.id\s*$/);
-  assert.equal(compiled.params.filter((value) => value === 40).length, 2);
-  assert.ok(!compiled.params.includes(60));
+  assert.match(
+    compiled.sql,
+    /ORDER BY COALESCE\(1\.0 \/ \(\$\d+ \+ v\.vector_rank\), 0\)\s*\+ COALESCE\(1\.0 \/ \(\$\d+ \+ k\.keyword_rank\), 0\) DESC, c\.id\s+LIMIT \$\d+\s*$/,
+  );
+  assert.equal(compiled.params.filter((value) => value === 40).length, 3);
+  assert.deepEqual(compiled.params.slice(-3), [60, 60, 40]);
 });

@@ -217,13 +217,13 @@ app.post("/search", async (c) => {
       query: input.query,
       filter: input.filter,
       candidates: input.candidates,
+      rrfK: input.rrfK,
     }),
   );
   const ranked = await rerankResults({
     query: input.query,
     candidates: rows,
     limit: input.limit,
-    rrfK: input.rrfK,
   });
   return c.json({
     mode: input.mode,
