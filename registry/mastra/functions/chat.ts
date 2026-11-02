@@ -178,6 +178,12 @@ export default {
 		);
 
 		try {
+			// A thread that belongs to another resourceId reads as missing, as in /history.
+			const thread = await memory.getThreadById({ threadId: id as string });
+			if (thread && thread.resourceId !== resourceId) {
+				return errorResponse("Thread not found", 404);
+			}
+
 			// Only pass fields the server controls: the rest of params becomes the
 			// agent's execution options.
 			const stream = await handleChatStream({

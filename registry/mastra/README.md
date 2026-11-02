@@ -153,7 +153,7 @@ SELECT id, "workingMemory" FROM mastra.mastra_resources;
 | --- | --- |
 | `400` | The body is not JSON or fails validation. |
 | `401` | The bearer token is missing or wrong. |
-| `404` | `/history`: no such thread for this `resourceId`. `/review`: no such run. |
+| `404` | `/chat`: the thread belongs to another `resourceId`. `/history`: no such thread for this `resourceId`. `/review`: no such run. |
 | `405` | The method is not `POST`. |
 | `409` | `/review`: the run is not awaiting review. |
 | `502` | The model, database, or workflow failed. The function logs the cause. |
