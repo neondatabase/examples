@@ -21,24 +21,28 @@ type RankingOptions<T extends Candidate> = {
   rrfK: number;
 };
 
-type RankingResult<T> =
-  | { reranker: "jev"; results: (T & { relevanceProbability: number })[] }
-  | { reranker: "rrf"; results: (T & { score: number })[] };
+type RankingResult<T> = {
+  reranker: "jev" | "rrf";
+  results: T[];
+};
 
 function rankWithRrf<T extends Candidate>(
   candidates: readonly T[],
   k: number,
   limit: number,
-): (T & { score: number })[] {
+): T[] {
   const rankScore = (rank: number | null) =>
     rank === null ? 0 : 1 / (k + rank);
   return candidates
     .map((candidate) => ({
-      ...candidate,
+      candidate,
       score: rankScore(candidate.vectorRank) + rankScore(candidate.keywordRank),
     }))
-    .sort((a, b) => b.score - a.score || a.chunkId - b.chunkId)
-    .slice(0, limit);
+    .sort(
+      (a, b) => b.score - a.score || a.candidate.chunkId - b.candidate.chunkId,
+    )
+    .slice(0, limit)
+    .map(({ candidate }) => candidate);
 }
 
 function questionsFor(rows: readonly Passage[]) {
@@ -112,7 +116,7 @@ export async function rerankResults<T extends Candidate>({
   try {
     const abortSignal = AbortSignal.timeout(RERANK_TIMEOUT_MS);
     const model = neon.decisionModel(RERANK_MODEL);
-    const scored: (T & { relevanceProbability: number })[] = [];
+    const scored: { candidate: T; probability: number }[] = [];
     for (const batch of splitRerankBatches(query, candidates)) {
       const { answers } = await decide({
         model,
@@ -134,16 +138,19 @@ export async function rerankResults<T extends Candidate>({
               "Gateway returned an invalid reranking probability",
             );
           }
-          return { ...candidate, relevanceProbability: answer.probability };
+          return { candidate, probability: answer.probability };
         }),
       );
     }
     scored.sort(
       (a, b) =>
-        b.relevanceProbability - a.relevanceProbability ||
-        a.chunkId - b.chunkId,
+        b.probability - a.probability ||
+        a.candidate.chunkId - b.candidate.chunkId,
     );
-    return { reranker: "jev", results: scored.slice(0, limit) };
+    return {
+      reranker: "jev",
+      results: scored.slice(0, limit).map(({ candidate }) => candidate),
+    };
   } catch (error) {
     // Retryable failures, including retry exhaustion and deadlines, remain 503s.
     if (isRetryableGatewayError(error)) throw error;

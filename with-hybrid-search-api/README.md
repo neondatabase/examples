@@ -64,7 +64,7 @@ All endpoints require `Authorization: Bearer <SEARCH_API_KEY>`.
 
 Search defaults: `limit=10`, `candidates=40` per retriever, and `rrfK=60` for fallback ranking. Invalid input returns HTTP 400.
 
-Hybrid responses identify the `reranker` as `"jev"` or `"rrf"`. Jev results include `relevanceProbability`; fallback results include the RRF `score`. Follow the returned result order.
+Hybrid responses identify the `reranker` as `"jev"` or `"rrf"`. Both return the same result fields without scores or probabilities. Results are ordered from most to least relevant.
 
 Non-retryable Jev errors fall back to reciprocal rank fusion (RRF). Retryable errors get up to two retries per batch within a shared 15-second deadline. Retry exhaustion or timeout returns HTTP 503.
 

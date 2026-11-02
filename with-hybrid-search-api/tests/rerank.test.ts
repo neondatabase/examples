@@ -34,10 +34,7 @@ const rows = [
   },
 ];
 
-const fallback = [
-  { ...rows[1]!, score: 1 / 62 + 1 / 61 },
-  { ...rows[0]!, score: 1 / 61 },
-];
+const fallback = [rows[1]!, rows[0]!];
 
 type RequestBody = {
   model: string;
@@ -99,9 +96,12 @@ test("Jev ranks the complete union before the final limit and breaks ties by chu
     result.results.map((row) => row.id),
     ["second", "third"],
   );
-  if (result.reranker !== "jev") assert.fail("Expected Jev results");
-  assert.equal(result.results[0]!.relevanceProbability, 0.9);
-  assert.ok(result.results.every((row) => !("score" in row)));
+  assert.deepEqual(result.results, [rows[1], rows[2]]);
+  assert.ok(
+    result.results.every(
+      (row) => !("score" in row) && !("relevanceProbability" in row),
+    ),
+  );
 });
 
 test("non-retryable model access errors fall back immediately to RRF", async (t) => {
@@ -119,6 +119,11 @@ test("non-retryable model access errors fall back immediately to RRF", async (t)
   });
   assert.equal(result.reranker, "rrf");
   assert.deepEqual(result.results, fallback);
+  assert.ok(
+    result.results.every(
+      (row) => !("score" in row) && !("relevanceProbability" in row),
+    ),
+  );
   assert.equal(fetch.mock.callCount(), 1);
 });
 
@@ -129,7 +134,7 @@ test("RRF fallback respects k, missing ranks, and deterministic ties without mut
   const candidates = [
     { ...rows[0]!, chunkId: 9 },
     { ...rows[0]!, chunkId: 4, vectorRank: null, keywordRank: 1 },
-    rows[1]!,
+    { ...rows[1]!, vectorRank: 4, keywordRank: 4 },
   ];
   const before = structuredClone(candidates);
   const result = await rerankResults({
@@ -140,12 +145,15 @@ test("RRF fallback respects k, missing ranks, and deterministic ties without mut
   });
   assert.deepEqual(result, {
     reranker: "rrf",
-    results: [
-      { ...candidates[2]!, score: 1 / 3 + 1 / 2 },
-      { ...candidates[1]!, score: 1 / 2 },
-      { ...candidates[0]!, score: 1 / 2 },
-    ],
+    results: [candidates[1], candidates[0], candidates[2]],
   });
+  assert.deepEqual(
+    await rerankResults({ query: "branching", candidates, limit: 3, rrfK: 60 }),
+    {
+      reranker: "rrf",
+      results: [candidates[2], candidates[1], candidates[0]],
+    },
+  );
   assert.deepEqual(candidates, before);
 });
 
@@ -189,10 +197,7 @@ test("a permanent error in a later batch restores the entire RRF order", async (
     }),
     {
       reranker: "rrf",
-      results: [
-        { ...candidates[16]!, score: 1 / 61 },
-        { ...candidates[15]!, score: 1 / 62 },
-      ],
+      results: [candidates[16], candidates[15]],
     },
   );
   assert.equal(calls, 2);
@@ -242,7 +247,7 @@ test("a reranking timeout propagates rather than falling back", async (t) => {
   );
 });
 
-test("missing or invalid probabilities fall back without returning partial Jev scores", async (t) => {
+test("missing or invalid probabilities fall back without returning partial Jev results", async (t) => {
   let response = success([0.9]);
   gateway(t, () => response);
   assert.deepEqual(
