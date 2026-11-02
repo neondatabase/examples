@@ -4,7 +4,7 @@
 	"provider": "Mastra",
 	"title": "Mastra agent with Postgres memory",
 	"description": "A Mastra agent that remembers users in Neon Postgres, streams chat for useChat on AI Gateway, and runs a resumable human-in-the-loop review workflow.",
-	"categories": ["official", "ai"],
+	"categories": ["ai"],
 	"layout": "router",
 	"dependencies": [
 		"@mastra/ai-sdk@1.11.2",
