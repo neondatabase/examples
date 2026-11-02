@@ -90,6 +90,14 @@
 			"categories": ["ai"],
 			"logo": "https://avatars.githubusercontent.com/u/149120496?s=200&v=4",
 			"website": "https://mastra.ai/"
+		},
+		{
+			"id": "rate-limit-postgres",
+			"provider": "Neon",
+			"title": "Rate limit with Postgres",
+			"description": "Fixed-window rate limiting with an atomic Postgres upsert.",
+			"path": "rate-limit-postgres/template.json",
+			"categories": ["first-party", "api"]
 		}
 	]
 }
