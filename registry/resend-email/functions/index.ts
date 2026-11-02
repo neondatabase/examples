@@ -9,9 +9,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 let client: Resend | undefined;
 
-function getClient(): Resend {
-	const apiKey = process.env.RESEND_API_KEY;
-	if (!apiKey) throw new Error("RESEND_API_KEY is not set");
+function getClient(apiKey: string): Resend {
 	client ??= new Resend(apiKey);
 	return client;
 }
@@ -24,12 +22,9 @@ function jsonError(message: string, status: number): Response {
 	return Response.json({ error: message }, { status });
 }
 
-// Neon Function URLs are public, so require a caller token on top of the
-// Resend key. The token is compared in constant time.
-function isAuthorized(request: Request): boolean {
-	const expected = process.env.RESEND_FUNCTION_TOKEN;
+function isAuthorized(request: Request, expected: string): boolean {
 	const header = request.headers.get("authorization");
-	if (!expected || !header?.startsWith("Bearer ")) return false;
+	if (!header?.startsWith("Bearer ")) return false;
 
 	const provided = Buffer.from(header.slice("Bearer ".length));
 	const secret = Buffer.from(expected);
@@ -73,10 +68,14 @@ export default {
 		const url = new URL(request.url);
 
 		if (url.pathname === "/") {
+			if (request.method !== "GET") {
+				return jsonError("Use GET", 405);
+			}
+
 			return Response.json({
 				name: "Send email with Resend",
 				routes: ["POST /send  { to, subject, html?, text?, replyTo? }"],
-				note: "Send Authorization: Bearer <RESEND_FUNCTION_TOKEN> with every request.",
+				note: "Send Authorization: Bearer <RESEND_FUNCTION_TOKEN> with every POST /send request.",
 			});
 		}
 
@@ -88,8 +87,19 @@ export default {
 			return jsonError("Use POST", 405);
 		}
 
-		if (!isAuthorized(request)) {
+		const expectedToken = process.env.RESEND_FUNCTION_TOKEN;
+		if (!expectedToken || expectedToken.length < 32) {
+			return jsonError("Resend function is not configured", 503);
+		}
+
+		if (!isAuthorized(request, expectedToken)) {
 			return jsonError("Unauthorized", 401);
+		}
+
+		const apiKey = process.env.RESEND_API_KEY;
+		const from = process.env.RESEND_FROM;
+		if (!apiKey || !from) {
+			return jsonError("Resend function is not configured", 503);
 		}
 
 		const parsed = await readJson(request);
@@ -140,11 +150,6 @@ export default {
 			return jsonError("replyTo must be an email address", 400);
 		}
 
-		const from = process.env.RESEND_FROM;
-		if (!from) {
-			return jsonError("RESEND_FROM is not configured", 500);
-		}
-
 		try {
 			const content =
 				typeof html === "string" && typeof text === "string"
@@ -153,7 +158,7 @@ export default {
 						? { html }
 						: { text: text as string };
 
-			const { data, error } = await getClient().emails.send({
+			const { data, error } = await getClient(apiKey).emails.send({
 				from,
 				to,
 				subject: body.subject.trim(),

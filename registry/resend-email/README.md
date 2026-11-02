@@ -1,6 +1,6 @@
 # Send email with Resend
 
-A Neon Function that sends transactional email through the [Resend](https://resend.com) API. Because a Neon Function URL is public, `POST /send` also requires a bearer token.
+A Neon Function that sends transactional email through the [Resend](https://resend.com) API.
 
 ## Scaffold it
 
@@ -60,7 +60,7 @@ curl -s http://localhost:8787/send \
 | `GET` | `/` | — | — | The function name and route list |
 | `POST` | `/send` | Bearer `RESEND_FUNCTION_TOKEN` | `{ to, subject, html?, text?, replyTo? }` | `200` with the Resend message `id`, or an error |
 
-`to` is a string or an array of up to 50 addresses, the subject is capped at 200 characters on one line, and `html` and `text` are capped at 100,000 characters each. A missing or wrong token returns `401`, a malformed body returns `400`, a body over 500,000 bytes returns `413`, and any other path or method returns `404` or `405`.
+`to` is a string or an array of up to 50 addresses, the subject is capped at 200 characters on one line, and `html` and `text` are capped at 100,000 characters each. A missing or shorter-than-32-character `RESEND_FUNCTION_TOKEN` returns `503`, a wrong token returns `401`, a malformed body returns `400`, a body over 500,000 bytes returns `413`, and any other path or method returns `404` or `405`.
 
 ## Deploy
 
@@ -69,7 +69,7 @@ neon deploy --env .env.local
 neon functions get resendemail
 ```
 
-`neon functions get` prints the function's public URL. Trigger the same request there:
+`neon functions get` prints the function's public URL. Test it with `curl`:
 
 ```bash
 curl -s https://<function-url>/send \
@@ -86,7 +86,7 @@ curl -s https://<function-url>/send \
 
 ## Notes
 
-- `RESEND_FUNCTION_TOKEN` is required. Without it, anyone who learns the function URL can send email from your verified domain. Rotate the token if it leaks and never put it in client-side code.
+- `RESEND_FUNCTION_TOKEN` is required and must be at least 32 characters. If it is unset or too short, the function returns `503`; a wrong token returns `401`.
 - Input is capped at 50 recipients, a 200-character subject, and 100,000 characters each for `html` and `text`.
-- The function returns `502` when Resend rejects the message or the API is unavailable, and `401` when the token is missing or wrong.
+- The function returns `503` when `RESEND_API_KEY`, `RESEND_FROM`, or a 32+ character `RESEND_FUNCTION_TOKEN` is missing, `401` for a wrong token, and `502` when Resend rejects the message or the API is unavailable.
 - Resend's sandbox sender `onboarding@resend.dev` only delivers to the account owner. Use a verified domain for real recipients.
