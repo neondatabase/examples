@@ -4,7 +4,7 @@ A [Hono](https://hono.dev) API on [Neon Functions](https://neon.com/docs/compute
 
 ## Setup
 
-Requires Node.js 24, Neon CLI 6.2.3+, and a Neon project on Postgres 16+ with Functions and AI Gateway access to `qwen3-embedding-0-6b` and `typesafeai-jev-1-14-0`. AI Gateway requires a paid plan and prepaid credits. The Neon provider and AI SDK versions are pinned because the decision-model API is experimental.
+Requires Node.js 24, Neon CLI 6.2.3+, and a Neon project on Postgres 16+ with Functions and AI Gateway access to `qwen3-embedding-0-6b` and `typesafeai-jev-1-14-0`. AI Gateway requires a paid plan and prepaid credits.
 
 ```bash
 npx degit neondatabase/examples/with-hybrid-search-api ./with-hybrid-search-api
@@ -27,7 +27,7 @@ npm run db:setup
 npm run dev
 ```
 
-Use `db:setup`, rather than `drizzle-kit push`, to create the Lakebase extensions before the tables and indexes. Document writes batch chunks through binary COPY in the same transaction as the document update.
+Use `db:setup` rather than `drizzle-kit push`; the migration also installs the required Lakebase extensions.
 
 ## Try it
 
@@ -48,7 +48,7 @@ curl -sS -X POST "$BASE_URL/search" \
 
 Search defaults to hybrid mode, combining vector search and BM25-ranked full-text search, with [Jev reranking](https://neon.com/docs/ai-gateway/decisions) before the final result limit. Set `mode` to `vector` for vector search only, or `keyword` for BM25-ranked full-text search only. Both modes skip reranking; `keyword` mode makes no AI Gateway call.
 
-Results contain chunk content, heading context, metadata, and the parent document `id`. Several hits can belong to one document; `limit` counts chunks. Use `GET /documents/:id` to retrieve the full document.
+Results contain chunks with heading context, metadata, and the parent document `id`. `limit` counts chunks, so several hits can belong to one document. Use `GET /documents/:id` for the full document.
 
 ## API
 
@@ -62,21 +62,18 @@ All endpoints require `Authorization: Bearer <SEARCH_API_KEY>`.
 | `DELETE /documents/:id` | —                                                                                                                                              | Delete the document and all its chunks.                                                          |
 | `POST /search`          | `{ "query": string, "mode"?: "hybrid" \| "vector" \| "keyword", "filter"?: object, "limit"?: number, "candidates"?: number, "rrfK"?: number }` | Return ranked chunks. `filter` matches JSONB metadata fields.                                    |
 
-Search defaults: `limit=10`, `candidates=40` per retriever, `rrfK=60` for RRF fallback. BM25-ranked full-text search allows partial query-term matches and excludes zero-score chunks. Invalid input returns HTTP 400.
+Search defaults: `limit=10`, `candidates=40` per retriever, and `rrfK=60` for fallback ranking. Invalid input returns HTTP 400.
 
-In hybrid mode, vector search and BM25-ranked full-text search each return up to `candidates` chunks, with chunk ID breaking ties at the cutoff. Their union deduplicates chunks found by both searches and goes directly to Jev, without RRF scoring or a combined cutoff. Jev scores every candidate before applying `limit`: at most `2 * candidates` chunks (80 by default, up to 200). Results count chunks, so several hits can still belong to one document.
+Hybrid responses identify the `reranker` as `"jev"` or `"rrf"`. Jev results include `relevanceProbability`; fallback results include the RRF `score`. Follow the returned result order.
 
-Hybrid responses include `reranker: "jev"` or `"rrf"`. Jev results include `relevanceProbability` and are ordered by that probability. Only a non-retryable Jev failure triggers reciprocal rank fusion (RRF): it combines the saved retrieval ranks using `1 / (rrfK + rank)` for each search, then returns results ordered by their RRF `score`. A missing rank contributes zero. Equal probabilities or RRF scores are ordered by chunk ID. Jev results do not include an RRF `score`. Jev scores answer relevance, not answer completeness, and this starter does not apply a no-answer threshold.
-
-Jev uses the original query, up to 256 heading characters and 2,000 content characters per chunk, with at most 16 candidates and 48,000 serialized UTF-8 bytes per batch. Each batch gets one initial attempt and up to two retries for retryable errors (at most three attempts per batch). A shared 15-second deadline covers all reranking batches and retries, so it can stop attempts earlier. Non-retryable errors (including unavailable models, invalid responses, or inputs exceeding the reranking budget) fall back to RRF ranking of the full candidate union. Retry exhaustion or timeout returns HTTP 503 rather than silently changing ranking.
+Non-retryable Jev errors fall back to reciprocal rank fusion (RRF). Retryable errors get up to two retries per batch within a shared 15-second deadline. Retry exhaustion or timeout returns HTTP 503.
 
 ## Notes
 
-- Markdown chunks follow heading sections and preserve code, tables, lists, quotes, and HTML blocks. The target is 4,096 characters; oversized blocks stay intact. YAML/TOML front matter stays in the full document but is excluded from search. Writes with no searchable content or more than 100 chunks return HTTP 400.
-- Documents and queries use `qwen3-embedding-0-6b` with 1024 dimensions. Only query embeddings receive a [Qwen task instruction](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B/blob/main/config_sentence_transformers.json). Changing the model requires re-embedding documents and updating the vector schema.
-- Embeddings use `neon.embeddingModel()` through the AI SDK, with at most 32 inputs and 80,000 characters per batch, sequential calls, two retries, and a shared 30-second deadline per document or query embedding operation. Invalid, non-finite, and all-zero vectors are rejected before storage or search. Embeddings complete before the document transaction starts.
-- A newly built index already has up-to-date statistics for BM25-ranked full-text search. After many document updates or deletes, run `npm run db:refresh` to refresh those statistics with `VACUUM ANALYZE search_chunks` over the unpooled connection, outside a transaction. Regular autovacuum handles routine maintenance. See [full-text index maintenance](https://neon.com/docs/extensions/lakebase-text#keep-the-index-accurate). For a large corpus, also rebuild the vector index after loading so its automatic partition layout reflects the data.
-- With highly selective metadata filters, BM25-ranked full-text search can return fewer matches than requested: its index candidate cap (`lakebase_bm25.default_limit`, default 1,000) applies before the parent-document filter. Raising the cap can help; the full-text index's prefilter alone cannot filter metadata on the parent table.
+- Markdown documents are split into searchable chunks by heading. Documents with no searchable content return HTTP 400.
+- Embeddings use `qwen3-embedding-0-6b` with 1024 dimensions. Re-embed documents when changing models, and keep the vector schema dimensions in sync.
+- After many document updates or deletes, run `npm run db:refresh` for [full-text index maintenance](https://neon.com/docs/extensions/lakebase-text#keep-the-index-accurate).
+- Highly selective metadata filters can return fewer full-text matches than requested. See the [full-text search reference](https://neon.com/docs/extensions/lakebase-text) for tuning.
 
 This starter uses one shared service key. Add user authorization and tenant scoping before sharing it across customers.
 
@@ -90,8 +87,6 @@ npm run endpoint
 ```
 
 Repeat the requests above using the Function URL printed by `npm run endpoint` as `BASE_URL`.
-
-The bootstrap template ID is `hybrid-search-api`; the deployed Function slug and name are `search`. `neon functions get search` looks up that slug in the project and branch saved by `neon link` in `.neon`. The current deployment API does not propagate a separate display name from `neon.ts`.
 
 ## Checks
 
