@@ -14,11 +14,15 @@ import {
   parseSearch,
 } from "./input.js";
 import { searchResults } from "./search-results.js";
-import { hybridSearchSql, keywordSearchSql } from "./search-sql.js";
+import {
+  hybridSearchSql,
+  keywordSearchSql,
+  type HybridCandidate,
+} from "./search-sql.js";
 import { chunks, documents } from "./schema.js";
 import { chunkMarkdown } from "./chunking.js";
 import { copyChunks, type EmbeddedChunk } from "./chunk-copy.js";
-import { RERANK_CANDIDATES, rerankResults } from "./rerank.js";
+import { rerankResults } from "./rerank.js";
 
 const apiKey = process.env.SEARCH_API_KEY;
 if (!apiKey || apiKey.length < 32)
@@ -207,21 +211,20 @@ app.post("/search", async (c) => {
       .limit(input.limit);
     return c.json({ mode: input.mode, results: searchResults(rows) });
   }
-  const { rows } = await db.execute(
-    hybridSearchSql(
-      queryVector,
-      input.query,
-      input.filter,
-      input.candidates,
-      input.rrfK,
-      Math.min(input.candidates * 2, RERANK_CANDIDATES),
-    ),
+  const { rows } = await db.execute<HybridCandidate>(
+    hybridSearchSql({
+      embedding: queryVector,
+      query: input.query,
+      filter: input.filter,
+      candidates: input.candidates,
+    }),
   );
-  const ranked = await rerankResults(
-    input.query,
-    rows as (Record<string, unknown> & { heading: string; content: string })[],
-    input.limit,
-  );
+  const ranked = await rerankResults({
+    query: input.query,
+    candidates: rows,
+    limit: input.limit,
+    rrfK: input.rrfK,
+  });
   return c.json({
     mode: input.mode,
     ...ranked,

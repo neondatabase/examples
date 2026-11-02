@@ -2,15 +2,46 @@ import { neon } from "@neon/ai-sdk-provider";
 import { APICallError, RetryError, experimental_decide as decide } from "ai";
 
 export const RERANK_MODEL = "typesafeai-jev-1-14-0";
-export const RERANK_CANDIDATES = 80;
 export const RERANK_TIMEOUT_MS = 15_000;
 const BATCH_ITEMS = 16;
 const BATCH_BYTES = 48_000;
 const EXCERPT_CHARS = 2_000;
 
-type Candidate = { heading: string; content: string };
+type Passage = { heading: string; content: string };
+type Candidate = Passage & {
+  chunkId: number;
+  vectorRank: number | null;
+  keywordRank: number | null;
+};
 
-function questionsFor(rows: readonly Candidate[]) {
+type RankingOptions<T extends Candidate> = {
+  query: string;
+  candidates: readonly T[];
+  limit: number;
+  rrfK: number;
+};
+
+type RankingResult<T> =
+  | { reranker: "jev"; results: (T & { relevanceProbability: number })[] }
+  | { reranker: "rrf"; results: (T & { score: number })[] };
+
+function rankWithRrf<T extends Candidate>(
+  candidates: readonly T[],
+  k: number,
+  limit: number,
+): (T & { score: number })[] {
+  const rankScore = (rank: number | null) =>
+    rank === null ? 0 : 1 / (k + rank);
+  return candidates
+    .map((candidate) => ({
+      ...candidate,
+      score: rankScore(candidate.vectorRank) + rankScore(candidate.keywordRank),
+    }))
+    .sort((a, b) => b.score - a.score || a.chunkId - b.chunkId)
+    .slice(0, limit);
+}
+
+function questionsFor(rows: readonly Passage[]) {
   return Object.fromEntries(
     rows.map((row, index) => [
       `c${index}`,
@@ -34,7 +65,7 @@ function questionsFor(rows: readonly Candidate[]) {
   );
 }
 
-export function splitRerankBatches<T extends Candidate>(
+export function splitRerankBatches<T extends Passage>(
   query: string,
   rows: readonly T[],
 ): T[][] {
@@ -71,49 +102,48 @@ export function isRetryableGatewayError(error: unknown): boolean {
   );
 }
 
-export async function rerankResults<T extends Candidate>(
-  query: string,
-  rows: readonly T[],
-  limit: number,
-) {
-  if (!rows.length) return { reranker: "jev" as const, results: [] };
-  const candidates = rows.slice(0, RERANK_CANDIDATES);
+export async function rerankResults<T extends Candidate>({
+  query,
+  candidates,
+  limit,
+  rrfK,
+}: RankingOptions<T>): Promise<RankingResult<T>> {
+  if (!candidates.length) return { reranker: "jev", results: [] };
   try {
     const abortSignal = AbortSignal.timeout(RERANK_TIMEOUT_MS);
-    const scored: { row: T; index: number; probability: number }[] = [];
+    const model = neon.decisionModel(RERANK_MODEL);
+    const scored: (T & { relevanceProbability: number })[] = [];
     for (const batch of splitRerankBatches(query, candidates)) {
       const { answers } = await decide({
-        model: neon.decisionModel(RERANK_MODEL),
+        model,
         state: { query },
         questions: questionsFor(batch),
         maxRetries: 2, // At most three attempts per batch within the shared deadline.
         abortSignal,
       });
-      for (const [index, row] of batch.entries()) {
-        const answer = answers[`c${index}`];
-        if (
-          answer?.type !== "boolean" ||
-          !Number.isFinite(answer.probability) ||
-          answer.probability < 0 ||
-          answer.probability > 1
-        ) {
-          throw new Error("Gateway returned an invalid reranking probability");
-        }
-        scored.push({
-          row,
-          index: scored.length,
-          probability: answer.probability,
-        });
-      }
+      scored.push(
+        ...batch.map((candidate, index) => {
+          const answer = answers[`c${index}`];
+          if (
+            answer?.type !== "boolean" ||
+            !Number.isFinite(answer.probability) ||
+            answer.probability < 0 ||
+            answer.probability > 1
+          ) {
+            throw new Error(
+              "Gateway returned an invalid reranking probability",
+            );
+          }
+          return { ...candidate, relevanceProbability: answer.probability };
+        }),
+      );
     }
-    scored.sort((a, b) => b.probability - a.probability || a.index - b.index);
-    return {
-      reranker: "jev" as const,
-      results: scored.slice(0, limit).map(({ row, probability }) => ({
-        ...row,
-        relevanceProbability: probability,
-      })),
-    };
+    scored.sort(
+      (a, b) =>
+        b.relevanceProbability - a.relevanceProbability ||
+        a.chunkId - b.chunkId,
+    );
+    return { reranker: "jev", results: scored.slice(0, limit) };
   } catch (error) {
     // Retryable failures, including retry exhaustion and deadlines, remain 503s.
     if (isRetryableGatewayError(error)) throw error;
@@ -121,6 +151,6 @@ export async function rerankResults<T extends Candidate>(
       model: RERANK_MODEL,
       error: error instanceof Error ? error.name : "unknown",
     });
-    return { reranker: "rrf" as const, results: candidates.slice(0, limit) };
+    return { reranker: "rrf", results: rankWithRrf(candidates, rrfK, limit) };
   }
 }
