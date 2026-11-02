@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createEmbedder, splitEmbeddingBatches } from "../src/embedding.ts";
+import { createEmbedder } from "../src/embedding.ts";
 
 test("only query embeddings receive the Qwen retrieval instruction", async (t) => {
   const previousToken = process.env.NEON_AI_GATEWAY_TOKEN;
@@ -59,22 +59,7 @@ test("only query embeddings receive the Qwen retrieval instruction", async (t) =
   }
 });
 
-test("embedding batches respect item and character budgets", () => {
-  assert.deepEqual(splitEmbeddingBatches([]), []);
-  assert.deepEqual(
-    splitEmbeddingBatches(Array(33).fill("x")).map((batch) => batch.length),
-    [32, 1],
-  );
-  assert.deepEqual(
-    splitEmbeddingBatches(["x".repeat(50_000), "y".repeat(40_000)]).map(
-      (batch) => batch.length,
-    ),
-    [1, 1],
-  );
-  assert.throws(() => splitEmbeddingBatches(["x".repeat(80_001)]), /budget/);
-});
-
-test("embedding batches run sequentially with one shared deadline", async (t) => {
+test("SDK batches respect provider limits, retain duplicates, and share one deadline", async (t) => {
   const oldToken = process.env.NEON_AI_GATEWAY_TOKEN;
   const oldBase = process.env.NEON_AI_GATEWAY_BASE_URL;
   process.env.NEON_AI_GATEWAY_TOKEN = "test-placeholder";
@@ -112,16 +97,15 @@ test("embedding batches run sequentially with one shared deadline", async (t) =>
       });
     },
   );
-  const vectors = await createEmbedder()(
-    Array.from({ length: 33 }, (_, i) => String(i)),
-  );
-  assert.deepEqual(batches, [32, 1]);
+  const texts = [...Array.from({ length: 151 }, (_, i) => String(i)), "0"];
+  const vectors = await createEmbedder()(texts);
+  assert.deepEqual(batches, [150, 2]);
   assert.deepEqual(deadlines, [30_000]);
   assert.equal(new Set(signals).size, 1);
   assert.ok(signals[0] instanceof AbortSignal);
   assert.deepEqual(
     vectors.map((vector) => vector[0]),
-    Array.from({ length: 33 }, (_, i) => i + 1),
+    texts.map((text) => Number(text) + 1),
   );
 });
 

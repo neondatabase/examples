@@ -4,32 +4,7 @@ import { validateVector } from "./input.ts";
 
 export const EMBEDDING_MODEL = "qwen3-embedding-0-6b";
 export const EMBEDDING_DIMENSIONS = 1024;
-export const EMBEDDING_BATCH_ITEMS = 32;
-export const EMBEDDING_BATCH_CHARS = 80_000;
 export const EMBEDDING_TIMEOUT_MS = 30_000;
-
-export function splitEmbeddingBatches(texts: string[]): string[][] {
-  const batches: string[][] = [];
-  let batch: string[] = [];
-  let chars = 0;
-  for (const text of texts) {
-    if (text.length > EMBEDDING_BATCH_CHARS)
-      throw new Error("Embedding input exceeds the batch character budget");
-    if (
-      batch.length &&
-      (batch.length >= EMBEDDING_BATCH_ITEMS ||
-        chars + text.length > EMBEDDING_BATCH_CHARS)
-    ) {
-      batches.push(batch);
-      batch = [];
-      chars = 0;
-    }
-    batch.push(text);
-    chars += text.length;
-  }
-  if (batch.length) batches.push(batch);
-  return batches;
-}
 
 export function createEmbedder() {
   if (
@@ -93,18 +68,14 @@ export function createEmbedder() {
       const { embedding } = await embedOne({ ...options, value: format(text) });
       return validateVector(embedding);
     }
-    const vectors: number[][] = [];
-    for (const batch of splitEmbeddingBatches(text.map(format))) {
-      const { embeddings } = await embedMany({
-        ...options,
-        values: batch,
-        maxParallelCalls: 1,
-      });
-      if (embeddings.length !== batch.length)
-        throw new Error("Gateway returned an incomplete embedding batch");
-      vectors.push(...embeddings.map(validateVector));
-    }
-    return vectors;
+    const { embeddings } = await embedMany({
+      ...options,
+      values: text.map(format),
+      maxParallelCalls: 1,
+    });
+    if (embeddings.length !== text.length)
+      throw new Error("Gateway returned an incomplete embedding batch");
+    return embeddings.map(validateVector);
   }
   return embed;
 }
