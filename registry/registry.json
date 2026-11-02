@@ -71,6 +71,15 @@
 			"path": "tanstack-ai/template.json",
 			"logo": "https://cdn.jsdelivr.net/gh/TanStack/tanstack.com@f24f323ba7ef981c7e1914e8aef1f161999da908/public/images/logos/logo-color-100.png",
 			"website": "https://tanstack.com/ai"
+		},
+		{
+			"id": "upstash-workflow",
+			"provider": "Upstash",
+			"title": "Durable workflow with Upstash Workflow",
+			"description": "A minimal multi-step job with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
+			"path": "upstash-workflow/template.json",
+			"logo": "https://upstash.com/logo/upstash-icon-dark-bg.svg",
+			"website": "https://upstash.com/"
 		}
 	]
 }
