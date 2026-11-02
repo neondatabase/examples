@@ -1,10 +1,10 @@
 # Hybrid search API
 
-A [Hono](https://hono.dev) API on [Neon Functions](https://neon.com/docs/compute/functions/overview) for storing Markdown documents and searching their chunks. It uses Drizzle, [Neon AI Gateway](https://neon.com/docs/ai-gateway/embeddings) embeddings, and [Lakebase Search](https://neon.com/docs/ai/lakebase-search-get-started) for vector search, BM25 keyword search, or both combined.
+A [Hono](https://hono.dev) API on [Neon Functions](https://neon.com/docs/compute/functions/overview) for storing Markdown documents and searching their chunks. It uses Drizzle, [Neon AI Gateway](https://neon.com/docs/ai-gateway/embeddings) embeddings, and [Lakebase Search](https://neon.com/docs/ai/lakebase-search-get-started) for vector search, BM25 keyword search, or hybrid retrieval with [Jev reranking](https://neon.com/docs/ai-gateway/decisions).
 
 ## Setup
 
-Requires Node.js 24, Neon CLI 6.2.3+, and a Neon project on Postgres 16+ with Functions and AI Gateway access to `qwen3-embedding-0-6b`.
+Requires Node.js 24, Neon CLI 6.2.3+, and a Neon project on Postgres 16+ with Functions and AI Gateway access to `qwen3-embedding-0-6b` and `typesafeai-jev-1-14-0`. AI Gateway requires a paid plan and prepaid credits. The Neon provider and AI SDK versions are pinned because the decision-model API is experimental.
 
 ```bash
 npx degit neondatabase/examples/with-hybrid-search-api ./with-hybrid-search-api
@@ -46,7 +46,7 @@ curl -sS -X POST "$BASE_URL/search" \
   -d '{"query":"isolated branches","filter":{"source":"docs"},"limit":5}'
 ```
 
-Search defaults to hybrid mode, combining vector and BM25 ranks with reciprocal rank fusion (RRF). Set `mode` to `vector` or `keyword` to use either alone; keyword search makes no AI Gateway call.
+Search defaults to hybrid mode: vector and BM25 retrieval produce an RRF shortlist, then Jev reranks it before the final result limit. Set `mode` to `vector` or `keyword` to use either alone, without reranking; keyword search makes no AI Gateway call.
 
 Results contain chunk content, heading context, metadata, and the parent document `id`. Several hits can belong to one document; `limit` counts chunks. Use `GET /documents/:id` to retrieve the full document.
 
@@ -62,12 +62,17 @@ All endpoints require `Authorization: Bearer <SEARCH_API_KEY>`.
 | `DELETE /documents/:id` | —                                                                                                                                              | Delete the document and all its chunks.                                                          |
 | `POST /search`          | `{ "query": string, "mode"?: "hybrid" \| "vector" \| "keyword", "filter"?: object, "limit"?: number, "candidates"?: number, "rrfK"?: number }` | Return ranked chunks. `filter` matches JSONB metadata fields.                                    |
 
-Search defaults: `limit=10`, `candidates=40` per retriever, `rrfK=60`. Hybrid retrieval includes ties at the candidate cutoff, then limits the final results. BM25 allows partial query-term matches and excludes zero-score chunks. Invalid input returns HTTP 400.
+Search defaults: `limit=10`, `candidates=40` per retriever, `rrfK=60`. Hybrid retrieval includes ties at each retriever's cutoff and takes up to `min(2 * candidates, 80)` chunks in RRF order for Jev. BM25 allows partial query-term matches and excludes zero-score chunks. Invalid input returns HTTP 400.
+
+Hybrid responses include `reranker: "jev"` or `"rrf"`. With Jev, each result includes `relevanceProbability`; ties retain RRF order. The existing `score` remains the RRF score: use the returned array order. Jev scores answer relevance, not answer completeness, and this starter does not apply a no-answer threshold.
+
+Jev uses the original query, up to 256 heading characters and 2,000 content characters per chunk, with at most 16 candidates and 48,000 serialized UTF-8 bytes per batch. A 15-second deadline covers all reranking batches and retries. Non-retryable errors (including unavailable models, invalid responses, or inputs exceeding the reranking budget) fall back to the RRF shortlist. Retryable errors get up to two retries; exhaustion or timeout returns HTTP 503 rather than silently changing ranking.
 
 ## Notes
 
 - Markdown chunks follow heading sections and preserve code, tables, lists, quotes, and HTML blocks. The target is 4,096 characters; oversized blocks stay intact. YAML/TOML front matter stays in the full document but is excluded from search. Writes with no searchable content or more than 100 chunks return HTTP 400.
 - Documents and queries use `qwen3-embedding-0-6b` with 1024 dimensions. Only query embeddings receive a [Qwen task instruction](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B/blob/main/config_sentence_transformers.json). Changing the model requires re-embedding documents and updating the vector schema.
+- Embeddings use `neon.embeddingModel()` through the AI SDK, with at most 32 inputs and 80,000 characters per batch, sequential calls, two retries, and a shared 30-second deadline per document or query embedding operation. Invalid, non-finite, and all-zero vectors are rejected before storage or search. Embeddings complete before the document transaction starts.
 - With highly selective metadata filters, BM25 can return fewer matches than requested: its index candidate cap (`lakebase_bm25.default_limit`, default 1,000) applies before the parent-document filter. Raising the cap can help; BM25 prefilter alone cannot filter metadata on the parent table.
 
 This starter uses one shared service key. Add user authorization and tenant scoping before sharing it across customers.

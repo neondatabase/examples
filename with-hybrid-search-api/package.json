@@ -1,6 +1,6 @@
 {
   "name": "with-hybrid-search-api",
-  "description": "A document API that combines vector search and full-text search with BM25 ranking on Neon Functions.",
+  "description": "A document API with vector and BM25 retrieval and Jev reranking on Neon Functions.",
   "private": true,
   "type": "module",
   "scripts": {
@@ -18,7 +18,8 @@
     "@neon/functions": "^0.11.0",
     "drizzle-orm": "^0.45.3",
     "hono": "^4.7.8",
-    "openai": "^6.0.0",
+    "@neon/ai-sdk-provider": "1.1.0",
+    "ai": "7.0.133",
     "pg": "^8.21.0",
     "zod": "^4.4.3",
     "mdast-util-from-markdown": "^2.0.2",
