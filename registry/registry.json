@@ -96,8 +96,8 @@
 			"description": "A minimal multi-step workflow with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
 			"path": "inngest-workflow/template.json",
 			"categories": ["first-party", "workflow"],
-			"logo": "https://svgl.app/library/inngest-light.svg",
-			"logoDark": "https://svgl.app/library/inngest-dark.svg",
+			"logo": "https://www.inngest.com/favicon-june-2025-light.svg",
+			"logoDark": "https://www.inngest.com/favicon-june-2025-dark.svg",
 			"website": "https://www.inngest.com/"
 		},
 		{
