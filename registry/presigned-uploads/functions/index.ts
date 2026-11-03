@@ -48,7 +48,8 @@ async function listFiles() {
 	const { Contents = [] } = await getS3().send(
 		new ListObjectsV2Command({ Bucket: BUCKET, MaxKeys: MAX_LIST }),
 	);
-	return Contents.filter((object) => object.Key).map((object) => ({
+	const validObjects = Contents.filter((object: {Key: string; Size?: number; LastModified?: Date }) => object.Key);
+	return validObjects.map((object: { Key: string; Size?: number; LastModified?: Date }) => ({
 		key: object.Key,
 		size: object.Size ?? 0,
 		lastModified: object.LastModified?.toISOString() ?? null,
@@ -94,7 +95,6 @@ export default {
 				const uploadUrl = await getSignedUrl(
 					getS3(),
 					new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: contentType }),
-					// The uploader must send the same content-type the URL was signed with.
 					{ expiresIn: UPLOAD_TTL_SECONDS, signableHeaders: new Set(["content-type"]) },
 				);
 				return Response.json(
