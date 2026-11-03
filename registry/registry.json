@@ -39,7 +39,7 @@
 		},
 		{
 			"id": "telegram-bot",
-			"provider": "Telegram",
+			"provider": "Neon",
 			"title": "Telegram AI chat bot",
 			"description": "Telegram bot with Neon Functions, AI Gateway, and Postgres for message storage.",
 			"path": "telegram-bot/template.json",
@@ -73,11 +73,11 @@
 		},
 		{
 			"id": "tanstack-ai",
-			"provider": "TanStack",
+			"provider": "Neon",
 			"title": "TanStack AI on AI Gateway",
 			"description": "Streaming chat with tool calling, structured extraction, and summaries with TanStack AI on Neon AI Gateway.",
 			"path": "tanstack-ai/template.json",
-			"categories": ["ai"],
+			"categories": ["first-party", "ai"],
 			"logo": "https://cdn.jsdelivr.net/gh/TanStack/tanstack.com@f24f323ba7ef981c7e1914e8aef1f161999da908/public/images/logos/logo-color-100.png",
 			"website": "https://tanstack.com/ai"
 		},
@@ -91,41 +91,41 @@
 		},
 		{
 			"id": "inngest-workflow",
-			"provider": "Inngest",
+			"provider": "Neon",
 			"title": "Durable workflow with Inngest",
 			"description": "A minimal multi-step workflow with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
 			"path": "inngest-workflow/template.json",
-			"categories": ["workflow"],
+			"categories": ["first-party", "workflow"],
 			"logo": "https://raw.githubusercontent.com/inngest/website/refs/heads/main/public/logo.svg",
 			"website": "https://www.inngest.com/"
 		},
 		{
 			"id": "upstash-workflow",
-			"provider": "Upstash",
+			"provider": "Neon",
 			"title": "Durable workflow with Upstash Workflow",
 			"description": "A minimal multi-step job with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
 			"path": "upstash-workflow/template.json",
-			"categories": ["workflow"],
+			"categories": ["first-party", "workflow"],
 			"logo": "https://upstash.com/logo/upstash-icon-dark-bg.svg",
 			"website": "https://upstash.com/"
 		},
 		{
 			"id": "resend-email",
-			"provider": "Resend",
+			"provider": "Neon",
 			"title": "Send email with Resend",
 			"description": "Send transactional email through the Resend API with a caller token.",
 			"path": "resend-email/template.json",
-			"categories": ["email"],
+			"categories": ["first-party", "email"],
 			"logo": "https://cdn.resend.com/brand/resend-icon-black.svg",
 			"website": "https://resend.com/"
 		},
 		{
 			"id": "mastra",
-			"provider": "Mastra",
+			"provider": "Neon",
 			"title": "Mastra agent with Postgres memory",
 			"description": "A Mastra agent that remembers users in Neon Postgres, streams chat for useChat on AI Gateway, and runs a resumable human-in-the-loop review workflow.",
 			"path": "mastra/template.json",
-			"categories": ["ai"],
+			"categories": ["first-party", "ai"],
 			"logo": "https://avatars.githubusercontent.com/u/149120496?s=200&v=4",
 			"website": "https://mastra.ai/"
 		},
@@ -139,11 +139,11 @@
 		},
 		{
 			"id": "chat-sdk",
-			"provider": "Vercel",
+			"provider": "Neon",
 			"title": "Chat SDK bot for Slack, Telegram, and the web",
 			"description": "A Vercel Chat SDK bot that answers on Slack, Telegram, and useChat, streams replies from AI Gateway, and keeps conversations, subscriptions, and locks in Neon Postgres.",
 			"path": "chat-sdk/template.json",
-			"categories": ["bots", "ai"],
+			"categories": ["first-party", "bots", "ai"],
 			"logo": "https://avatars.githubusercontent.com/u/14985020?s=200&v=4",
 			"website": "https://chat-sdk.dev/"
 		},
