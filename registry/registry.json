@@ -136,6 +136,16 @@
 			"description": "Create presigned PUT and GET URLs for a Neon Object Storage bucket.",
 			"path": "presigned-uploads/template.json",
 			"categories": ["first-party", "storage"]
+		},
+		{
+			"id": "chat-sdk",
+			"provider": "Vercel",
+			"title": "Chat SDK bot for Slack, Telegram, and the web",
+			"description": "A Vercel Chat SDK bot that answers on Slack, Telegram, and useChat, streams replies from AI Gateway, and keeps conversations, subscriptions, and locks in Neon Postgres.",
+			"path": "chat-sdk/template.json",
+			"categories": ["bots", "ai"],
+			"logo": "https://avatars.githubusercontent.com/u/14985020?s=200&v=4",
+			"website": "https://chat-sdk.dev/"
 		}
 	]
 }
