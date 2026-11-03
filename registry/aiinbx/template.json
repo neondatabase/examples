@@ -1,0 +1,30 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "aiinbx",
+	"provider": "AI Inbx",
+	"title": "Send email with AI Inbx",
+	"description": "Send email from your domains or connected Gmail and Outlook mailboxes, and follow up in the same thread, schedule it, or draft it for review.",
+	"categories": ["email"],
+	"layout": "router",
+	"dependencies": ["aiinbx@3.0.1"],
+	"environment": [
+		{
+			"name": "AI_INBX_API_KEY",
+			"description": "API key from aiinbx.com/app with the sending scope. Keep this server-side."
+		},
+		{
+			"name": "AI_INBX_FUNCTION_TOKEN",
+			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public."
+		}
+	],
+	"operations": [
+		{
+			"id": "send-email",
+			"title": "Send an email",
+			"description": "POST an AI Inbx send request: from, to, subject, and html or text; optionally thread_id to follow up, scheduled_at to send later, or draft to hold it for review.",
+			"source": "functions/send-email.ts",
+			"route": "/send-email",
+			"recommended": true
+		}
+	]
+}
