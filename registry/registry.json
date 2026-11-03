@@ -96,7 +96,8 @@
 			"provider": "Neon",
 			"title": "Presigned uploads with Object Storage",
 			"description": "Create presigned PUT and GET URLs for a Neon Object Storage bucket.",
-			"path": "presigned-uploads/template.json"
+			"path": "presigned-uploads/template.json",
+			"categories": ["first-party"]
 		}
 	]
 }
