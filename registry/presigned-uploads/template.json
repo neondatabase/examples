@@ -4,7 +4,7 @@
 	"provider": "Neon",
 	"title": "Presigned uploads with Object Storage",
 	"description": "Create presigned PUT and GET URLs for a Neon Object Storage bucket.",
-	"categories": ["first-party"],
+	"categories": ["first-party", "storage"],
 	"layout": "router",
 	"dependencies": [
 		"@aws-sdk/client-s3@3.1156.0",
