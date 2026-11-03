@@ -29,10 +29,17 @@ buckets: {
 
 Object Storage is available in `aws-us-east-2`, `aws-us-east-1`, `aws-eu-central-1`, and `aws-ap-southeast-1`. See [Object Storage](https://neon.com/docs/storage/overview).
 
-Deploy once so Neon creates the bucket and pulls `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL_S3`, and `AWS_REGION` into your local env file:
+Function URLs are public, so the function only answers callers that send a token you choose. Generate one and add it to `.env.local`:
 
 ```bash
-neon deploy
+export UPLOADS_FUNCTION_TOKEN=$(openssl rand -hex 32)
+echo "UPLOADS_FUNCTION_TOKEN=$UPLOADS_FUNCTION_TOKEN" >> .env.local
+```
+
+Deploy once so Neon creates the bucket and pulls `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL_S3`, and `AWS_REGION` into `.env.local`:
+
+```bash
+neon deploy --env .env.local
 ```
 
 ## Run locally
@@ -41,17 +48,18 @@ neon deploy
 neon dev
 ```
 
-The default URL is `http://localhost:8787/` and prints the route list plus the bucket setup steps.
+The default URL is `http://localhost:8787/` and prints the route list, the setup steps, and whether `UPLOADS_FUNCTION_TOKEN` is set. It's the only route that works without the token.
 
 Get a presigned upload URL:
 
 ```bash
 curl -s http://localhost:8787/uploads \
+  -H "authorization: Bearer $UPLOADS_FUNCTION_TOKEN" \
   -H 'content-type: application/json' \
   -d '{"filename":"hello.txt","contentType":"text/plain"}'
 ```
 
-Example response:
+Example response (`201`):
 
 ```json
 {
@@ -74,15 +82,33 @@ curl -X PUT "<uploadUrl>" \
 List the bucket and get a download URL:
 
 ```bash
-curl -s http://localhost:8787/files
-curl -s "http://localhost:8787/files/download?key=<key>"
+curl -s http://localhost:8787/files \
+  -H "authorization: Bearer $UPLOADS_FUNCTION_TOKEN"
+curl -s "http://localhost:8787/files/download?key=<key>" \
+  -H "authorization: Bearer $UPLOADS_FUNCTION_TOKEN"
 ```
 
 ## Routes
 
-| Route | Purpose |
-| --- | --- |
-| `GET /` | Route list, bucket name, and setup steps. |
-| `POST /uploads` | `{ filename, contentType }` returns a presigned PUT URL. |
-| `GET /files` | Lists up to 100 objects in the bucket. |
-| `GET /files/download?key=...` | Returns a presigned GET URL with an attachment filename. |
+| Route | Auth | Purpose |
+| --- | --- | --- |
+| `GET /` | None | Route list, bucket name, setup steps, and whether the token is set. |
+| `POST /uploads` | Bearer `UPLOADS_FUNCTION_TOKEN` | `{ filename, contentType }` returns `201` with a presigned PUT URL that expires in 5 minutes. |
+| `GET /files` | Bearer `UPLOADS_FUNCTION_TOKEN` | Lists up to 100 objects in the bucket. |
+| `GET /files/download?key=...` | Bearer `UPLOADS_FUNCTION_TOKEN` | Returns a presigned GET URL with an attachment filename that expires in 1 hour, or `404` if the key doesn't exist. |
+
+A missing or shorter-than-32-character `UPLOADS_FUNCTION_TOKEN` returns `503` with setup instructions, a missing or wrong token returns `401`, a malformed body returns `400`, and any other path or method returns `404` or `405`.
+
+## Deploy
+
+```bash
+neon deploy --env .env.local
+neon functions get presigneduploads
+```
+
+`neon functions get` prints the function's public URL. Call it the same way as locally, with the bearer token.
+
+## Notes
+
+- Keep `UPLOADS_FUNCTION_TOKEN` on your server. Call this function from your backend after you've checked who the user is, then hand only the presigned `uploadUrl` or `downloadUrl` to the browser.
+- A presigned PUT can't cap the file size. Check `size` from `GET /files` after upload, or delete objects you don't want.

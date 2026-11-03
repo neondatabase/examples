@@ -1,6 +1,7 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID, timingSafeEqual } from "node:crypto";
 import {
 	GetObjectCommand,
+	HeadObjectCommand,
 	ListObjectsV2Command,
 	PutObjectCommand,
 	S3Client,
@@ -11,6 +12,7 @@ const BUCKET = "uploads";
 const UPLOAD_TTL_SECONDS = 300;
 const DOWNLOAD_TTL_SECONDS = 3_600;
 const MAX_LIST = 100;
+const MIN_TOKEN_LENGTH = 32;
 
 let s3: S3Client | undefined;
 
@@ -24,6 +26,32 @@ function getS3(): S3Client {
 
 function jsonError(message: string, status: number): Response {
 	return Response.json({ error: message }, { status });
+}
+
+// Function URLs are public, so every route except GET / needs the caller token.
+function checkAuth(request: Request): Response | null {
+	const expected = process.env.UPLOADS_FUNCTION_TOKEN ?? "";
+	if (expected.length < MIN_TOKEN_LENGTH) {
+		return jsonError(
+			`Set UPLOADS_FUNCTION_TOKEN to a random value of at least ${MIN_TOKEN_LENGTH} characters, for example from openssl rand -hex 32, then redeploy`,
+			503,
+		);
+	}
+
+	const match = /^Bearer\s+(.+)$/i.exec(request.headers.get("authorization") ?? "");
+	const provided = Buffer.from(match?.[1]?.trim() ?? "");
+	const secret = Buffer.from(expected);
+	if (provided.length === secret.length && timingSafeEqual(provided, secret)) return null;
+
+	return Response.json(
+		{ error: "Send Authorization: Bearer <UPLOADS_FUNCTION_TOKEN>" },
+		{ status: 401, headers: { "www-authenticate": "Bearer" } },
+	);
+}
+
+function isNotFound(error: unknown): boolean {
+	const e = error as { name?: string; $metadata?: { httpStatusCode?: number } };
+	return e?.name === "NotFound" || e?.name === "NoSuchKey" || e?.$metadata?.httpStatusCode === 404;
 }
 
 async function readJson(request: Request): Promise<Record<string, unknown> | null> {
@@ -66,8 +94,11 @@ export default {
 				bucket: BUCKET,
 				setup: [
 					`Declare the private bucket: neon config add bucket ${BUCKET}`,
-					"Run neon deploy to create it and pull the AWS_* variables.",
+					"Add UPLOADS_FUNCTION_TOKEN to .env.local, for example from openssl rand -hex 32.",
+					"Run neon deploy --env .env.local to create the bucket and pull the AWS_* variables.",
 				],
+				tokenConfigured: (process.env.UPLOADS_FUNCTION_TOKEN ?? "").length >= MIN_TOKEN_LENGTH,
+				auth: "Every route below needs Authorization: Bearer <UPLOADS_FUNCTION_TOKEN>.",
 				routes: [
 					"POST /uploads  { filename, contentType }",
 					"GET /files",
@@ -75,6 +106,13 @@ export default {
 				],
 			});
 		}
+
+		const isKnownRoute =
+			pathname === "/uploads" || pathname === "/files" || pathname === "/files/download";
+		if (!isKnownRoute) return jsonError("Not found", 404);
+
+		const denied = checkAuth(request);
+		if (denied) return denied;
 
 		if (pathname === "/uploads") {
 			if (request.method !== "POST") return jsonError("Use POST", 405);
@@ -129,6 +167,13 @@ export default {
 			const key = searchParams.get("key");
 			if (!key || key.includes("..") || key.startsWith("/")) {
 				return jsonError("Provide a key from GET /files", 400);
+			}
+			try {
+				await getS3().send(new HeadObjectCommand({ Bucket: BUCKET, Key: key }));
+			} catch (error) {
+				if (isNotFound(error)) return jsonError("No file with that key. List keys with GET /files", 404);
+				console.error("[presigned-uploads] could not read object:", error);
+				return jsonError("Could not create the download URL", 502);
 			}
 			try {
 				const downloadUrl = await getSignedUrl(

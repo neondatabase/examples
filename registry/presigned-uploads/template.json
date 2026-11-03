@@ -10,5 +10,10 @@
 		"@aws-sdk/client-s3@3.1156.0",
 		"@aws-sdk/s3-request-presigner@3.1156.0"
 	],
-	"environment": []
+	"environment": [
+		{
+			"name": "UPLOADS_FUNCTION_TOKEN",
+			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public."
+		}
+	]
 }
