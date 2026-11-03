@@ -13,7 +13,7 @@ neon link
 neon functions new rate-limit-postgres
 ```
 
-The CLI writes `functions/ratelimitpostgres/index.ts` and declares the function in `neon.ts`. Postgres is enabled by default, so `DATABASE_URL` is already available.
+The CLI writes `functions/ratelimitpostgres/index.ts` and declares the function in `neon.ts`.
 
 ## Run locally
 
@@ -32,9 +32,9 @@ for i in $(seq 1 12); do
 done
 ```
 
-The first 10 return `200`, the last 2 return `429`. If you run the loop again, use a fresh key or
-wait for the next 60-second window; a key that is already at the limit stays at `429` until the
-window resets. The response includes the counters:
+The first 10 requests return `200` while the last 2 return `429`.
+
+You should also see the following output from the last request:
 
 ```json
 {
@@ -94,5 +94,4 @@ The conflict update is atomic, so concurrent requests in different function inst
 
 - `key` is whatever the caller sends. In a real app, derive it from the authenticated user, API key, or client IP rather than trusting the body.
 - Change `LIMIT` and `WINDOW_SECONDS` to tune the policy. The window is fixed, not sliding: a burst at the end of one window and the start of the next can reach twice the limit.
-- Old keys stay in the table, one row per distinct key. Delete stale rows in a scheduled job; add an
-  index on `window_start` if that cleanup scans too much.
+- Old keys stay in the table forever. Delete them with a scheduled job or Postgres `pg_cron` if you want to reclaim space.

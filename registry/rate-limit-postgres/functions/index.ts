@@ -59,8 +59,7 @@ function parseKey(value: unknown): string | null {
 	return key;
 }
 
-// Fixed windows start on a multiple of WINDOW_SECONDS. Passing the start from
-// the application keeps the SQL portable and makes the reset time easy to return.
+// Returns the start of the current window, rounded down to the nearest window boundary.
 function currentWindowStart(now = Date.now()): Date {
 	return new Date(
 		Math.floor(now / 1000 / WINDOW_SECONDS) * WINDOW_SECONDS * 1000,
