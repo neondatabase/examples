@@ -49,6 +49,7 @@ several: Neon-maintained ones have `first-party` plus a topical label.
 | `bots` | Chat or messaging bot. |
 | `mcp` | Model Context Protocol server. |
 | `websocket` | Live updates over a WebSocket connection. |
+| `workflow` | Durable or background job orchestration. |
 
 Categories are lowercase hyphenated strings, not a fixed list. To add one, use it in the entry and
 add a row here.
