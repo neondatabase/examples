@@ -43,9 +43,7 @@
 			"title": "Telegram AI chat bot",
 			"description": "Telegram bot with Neon Functions, AI Gateway, and Postgres for message storage.",
 			"path": "telegram-bot/template.json",
-			"categories": ["first-party", "bots"],
-			"logo": "https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg",
-			"website": "https://telegram.org/"
+			"categories": ["first-party", "bots"]
 		},
 		{
 			"id": "rest-api-postgres",
@@ -77,9 +75,7 @@
 			"title": "TanStack AI on AI Gateway",
 			"description": "Streaming chat with tool calling, structured extraction, and summaries with TanStack AI on Neon AI Gateway.",
 			"path": "tanstack-ai/template.json",
-			"categories": ["first-party", "ai"],
-			"logo": "https://cdn.jsdelivr.net/gh/TanStack/tanstack.com@f24f323ba7ef981c7e1914e8aef1f161999da908/public/images/logos/logo-color-100.png",
-			"website": "https://tanstack.com/ai"
+			"categories": ["first-party", "ai"]
 		},
 		{
 			"id": "websocket-live-poll",
@@ -95,10 +91,7 @@
 			"title": "Durable workflow with Inngest",
 			"description": "A minimal multi-step workflow with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
 			"path": "inngest-workflow/template.json",
-			"categories": ["first-party", "workflow"],
-			"logo": "https://www.inngest.com/favicon-june-2025-light.svg",
-			"logoDark": "https://www.inngest.com/favicon-june-2025-dark.svg",
-			"website": "https://www.inngest.com/"
+			"categories": ["first-party", "workflow"]
 		},
 		{
 			"id": "upstash-workflow",
@@ -106,9 +99,7 @@
 			"title": "Durable workflow with Upstash Workflow",
 			"description": "A minimal multi-step job with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
 			"path": "upstash-workflow/template.json",
-			"categories": ["first-party", "workflow"],
-			"logo": "https://upstash.com/logo/upstash-icon-dark-bg.svg",
-			"website": "https://upstash.com/"
+			"categories": ["first-party", "workflow"]
 		},
 		{
 			"id": "resend-email",
@@ -116,10 +107,7 @@
 			"title": "Send email with Resend",
 			"description": "Send transactional email through the Resend API with a caller token.",
 			"path": "resend-email/template.json",
-			"categories": ["first-party", "email"],
-			"logo": "https://cdn.resend.com/brand/resend-icon-black.svg",
-			"logoDark": "https://cdn.resend.com/brand/resend-icon-white.svg",
-			"website": "https://resend.com/"
+			"categories": ["first-party", "email"]
 		},
 		{
 			"id": "mastra",
@@ -127,9 +115,7 @@
 			"title": "Mastra agent with Postgres memory",
 			"description": "A Mastra agent that remembers users in Neon Postgres, streams chat for useChat on AI Gateway, and runs a resumable human-in-the-loop review workflow.",
 			"path": "mastra/template.json",
-			"categories": ["first-party", "ai"],
-			"logo": "https://avatars.githubusercontent.com/u/149120496?s=200&v=4",
-			"website": "https://mastra.ai/"
+			"categories": ["first-party", "ai"]
 		},
 		{
 			"id": "presigned-uploads",
@@ -145,10 +131,7 @@
 			"title": "Chat SDK bot for Slack, Telegram, and the web",
 			"description": "A Vercel Chat SDK bot that answers on Slack, Telegram, and useChat, streams replies from AI Gateway, and keeps conversations, subscriptions, and locks in Neon Postgres.",
 			"path": "chat-sdk/template.json",
-			"categories": ["first-party", "bots", "ai"],
-			"logo": "https://vercel.com/geist/brands/assets/vercel-symbol-black.svg",
-			"logoDark": "https://vercel.com/geist/brands/assets/vercel-symbol-white.svg",
-			"website": "https://chat-sdk.dev/"
+			"categories": ["first-party", "bots", "ai"]
 		},
 		{
 			"id": "rate-limit-postgres",
@@ -164,10 +147,7 @@
 			"title": "OpenAI Agents SDK starter",
 			"description": "Streaming agent with tools, agent handoffs, and structured output on Neon AI Gateway.",
 			"path": "openai-agents/template.json",
-			"categories": ["first-party", "ai", "agents"],
-			"logo": "https://svgl.app/library/openai.svg",
-			"logoDark": "https://svgl.app/library/openai_dark.svg",
-			"website": "https://openai.github.io/openai-agents-js/"
+			"categories": ["first-party", "ai", "agents"]
 		},
 		{
 			"id": "aiinbx",

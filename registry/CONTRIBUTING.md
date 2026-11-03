@@ -127,8 +127,11 @@ Append to `templates` in `registry.json`:
 required array of lowercase hyphenated strings you can change without a schema edit (`first-party`,
 `ai`, `bots`, `ai-infrastructure`, and so on). A template can belong to several; listings can gate
 on a value such as `first-party`. `logo`, `logoDark`, and `website` are optional display metadata:
-absolute `https://` URLs that the CLI never fetches or writes. Set `logoDark` when `logo` is dark on
-a transparent background; listings show it in dark mode and fall back to `logo` without it.
+absolute `https://` URLs that the CLI never fetches or writes. The templates page uses them for the
+Built by block; omit them on first-party templates so listings default to Neon, even when the
+template wraps a third-party SDK. Set them only when another company wrote the template. Set
+`logoDark` when `logo` is dark on a transparent background; listings show it in dark mode and fall
+back to `logo` without it.
 
 An entry that fails validation is dropped from the listing without an error, so check that your
 template shows up (see below). Do not add generated archives. The CLI builds what it needs from
