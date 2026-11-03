@@ -42,6 +42,7 @@ several: Neon-maintained ones have `first-party` plus a topical label.
 | Category | Meaning |
 | --- | --- |
 | `first-party` | Maintained by Neon. |
+| `agents` | Multi-turn agent framework or agent runtime. |
 | `ai` | Uses AI Gateway or an AI framework. |
 | `ai-infrastructure` | Third-party AI data or tooling provider. |
 | `api` | HTTP API backed by Postgres. |
