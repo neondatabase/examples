@@ -96,7 +96,8 @@
 			"description": "A minimal multi-step workflow with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
 			"path": "inngest-workflow/template.json",
 			"categories": ["first-party", "workflow"],
-			"logo": "https://raw.githubusercontent.com/inngest/website/refs/heads/main/public/logo.svg",
+			"logo": "https://www.inngest.com/favicon-june-2025-light.svg",
+			"logoDark": "https://www.inngest.com/favicon-june-2025-dark.svg",
 			"website": "https://www.inngest.com/"
 		},
 		{
@@ -117,6 +118,7 @@
 			"path": "resend-email/template.json",
 			"categories": ["first-party", "email"],
 			"logo": "https://cdn.resend.com/brand/resend-icon-black.svg",
+			"logoDark": "https://cdn.resend.com/brand/resend-icon-white.svg",
 			"website": "https://resend.com/"
 		},
 		{
@@ -144,7 +146,8 @@
 			"description": "A Vercel Chat SDK bot that answers on Slack, Telegram, and useChat, streams replies from AI Gateway, and keeps conversations, subscriptions, and locks in Neon Postgres.",
 			"path": "chat-sdk/template.json",
 			"categories": ["first-party", "bots", "ai"],
-			"logo": "https://avatars.githubusercontent.com/u/14985020?s=200&v=4",
+			"logo": "https://vercel.com/geist/brands/assets/vercel-symbol-black.svg",
+			"logoDark": "https://vercel.com/geist/brands/assets/vercel-symbol-white.svg",
 			"website": "https://chat-sdk.dev/"
 		},
 		{
@@ -162,7 +165,8 @@
 			"description": "Streaming agent with tools, agent handoffs, and structured output on Neon AI Gateway.",
 			"path": "openai-agents/template.json",
 			"categories": ["first-party", "ai", "agents"],
-			"logo": "https://upload.wikimedia.org/wikipedia/commons/6/66/OpenAI_logo_2025_%28symbol%29.svg",
+			"logo": "https://svgl.app/library/openai.svg",
+			"logoDark": "https://svgl.app/library/openai_dark.svg",
 			"website": "https://openai.github.io/openai-agents-js/"
 		}
 	]
