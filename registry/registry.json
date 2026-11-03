@@ -82,6 +82,44 @@
 			"website": "https://tanstack.com/ai"
 		},
 		{
+			"id": "websocket-live-poll",
+			"provider": "Neon",
+			"title": "Live poll over WebSockets",
+			"description": "Vote over HTTP and watch results update live over a WebSocket, backed by Lakebase Postgres.",
+			"path": "websocket-live-poll/template.json",
+			"categories": ["first-party", "websocket"]
+		},
+		{
+			"id": "inngest-workflow",
+			"provider": "Inngest",
+			"title": "Durable workflow with Inngest",
+			"description": "A minimal multi-step workflow with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
+			"path": "inngest-workflow/template.json",
+			"categories": ["workflow"],
+			"logo": "https://raw.githubusercontent.com/inngest/website/refs/heads/main/public/logo.svg",
+			"website": "https://www.inngest.com/"
+		},
+		{
+			"id": "upstash-workflow",
+			"provider": "Upstash",
+			"title": "Durable workflow with Upstash Workflow",
+			"description": "A minimal multi-step job with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
+			"path": "upstash-workflow/template.json",
+			"categories": ["workflow"],
+			"logo": "https://upstash.com/logo/upstash-icon-dark-bg.svg",
+			"website": "https://upstash.com/"
+		},
+		{
+			"id": "resend-email",
+			"provider": "Resend",
+			"title": "Send email with Resend",
+			"description": "Send transactional email through the Resend API with a caller token.",
+			"path": "resend-email/template.json",
+			"categories": ["email"],
+			"logo": "https://cdn.resend.com/brand/resend-icon-black.svg",
+			"website": "https://resend.com/"
+		},
+		{
 			"id": "mastra",
 			"provider": "Mastra",
 			"title": "Mastra agent with Postgres memory",
@@ -90,6 +128,24 @@
 			"categories": ["ai"],
 			"logo": "https://avatars.githubusercontent.com/u/149120496?s=200&v=4",
 			"website": "https://mastra.ai/"
+		},
+		{
+			"id": "presigned-uploads",
+			"provider": "Neon",
+			"title": "Presigned uploads with Object Storage",
+			"description": "Create presigned PUT and GET URLs for a Neon Object Storage bucket.",
+			"path": "presigned-uploads/template.json",
+			"categories": ["first-party", "storage"]
+		},
+		{
+			"id": "chat-sdk",
+			"provider": "Vercel",
+			"title": "Chat SDK bot for Slack, Telegram, and the web",
+			"description": "A Vercel Chat SDK bot that answers on Slack, Telegram, and useChat, streams replies from AI Gateway, and keeps conversations, subscriptions, and locks in Neon Postgres.",
+			"path": "chat-sdk/template.json",
+			"categories": ["bots", "ai"],
+			"logo": "https://avatars.githubusercontent.com/u/14985020?s=200&v=4",
+			"website": "https://chat-sdk.dev/"
 		},
 		{
 			"id": "rate-limit-postgres",
