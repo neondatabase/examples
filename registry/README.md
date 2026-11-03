@@ -47,8 +47,10 @@ several: Neon-maintained ones have `first-party` plus a topical label.
 | `api` | HTTP API backed by Postgres. |
 | `auth` | Authentication or access control. |
 | `bots` | Chat or messaging bot. |
-| `mcp` | Model Context Protocol server. |
 | `email` | Transactional or marketing email. |
+| `mcp` | Model Context Protocol server. |
+| `websocket` | Live updates over a WebSocket connection. |
+| `workflow` | Durable or background job orchestration. |
 
 Categories are lowercase hyphenated strings, not a fixed list. To add one, use it in the entry and
 add a row here.
