@@ -100,6 +100,16 @@
 			"website": "https://www.inngest.com/"
 		},
 		{
+			"id": "upstash-workflow",
+			"provider": "Upstash",
+			"title": "Durable workflow with Upstash Workflow",
+			"description": "A minimal multi-step job with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
+			"path": "upstash-workflow/template.json",
+			"categories": ["workflow"],
+			"logo": "https://upstash.com/logo/upstash-icon-dark-bg.svg",
+			"website": "https://upstash.com/"
+		},
+		{
 			"id": "mastra",
 			"provider": "Mastra",
 			"title": "Mastra agent with Postgres memory",
