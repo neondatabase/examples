@@ -47,6 +47,7 @@ several: Neon-maintained ones have `first-party` plus a topical label.
 | `api` | HTTP API backed by Postgres. |
 | `auth` | Authentication or access control. |
 | `bots` | Chat or messaging bot. |
+| `email` | Transactional or marketing email. |
 | `mcp` | Model Context Protocol server. |
 | `websocket` | Live updates over a WebSocket connection. |
 | `workflow` | Durable or background job orchestration. |
