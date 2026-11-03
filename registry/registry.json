@@ -146,8 +146,8 @@
 			"description": "A Vercel Chat SDK bot that answers on Slack, Telegram, and useChat, streams replies from AI Gateway, and keeps conversations, subscriptions, and locks in Neon Postgres.",
 			"path": "chat-sdk/template.json",
 			"categories": ["first-party", "bots", "ai"],
-			"logo": "https://svgl.app/library/vercel.svg",
-			"logoDark": "https://svgl.app/library/vercel_dark.svg",
+			"logo": "https://vercel.com/geist/brands/assets/vercel-symbol-black.svg",
+			"logoDark": "https://vercel.com/geist/brands/assets/vercel-symbol-white.svg",
 			"website": "https://chat-sdk.dev/"
 		},
 		{
