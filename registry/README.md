@@ -33,6 +33,26 @@ Installing a template does not fetch modules from neon.com. The CLI downloads th
 A merge to `main` updates the cached catalog within about an hour, without a CLI release or a
 website deploy. The next `functions new` then sees the new files in the tarball.
 
+## Categories
+
+Each index entry has a `categories` array, mirrored in its `template.json`. Listings such as the
+templates page on neon.com use it to filter and group; the CLI ignores it. A template can carry
+several: Neon-maintained ones have `first-party` plus a topical label.
+
+| Category | Meaning |
+| --- | --- |
+| `first-party` | Maintained by Neon. |
+| `ai` | Uses AI Gateway or an AI framework. |
+| `ai-infrastructure` | Third-party AI data or tooling provider. |
+| `api` | HTTP API backed by Postgres. |
+| `auth` | Authentication or access control. |
+| `bots` | Chat or messaging bot. |
+| `mcp` | Model Context Protocol server. |
+| `email` | Transactional or marketing email. |
+
+Categories are lowercase hyphenated strings, not a fixed list. To add one, use it in the entry and
+add a row here.
+
 ## Trying a change
 
 Point the CLI at your checkout. Local mode reads the loose files in this folder and does not

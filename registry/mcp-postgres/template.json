@@ -4,6 +4,7 @@
 	"provider": "Neon",
 	"title": "MCP server backed by Postgres",
 	"description": "A Hono MCP server exposing create, list, update, and delete tools backed by a Postgres database.",
+	"categories": ["first-party", "mcp"],
 	"layout": "router",
 	"dependencies": [
 		"@modelcontextprotocol/server@2.3.1",
