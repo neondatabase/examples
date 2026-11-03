@@ -42,7 +42,7 @@ You should also see the following output from the last request:
   "allowed": false,
   "limit": 10,
   "remaining": 0,
-  "resetAt": "2026-11-01T04:02:00.000Z"
+  "resetAt": "2026-11-03T13:25:00.000Z"
 }
 ```
 
