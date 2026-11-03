@@ -82,6 +82,14 @@
 			"website": "https://tanstack.com/ai"
 		},
 		{
+			"id": "websocket-live-poll",
+			"provider": "Neon",
+			"title": "Live poll over WebSockets",
+			"description": "Vote over HTTP and watch results update live over a WebSocket, backed by Lakebase Postgres.",
+			"path": "websocket-live-poll/template.json",
+			"categories": ["first-party", "websocket"]
+		},
+		{
 			"id": "inngest-workflow",
 			"provider": "Inngest",
 			"title": "Durable workflow with Inngest",
