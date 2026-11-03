@@ -11,7 +11,7 @@ neon link
 neon functions new presigned-uploads
 ```
 
-The CLI writes `functions/presigneduploads/index.ts` and declares the function in `neon.ts`.
+The CLI writes `functions/presigneduploads/index.ts`, declares the function in `neon.ts`, and installs the template's dependencies.
 
 Create the bucket the template expects:
 
@@ -19,7 +19,7 @@ Create the bucket the template expects:
 neon config add bucket uploads
 ```
 
-Or declare it in `neon.ts`:
+Or add the `buckets` block to the `neon.ts` that `neon functions new` created:
 
 ```ts
 buckets: {
@@ -29,10 +29,10 @@ buckets: {
 
 Object Storage is available in `aws-us-east-2`, `aws-us-east-1`, `aws-eu-central-1`, and `aws-ap-southeast-1`. See [Object Storage](https://neon.com/docs/storage/overview).
 
-Deploy once so Neon creates the bucket and injects `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL_S3`, and `AWS_REGION` into `.env.local`:
+Deploy once so Neon creates the bucket and pulls `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL_S3`, and `AWS_REGION` into your local env file (`.env`, or `.env.local` when there is no `.env`):
 
 ```bash
-neon deploy --env .env.local
+neon deploy
 ```
 
 ## Run locally
@@ -41,9 +41,9 @@ neon deploy --env .env.local
 neon dev
 ```
 
-The default URL is `http://localhost:8787/`.
+The default URL is `http://localhost:8787/` and prints the route list plus the bucket setup steps.
 
-Ask for an upload URL:
+Get a presigned upload URL:
 
 ```bash
 curl -s http://localhost:8787/uploads \
@@ -51,9 +51,11 @@ curl -s http://localhost:8787/uploads \
   -d '{"filename":"hello.txt","contentType":"text/plain"}'
 ```
 
+Example response:
+
 ```json
 {
-  "key": "uploads/6f0d...-hello.txt",
+  "key": "6f0d...-hello.txt",
   "uploadUrl": "https://br-....storage...",
   "method": "PUT",
   "headers": { "content-type": "text/plain" },
@@ -61,7 +63,7 @@ curl -s http://localhost:8787/uploads \
 }
 ```
 
-Upload with the URL:
+Upload a file to the presigned URL:
 
 ```bash
 curl -X PUT "<uploadUrl>" \
@@ -73,21 +75,14 @@ List the bucket and get a download URL:
 
 ```bash
 curl -s http://localhost:8787/files
-curl -s "http://localhost:8787/files/download?key=uploads/<key>"
+curl -s "http://localhost:8787/files/download?key=<key>"
 ```
 
 ## Routes
 
 | Route | Purpose |
 | --- | --- |
+| `GET /` | Route list, bucket name, and setup steps. |
 | `POST /uploads` | `{ filename, contentType }` returns a presigned PUT URL. |
-| `GET /files` | Lists up to 100 objects under `uploads/`. |
+| `GET /files` | Lists up to 100 objects in the bucket. |
 | `GET /files/download?key=...` | Returns a presigned GET URL with an attachment filename. |
-
-## Notes
-
-- The bucket name is the `BUCKET` constant near the top of the module. Change it in both the code and `neon.ts` if you want a different name.
-- The client must send the same `Content-Type` that was signed. Do not add extra headers to the PUT.
-- Browser uploads need a CORS rule on the bucket. Neon Object Storage supports S3 `PutBucketCors`; the `curl` flow above does not need it.
-- Presigned URLs are bearer capabilities. Keep the upload TTL short and treat the URL like a password.
-- `POST /uploads` and `GET /files` are unauthenticated demos. Add authentication before pointing this at a real bucket: anyone with the function URL can mint upload URLs and list keys. Delete objects through the Neon Console, `neon buckets object rm`, or the S3 API.
