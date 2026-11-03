@@ -168,6 +168,17 @@
 			"logo": "https://svgl.app/library/openai.svg",
 			"logoDark": "https://svgl.app/library/openai_dark.svg",
 			"website": "https://openai.github.io/openai-agents-js/"
+		},
+		{
+			"id": "aiinbx",
+			"provider": "AI Inbx",
+			"title": "Send email with AI Inbx",
+			"description": "Send email from your domains or connected Gmail and Outlook mailboxes, and follow up in the same thread, schedule it, or draft it for review.",
+			"path": "aiinbx/template.json",
+			"categories": ["email"],
+			"logo": "https://aiinbx.com/logo-dark.svg",
+			"logoDark": "https://aiinbx.com/logo-light.svg",
+			"website": "https://aiinbx.com/"
 		}
 	]
 }
