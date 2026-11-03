@@ -48,6 +48,7 @@ several: Neon-maintained ones have `first-party` plus a topical label.
 | `auth` | Authentication or access control. |
 | `bots` | Chat or messaging bot. |
 | `mcp` | Model Context Protocol server. |
+| `websocket` | Live updates over a WebSocket connection. |
 
 Categories are lowercase hyphenated strings, not a fixed list. To add one, use it in the entry and
 add a row here.
