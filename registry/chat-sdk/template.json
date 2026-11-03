@@ -1,10 +1,10 @@
 {
 	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
 	"id": "chat-sdk",
-	"provider": "Vercel",
+	"provider": "Neon",
 	"title": "Chat SDK bot for Slack, Telegram, and the web",
 	"description": "A Vercel Chat SDK bot that answers on Slack, Telegram, and useChat, streams replies from AI Gateway, and keeps conversations, subscriptions, and locks in Neon Postgres.",
-	"categories": ["bots", "ai"],
+	"categories": ["first-party", "bots", "ai"],
 	"layout": "router",
 	"dependencies": [
 		"@chat-adapter/slack@4.43.0",
