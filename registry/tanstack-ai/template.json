@@ -4,6 +4,7 @@
 	"provider": "TanStack",
 	"title": "TanStack AI on AI Gateway",
 	"description": "Streaming chat with tool calling, structured extraction, and summaries with TanStack AI on Neon AI Gateway.",
+	"categories": ["ai"],
 	"layout": "router",
 	"dependencies": [
 		"@tanstack/ai@1.0.0",

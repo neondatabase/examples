@@ -4,6 +4,7 @@
 	"provider": "Inngest",
 	"title": "Durable workflow with Inngest",
 	"description": "A minimal multi-step workflow with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
+	"categories": ["workflow"],
 	"layout": "router",
 	"dependencies": [
 		"@neon/functions@0.11.0",
