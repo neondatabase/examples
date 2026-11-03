@@ -157,11 +157,11 @@
 		},
 		{
 			"id": "openai-agents",
-			"provider": "OpenAI",
+			"provider": "Neon",
 			"title": "OpenAI Agents SDK starter",
 			"description": "Streaming agent with tools, agent handoffs, and structured output on Neon AI Gateway.",
 			"path": "openai-agents/template.json",
-			"categories": ["ai", "agents"],
+			"categories": ["first-party", "ai", "agents"],
 			"logo": "https://upload.wikimedia.org/wikipedia/commons/6/66/OpenAI_logo_2025_%28symbol%29.svg",
 			"website": "https://openai.github.io/openai-agents-js/"
 		}
