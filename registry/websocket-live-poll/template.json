@@ -4,6 +4,7 @@
 	"provider": "Neon",
 	"title": "Live poll over WebSockets",
 	"description": "Vote over HTTP and watch results update live over a WebSocket, backed by Lakebase Postgres.",
+	"categories": ["first-party", "websocket"],
 	"layout": "router",
 	"dependencies": [
 		"@neon/functions@0.11.0",
