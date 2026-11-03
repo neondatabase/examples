@@ -96,7 +96,7 @@
 			"description": "A minimal multi-step workflow with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
 			"path": "inngest-workflow/template.json",
 			"categories": ["first-party", "workflow"],
-			"logo": "https://raw.githubusercontent.com/inngest/website/refs/heads/main/public/logo.svg",
+			"logo": "https://neon.com/images/technology-logos/inngest-dark.svg",
 			"website": "https://www.inngest.com/"
 		},
 		{
@@ -116,7 +116,7 @@
 			"description": "Send transactional email through the Resend API with a caller token.",
 			"path": "resend-email/template.json",
 			"categories": ["first-party", "email"],
-			"logo": "https://cdn.resend.com/brand/resend-icon-black.svg",
+			"logo": "https://cdn.resend.com/brand/resend-icon-white.svg",
 			"website": "https://resend.com/"
 		},
 		{
@@ -126,7 +126,7 @@
 			"description": "A Mastra agent that remembers users in Neon Postgres, streams chat for useChat on AI Gateway, and runs a resumable human-in-the-loop review workflow.",
 			"path": "mastra/template.json",
 			"categories": ["first-party", "ai"],
-			"logo": "https://avatars.githubusercontent.com/u/149120496?s=200&v=4",
+			"logo": "https://neon.com/images/technology-logos/mastra-dark.svg",
 			"website": "https://mastra.ai/"
 		},
 		{
@@ -144,7 +144,7 @@
 			"description": "A Vercel Chat SDK bot that answers on Slack, Telegram, and useChat, streams replies from AI Gateway, and keeps conversations, subscriptions, and locks in Neon Postgres.",
 			"path": "chat-sdk/template.json",
 			"categories": ["first-party", "bots", "ai"],
-			"logo": "https://avatars.githubusercontent.com/u/14985020?s=200&v=4",
+			"logo": "https://neon.com/images/technology-logos/vercel-dark.svg",
 			"website": "https://chat-sdk.dev/"
 		},
 		{
@@ -162,7 +162,7 @@
 			"description": "Streaming agent with tools, agent handoffs, and structured output on Neon AI Gateway.",
 			"path": "openai-agents/template.json",
 			"categories": ["first-party", "ai", "agents"],
-			"logo": "https://upload.wikimedia.org/wikipedia/commons/6/66/OpenAI_logo_2025_%28symbol%29.svg",
+			"logo": "https://cdn.jsdelivr.net/gh/openai/openai-agents-js@a52bc6fab24a0b967befa5220c3430b4edbedb52/docs/public/favicon.svg",
 			"website": "https://openai.github.io/openai-agents-js/"
 		}
 	]
