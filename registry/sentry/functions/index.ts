@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import * as Sentry from "@sentry/node";
 import { Hono } from "hono";
 
@@ -88,7 +89,7 @@ app.post("/api/orders", async (c) => {
 		return c.json({ error: "each item needs a sku and a positive integer qty" }, 400);
 	}
 
-	const orderId = crypto.randomUUID();
+	const orderId = randomUUID();
 	const forceFailure = input.force_failure === true;
 
 	Sentry.logger.info("order received", {
@@ -147,7 +148,7 @@ function callProvider(name: string, orderId: string, forceFailure: boolean) {
 	if (forceFailure && name === "stripe") {
 		throw new Error(`provider ${name} declined the charge for ${orderId}`);
 	}
-	return { transactionId: crypto.randomUUID() };
+	return { transactionId: randomUUID() };
 }
 
 app.get("/debug-sentry", () => {
@@ -158,6 +159,8 @@ app.onError((error, c) => {
 	Sentry.captureException(error);
 	return c.json({ error: "internal_error" }, 500);
 });
+
+app.notFound((c) => c.json({ error: "Not found" }, 404));
 
 // A Hono app satisfies the Neon Function contract: it exposes fetch(request).
 export default app;
