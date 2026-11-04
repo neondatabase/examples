@@ -162,13 +162,11 @@
 		},
 		{
 			"id": "sentry",
-			"provider": "Sentry",
+			"provider": "Neon",
 			"title": "Sentry-instrumented API",
 			"description": "Errors, structured logs, and request traces for a Hono API on Neon Functions.",
 			"path": "sentry/template.json",
-			"categories": ["observability"],
-			"logo": "https://sentry.io/favicon.ico",
-			"website": "https://sentry.io/"
+			"categories": ["first-party", "observability"]
 		}
 	]
 }

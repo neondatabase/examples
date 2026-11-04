@@ -1,10 +1,10 @@
 {
 	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
 	"id": "sentry",
-	"provider": "Sentry",
+	"provider": "Neon",
 	"title": "Sentry-instrumented API",
 	"description": "Errors, structured logs, and request traces for a Hono API on Neon Functions.",
-	"categories": ["observability"],
+	"categories": ["first-party", "observability"],
 	"layout": "router",
 	"dependencies": ["@sentry/node@11.10.0", "hono@4.13.16"],
 	"environment": [
