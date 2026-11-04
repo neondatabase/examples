@@ -1,10 +1,10 @@
 {
 	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
 	"id": "tanstack-ai",
-	"provider": "TanStack",
+	"provider": "Neon",
 	"title": "TanStack AI on AI Gateway",
 	"description": "Streaming chat with tool calling, structured extraction, and summaries with TanStack AI on Neon AI Gateway.",
-	"categories": ["ai"],
+	"categories": ["first-party", "ai"],
 	"layout": "router",
 	"dependencies": [
 		"@tanstack/ai@1.0.0",

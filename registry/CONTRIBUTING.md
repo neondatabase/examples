@@ -77,7 +77,7 @@ a sibling from the template folder.
 | `id` | yes | Lowercase letters, digits and hyphens, starting with a letter or digit. Must match the index entry's `id`; use it as the folder name too. |
 | `title`, `description` | yes | Non-empty. |
 | `categories` | no | Array of listing labels (`lowercase-with-hyphens`). Should match the index entry. Display-only; the CLI does not use it to scaffold. |
-| `provider` | no | Shown in listings. Defaults to `Neon`. |
+| `provider` | no | Who built and maintains the template, shown in listings. Defaults to `Neon`. Use `Neon` and add the `first-party` category for templates Neon writes, even when they wrap a third-party SDK. Name another company only when that company wrote the template. |
 | `layout` | yes | `router` or `separate`; see below. |
 | `dependencies` | no | Exact `name@version` pins, scoped packages included. No ranges, no `latest`. The version a reviewer approved is the version that gets installed. |
 | `environment` | no | `UPPER_SNAKE` names, each with a description. The CLI declares each one on every scaffolded function in `neon.ts` and adds it, with the description as a comment, to the project's `.env.example`. Write the description for someone filling that file in. |
@@ -126,8 +126,12 @@ Append to `templates` in `registry.json`:
 `id`, `title`, `description`, and `categories` should match `template.json`. `categories` is a
 required array of lowercase hyphenated strings you can change without a schema edit (`first-party`,
 `ai`, `bots`, `ai-infrastructure`, and so on). A template can belong to several; listings can gate
-on a value such as `first-party`. `logo` and `website` are optional display metadata: absolute
-`https://` URLs that the CLI never fetches or writes.
+on a value such as `first-party`. `logo`, `logoDark`, and `website` are optional display metadata:
+absolute `https://` URLs that the CLI never fetches or writes. The templates page uses them for the
+Built by block; omit them on first-party templates so listings default to Neon, even when the
+template wraps a third-party SDK. Set them only when another company wrote the template. Set
+`logoDark` when `logo` is dark on a transparent background; listings show it in dark mode and fall
+back to `logo` without it.
 
 An entry that fails validation is dropped from the listing without an error, so check that your
 template shows up (see below). Do not add generated archives. The CLI builds what it needs from
@@ -186,4 +190,4 @@ in agreement.
 Change the CLI first for fields the parser uses. A field the published CLI does not know about is
 either ignored or makes the template invalid for every user on that version, so do not use a new
 field in a template until a CLI release that understands it is out. Display-only index fields
-(`logo`, `website`, `categories`) may land here; the CLI never fetches them.
+(`logo`, `logoDark`, `website`, `categories`) may land here; the CLI never fetches them.

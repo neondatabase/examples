@@ -45,6 +45,13 @@
 						"maxLength": 2048,
 						"description": "Display-only logo. The CLI never fetches it."
 					},
+					"logoDark": {
+						"type": "string",
+						"format": "uri",
+						"pattern": "^https://",
+						"maxLength": 2048,
+						"description": "Display-only logo for dark backgrounds. Listings fall back to logo when it is unset. The CLI never fetches it."
+					},
 					"website": {
 						"type": "string",
 						"format": "uri",

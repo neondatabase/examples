@@ -1,0 +1,69 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "chat-sdk",
+	"provider": "Neon",
+	"title": "Chat SDK bot for Slack, Telegram, and the web",
+	"description": "A Vercel Chat SDK bot that answers on Slack, Telegram, and useChat, streams replies from AI Gateway, and keeps conversations, subscriptions, and locks in Neon Postgres.",
+	"categories": ["first-party", "bots", "ai"],
+	"layout": "router",
+	"dependencies": [
+		"@chat-adapter/slack@4.43.0",
+		"@chat-adapter/state-pg@4.43.0",
+		"@chat-adapter/telegram@4.43.0",
+		"@chat-adapter/web@4.43.0",
+		"@neon/ai-sdk-provider@1.3.0",
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"ai@7.0.154",
+		"chat@4.43.0",
+		"pg@8.23.1"
+	],
+	"environment": [
+		{
+			"name": "SLACK_BOT_TOKEN",
+			"description": "For /slack: the Bot User OAuth Token (xoxb-...) from your Slack app's OAuth & Permissions page. If you didn't scaffold /slack, delete this key from neon.ts."
+		},
+		{
+			"name": "SLACK_SIGNING_SECRET",
+			"description": "For /slack: the Signing Secret from your Slack app's Basic Information page; verifies that requests come from Slack. If you didn't scaffold /slack, delete this key from neon.ts."
+		},
+		{
+			"name": "TELEGRAM_BOT_TOKEN",
+			"description": "For /telegram: the bot token from @BotFather. If you didn't scaffold /telegram, delete this key from neon.ts."
+		},
+		{
+			"name": "TELEGRAM_WEBHOOK_SECRET_TOKEN",
+			"description": "For /telegram: a random secret (letters, digits, _ and -, for example from openssl rand -hex 32) you also pass to setWebhook; verifies that requests come from Telegram. If you didn't scaffold /telegram, delete this key from neon.ts."
+		},
+		{
+			"name": "CHAT_WEB_TOKEN",
+			"description": "For /web: a random token (at least 32 characters, for example from openssl rand -hex 32) your backend sends as Authorization: Bearer <token>; required because Neon Function URLs are public. If you didn't scaffold /web, delete this key from neon.ts."
+		}
+	],
+	"operations": [
+		{
+			"id": "slack",
+			"title": "Slack bot",
+			"description": "Slack's Events API and interactivity URL: answers @mentions and DMs, follows the threads it was mentioned in, and streams replies with Slack's native streaming.",
+			"source": "functions/slack.ts",
+			"route": "/slack",
+			"recommended": true
+		},
+		{
+			"id": "web",
+			"title": "Web chat for useChat",
+			"description": "POST the body useChat sends, with a bearer token and an X-User-Id header, to stream a reply in the AI SDK UI message format; earlier turns are read from Postgres.",
+			"source": "functions/web.ts",
+			"route": "/web",
+			"recommended": true
+		},
+		{
+			"id": "telegram",
+			"title": "Telegram bot",
+			"description": "Telegram webhook: answers private chats and group mentions, verified with the webhook secret token; chat history is kept in Postgres.",
+			"source": "functions/telegram.ts",
+			"route": "/telegram",
+			"recommended": false
+		}
+	]
+}

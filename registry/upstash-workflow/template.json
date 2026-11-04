@@ -1,0 +1,34 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "upstash-workflow",
+	"provider": "Neon",
+	"title": "Durable workflow with Upstash Workflow",
+	"description": "A minimal multi-step job with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
+	"categories": ["first-party", "workflow"],
+	"layout": "router",
+	"dependencies": [
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"@upstash/workflow@1.5.0",
+		"hono@4.13.13",
+		"pg@8.23.1"
+	],
+	"environment": [
+		{
+			"name": "QSTASH_URL",
+			"description": "QStash endpoint, copied from the Quickstart section of the Upstash Console. It is region-specific and may differ from https://qstash.upstash.io. Locally, use the URL printed by `npx @upstash/qstash-cli dev`."
+		},
+		{
+			"name": "QSTASH_TOKEN",
+			"description": "QStash token, copied from the Quickstart section of the Upstash Console. It is region-specific and must match QSTASH_URL. POST /api/jobs uses it to start workflow runs."
+		},
+		{
+			"name": "QSTASH_CURRENT_SIGNING_KEY",
+			"description": "Current signing key, copied from the Quickstart section of the Upstash Console. It must match QSTASH_URL's region. The workflow endpoint uses it to verify that requests come from QStash."
+		},
+		{
+			"name": "QSTASH_NEXT_SIGNING_KEY",
+			"description": "Next signing key, copied from the Quickstart section of the Upstash Console. It must match QSTASH_URL's region and is used to verify requests during key rotation."
+		}
+	]
+}

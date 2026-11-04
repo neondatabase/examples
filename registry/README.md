@@ -42,13 +42,18 @@ several: Neon-maintained ones have `first-party` plus a topical label.
 | Category | Meaning |
 | --- | --- |
 | `first-party` | Maintained by Neon. |
+| `agents` | Multi-turn agent framework or agent runtime. |
 | `ai` | Uses AI Gateway or an AI framework. |
 | `ai-infrastructure` | Third-party AI data or tooling provider. |
 | `api` | HTTP API backed by Postgres. |
 | `auth` | Authentication or access control. |
 | `bots` | Chat or messaging bot. |
+| `email` | Transactional or marketing email. |
 | `mcp` | Model Context Protocol server. |
 | `observability` | Logging, tracing, or error reporting. |
+| `storage` | Uses Neon Object Storage. |
+| `websocket` | Live updates over a WebSocket connection. |
+| `workflow` | Durable or background job orchestration. |
 
 Categories are lowercase hyphenated strings, not a fixed list. To add one, use it in the entry and
 add a row here.
