@@ -105,7 +105,7 @@ The first `/backfill` delivery creates the schema and starts loading. `/tick` ru
 ## Try it
 
 ```bash
-curl -H "Authorization: Bearer $WORKOS_SYNC_STATUS_TOKEN" https://<invocation_url>/status
+curl -H "Authorization: Bearer $WORKOS_SYNC_STATUS_TOKEN" <invocation_url>/status
 ```
 
 Then query the mirror. The `_live` views hide deleted rows; the base tables keep them as tombstones.
@@ -142,7 +142,7 @@ curl -H "Authorization: Bearer $WORKOS_SYNC_STATUS_TOKEN" http://localhost:8787/
 
 ## Notes
 
-- `GET /status` reports row counts and timestamps, not row contents. The other routes carry their own checks: trigger deliveries and signed webhooks.
+- `GET /status` reports row counts and timestamps, not row contents.
 - `MAX_PAGES` and `MAX_EVENTS_PER_TICK` at the top of the module bound each invocation. Each response reports `pages`. Raise the budget until a slice uses most of the 15-minute limit but still finishes before the next trigger fires.
 - A reconcile cannot pause inside a stream, so a stream whose listing alone outlasts the budget runs to its last page. Reconcile that stream once from the CLI with `npx workos-sync-postgres reconcile --repair --streams <name>` against the same `DATABASE_URL`, and let the scheduled slices cover the rest.
 - Every row carries an `_env` column, set from `ENVIRONMENT` at the top of the module. Rename it to match the WorkOS environment, or add entries to `environments` to mirror several.
