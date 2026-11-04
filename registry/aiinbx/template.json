@@ -2,7 +2,7 @@
 	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
 	"id": "aiinbx",
 	"provider": "AI Inbx",
-	"title": "Send email with AI Inbx",
+	"title": "Send emails with AI Inbx",
 	"description": "Send email from your domains or connected Gmail and Outlook mailboxes, and follow up in the same thread, schedule it, or draft it for review.",
 	"categories": ["email"],
 	"layout": "router",
