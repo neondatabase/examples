@@ -2,25 +2,26 @@ import { randomUUID } from "node:crypto";
 import * as Sentry from "@sentry/node";
 import { Hono } from "hono";
 
-// One init per process: this template deliberately ships one module, because a
-// router with several operation modules would initialize Sentry more than once.
 Sentry.init({
 	dsn: process.env.SENTRY_DSN,
 	enabled: Boolean(process.env.SENTRY_DSN),
 	tracesSampleRate: 1,
-	// Neon invokes the handler through its own ingress, not a node:http server,
-	// so the request root span is created by the middleware below.
 	integrations: [
 		Sentry.httpIntegration({ disableIncomingRequestSpans: true }),
 	],
-	// NEON_BRANCH is injected by the runtime; do not declare it in template.json.
 	environment:
 		!process.env.NEON_BRANCH || process.env.NEON_BRANCH === "main"
 			? "production"
 			: process.env.NEON_BRANCH,
 });
 
-type OrderItem = { sku: string; qty: number };
+process.on("SIGTERM", () => void Sentry.flush(2000));
+process.on("SIGINT", () => void Sentry.flush(2000));
+
+type Todo = { id: string; title: string; done: boolean };
+
+// In-memory todo store
+const todos = new Map<string, Todo>();
 
 const app = new Hono();
 
@@ -49,8 +50,8 @@ app.get("/", (c) =>
 		name: "Sentry-instrumented API",
 		routes: [
 			"GET /health",
-			"GET /api/orders/:id",
-			"POST /api/orders",
+			"GET /todos/:id",
+			"POST /todos",
 			"GET /debug-sentry",
 		],
 	}),
@@ -58,11 +59,12 @@ app.get("/", (c) =>
 
 app.get("/health", (c) => c.json({ status: "ok" }));
 
-app.get("/api/orders/:id", (c) =>
-	c.json({ orderId: c.req.param("id"), status: "confirmed" }),
-);
+app.get("/todos/:id", (c) => {
+	const todo = todos.get(c.req.param("id"));
+	return todo ? c.json(todo) : c.json({ error: "Todo not found" }, 404);
+});
 
-app.post("/api/orders", async (c) => {
+app.post("/todos", async (c) => {
 	let body: unknown;
 	try {
 		body = await c.req.json();
@@ -74,81 +76,63 @@ app.post("/api/orders", async (c) => {
 		body && typeof body === "object" && !Array.isArray(body)
 			? (body as Record<string, unknown>)
 			: {};
-	const items = input.items;
-	if (!Array.isArray(items) || items.length === 0) {
-		return c.json({ error: "orders require a non-empty items array" }, 400);
-	}
-	const isValidItem = (item: unknown): item is OrderItem =>
-		Boolean(item) &&
-		typeof item === "object" &&
-		typeof (item as Record<string, unknown>).sku === "string" &&
-		typeof (item as Record<string, unknown>).qty === "number" &&
-		Number.isInteger((item as Record<string, unknown>).qty) &&
-		((item as Record<string, unknown>).qty as number) > 0;
-	if (!items.every(isValidItem)) {
-		return c.json({ error: "each item needs a sku and a positive integer qty" }, 400);
+	const title = input.title;
+	if (typeof title !== "string" || title.trim() === "") {
+		return c.json({ error: "title must be a non-empty string" }, 400);
 	}
 
-	const orderId = randomUUID();
-	const forceFailure = input.force_failure === true;
+	const simulateRetry = input.simulate_retry === true;
 
-	Sentry.logger.info("order received", {
+	Sentry.logger.info("creating todo", {
 		component: "api",
-		orderId,
-		items: items.length,
+		title,
 	});
 
 	try {
-		const provider = await Sentry.startSpan(
-			{ name: "order.charge", attributes: { orderId } },
-			() => chargeOrder(orderId, forceFailure),
+		const todo = await Sentry.startSpan(
+			{ name: "todo.save", attributes: { title } },
+			() => saveTodo(title, simulateRetry),
 		);
-		Sentry.logger.info("order charged", {
+		Sentry.logger.info("todo created", {
 			component: "api",
-			orderId,
-			provider,
+			todoId: todo.id,
 		});
-		return c.json({ orderId, status: "confirmed", provider });
+		return c.json(todo, 201);
 	} catch (error) {
-		// Terminal: every provider failed, so this one becomes an issue.
+		// Only unrecoverable errors become issues; recovered ones are logged.
 		Sentry.captureException(error, {
-			tags: { component: "api", phase: "charge" },
-			contexts: { order: { orderId, items: items.length } },
+			tags: { component: "api", phase: "save" },
+			contexts: { todo: { title } },
 		});
-		return c.json({ error: "charge_failed" }, 502);
+		return c.json({ error: "todo_save_failed" }, 502);
 	}
 });
 
-// Fake providers keep the template runnable without a payment account. The
-// first provider fails on demand so you can see a recovered failure logged
-// without becoming an issue.
-function chargeOrder(orderId: string, forceFailure: boolean) {
-	const providers = ["stripe", "polar"];
-	let lastError: unknown;
-
-	for (const provider of providers) {
+// Saving is retried once. `simulate_retry` makes the first attempt fail so the
+// recovered failure is logged without becoming an issue.
+function saveTodo(title: string, simulateRetry: boolean): Todo {
+	const todo: Todo = { id: randomUUID(), title: title.trim(), done: false };
+	if (simulateRetry) {
 		try {
-			callProvider(provider, orderId, forceFailure);
-			return provider;
+			writeTodo(todo, true);
+			return todo;
 		} catch (error) {
-			lastError = error;
-			Sentry.logger.warn("payment provider failed, trying the next one", {
+			Sentry.logger.warn("first save attempt failed, retrying", {
 				component: "api",
-				phase: "charge-attempt",
-				provider,
+				phase: "save-attempt",
 				error: String(error),
 			});
 		}
 	}
-
-	throw lastError ?? new Error("all payment providers failed");
+	writeTodo(todo, false);
+	return todo;
 }
 
-function callProvider(name: string, orderId: string, forceFailure: boolean) {
-	if (forceFailure && name === "stripe") {
-		throw new Error(`provider ${name} declined the charge for ${orderId}`);
+function writeTodo(todo: Todo, fail: boolean) {
+	if (fail) {
+		throw new Error(`could not save todo ${todo.id}`);
 	}
-	return { transactionId: randomUUID() };
+	todos.set(todo.id, todo);
 }
 
 app.get("/debug-sentry", () => {
@@ -162,5 +146,4 @@ app.onError((error, c) => {
 
 app.notFound((c) => c.json({ error: "Not found" }, 404));
 
-// A Hono app satisfies the Neon Function contract: it exposes fetch(request).
 export default app;

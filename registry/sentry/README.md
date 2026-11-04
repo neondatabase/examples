@@ -3,10 +3,10 @@
 A [Neon Function](https://neon.com/docs/compute/functions/overview) that reports to [Sentry](https://sentry.io):
 
 - **Errors** from unhandled route failures, grouped into issues.
-- **Logs** for recovered failures and for the order lifecycle.
-- **Traces** for each request, with a child span around the charge attempt.
+- **Logs** for recovered failures and for the todo lifecycle.
+- **Traces** for each request, with a child span around the save.
 
-The API is a [Hono](https://hono.dev) app with fake payment providers, so it runs without a Stripe or Polar account. When `SENTRY_DSN` is empty, the SDK stays disabled and every route still works.
+The API is a [Hono](https://hono.dev) app with an in-memory todo store.
 
 ## Scaffold it
 
@@ -50,22 +50,22 @@ curl "$URL/health"
 ### Recovered failure: a log, not an issue
 
 ```bash
-curl -X POST "$URL/api/orders" \
+curl -X POST "$URL/todos" \
   -H "Content-Type: application/json" \
-  -d '{"items":[{"sku":"PRL-KIT","qty":2}],"force_failure":true}'
+  -d '{"title":"Buy milk","simulate_retry":true}'
 ```
 
-The response is `200` with `"provider":"polar"`. The first provider fails and is logged with `Sentry.logger.warn`, then the second provider succeeds. Check **Explore > Logs** in Sentry for `payment provider failed, trying the next one`.
+The response is `201` with the new todo. The first save attempt fails and is logged with `Sentry.logger.warn`, then the retry succeeds. Check **Explore > Logs** in Sentry for `first save attempt failed, retrying`.
 
-### Trace: the request and its charge span
+### Trace: the request and its save span
 
 ```bash
-curl -X POST "$URL/api/orders" \
+curl -X POST "$URL/todos" \
   -H "Content-Type: application/json" \
-  -d '{"items":[{"sku":"PRL-KIT","qty":2}]}'
+  -d '{"title":"Buy milk"}'
 ```
 
-Check **Explore > Traces** for the `POST /api/orders` root span with the `order.charge` child span.
+Check **Explore > Traces** for the `POST /todos` root span with the `todo.save` child span.
 
 ### Issue: an unhandled error
 
@@ -81,8 +81,8 @@ This returns `500` with `{"error":"internal_error"}`. Check **Issues** for the g
 | --- | --- | --- |
 | `GET` | `/` | The template name and route list |
 | `GET` | `/health` | `{ "status": "ok" }` |
-| `GET` | `/api/orders/:id` | A canned order |
-| `POST` | `/api/orders` | Charges an order through two fake providers; `force_failure: true` logs a recovered failure |
+| `GET` | `/todos/:id` | A todo saved earlier in this instance; `404` if unknown |
+| `POST` | `/todos` | Saves a todo in memory; `simulate_retry: true` logs a recovered failure |
 | `GET` | `/debug-sentry` | Throws on purpose and returns `500`, producing an issue in Sentry |
 
 ## Deploy
@@ -96,13 +96,14 @@ neon functions get sentry
 
 ## How it works
 
-- `Sentry.init()` runs once at module load with `enabled: Boolean(SENTRY_DSN)` and `tracesSampleRate: 1`. This SDK version captures `Sentry.logger` calls without a separate logs flag.
+- `Sentry.init()` runs once at module load with `enabled: Boolean(SENTRY_DSN)` and `tracesSampleRate: 1`.
+- `SIGTERM` and `SIGINT` handlers flush buffered telemetry when the runtime shuts the process down.
 - `httpIntegration({ disableIncomingRequestSpans: true })` is required because Neon Functions are not served by `node:http`. The middleware creates the request root span.
 - The middleware wraps every request in `Sentry.withIsolationScope()` and `Sentry.startSpan()`, then calls `Sentry.flush(2000)` in `finally` because an idle function can be suspended at any time.
 - `environment` comes from the injected `NEON_BRANCH`: `main` is tagged `production`, and preview branches use their branch name.
 - `SENTRY_DSN` is the only declared variable. `NEON_BRANCH` and the other Neon variables are injected and must not be declared.
+- The todo store is a plain `Map`: a saved todo is visible to later requests on the same function instance, and nothing persists when that instance is recycled.
 
 ## Notes
 
 - Neon Functions do not emit source maps today, so Sentry stack traces point at bundle positions. Errors, logs, and traces are still grouped correctly.
-- Letting the SDK read `SENTRY_RELEASE`, `SENTRY_TRACES_SAMPLE_RATE`, or `PRODUCTION_BRANCH` would make those required variables in `neon.ts` and block a deploy when unset. The template reads only `SENTRY_DSN` and keeps the sample rate at `1`, which suits a low-traffic demo. Add those variables deliberately if you want release tracking or sampling.
