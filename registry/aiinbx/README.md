@@ -1,4 +1,4 @@
-# Send email with AI Inbx
+# Send emails with AI Inbx
 
 A Neon Function that sends email through [AI Inbx](https://aiinbx.com).
 
