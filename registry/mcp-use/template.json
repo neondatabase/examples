@@ -1,0 +1,24 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "mcp-use",
+	"provider": "Manufact",
+	"title": "MCP server with mcp-use",
+	"description": "Build an MCP server with mcp-use, using Postgres event tools as an example.",
+	"categories": ["mcp"],
+	"layout": "router",
+	"dependencies": [
+		"@mcp-use/client@2.4.5",
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"drizzle-orm@0.45.2",
+		"mcp-use@2.12.2",
+		"pg@8.23.1",
+		"zod@4.6.7"
+	],
+	"environment": [
+		{
+			"name": "MCP_API_KEY",
+			"description": "Random token (for example, from openssl rand -hex 32) that clients send as Authorization: Bearer <token>; required because the function URL is public."
+		}
+	]
+}
