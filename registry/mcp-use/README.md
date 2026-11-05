@@ -1,6 +1,6 @@
 # MCP server with mcp-use
 
-Built by [Manufact](https://manufact.com/), this template shows how to run a [Model Context Protocol](https://modelcontextprotocol.io) server on Neon Functions. It uses [mcp-use](https://github.com/mcp-use/mcp-use) for streamable HTTP at `/mcp`, Drizzle ORM for queries, and a shared `pg` pool registered with `attachDatabasePool` for Lakebase Postgres.
+Built by [Manufact](https://manufact.com/), this template shows how to run a [Model Context Protocol](https://modelcontextprotocol.io) server on Neon Functions. It uses [mcp-use](https://github.com/mcp-use/mcp-use) for streamable HTTP at `/mcp` and a shared `pg` pool registered with `attachDatabasePool` for Lakebase Postgres.
 
 The example tools create, update, delete, and search events in Postgres. Adapt them to your own use case.
 
