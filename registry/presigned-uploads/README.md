@@ -1,6 +1,6 @@
 # Presigned uploads with Neon Object Storage
 
-A Neon Function that hands out short-lived S3 URLs so a browser or another service can upload and download files without holding your storage credentials. Files land in a Neon Object Storage bucket, which branches with your database.
+This Neon Function hands out short-lived S3 URLs, so a browser or another service can upload and download files without your storage credentials. The files go to a Neon Object Storage bucket, which branches with your database.
 
 ## Scaffold it
 
@@ -19,7 +19,7 @@ Create the bucket the template expects:
 neon config add bucket uploads
 ```
 
-Or add the `buckets` block to the `neon.ts` that `neon functions new` created:
+You can also add the `buckets` block to the `neon.ts` that `neon functions new` created:
 
 ```ts
 buckets: {
@@ -36,6 +36,12 @@ export UPLOADS_FUNCTION_TOKEN=$(openssl rand -hex 32)
 echo "UPLOADS_FUNCTION_TOKEN=$UPLOADS_FUNCTION_TOKEN" >> .env.local
 ```
 
+<EnvironmentVariables>
+
+- `UPLOADS_FUNCTION_TOKEN`: A random token of at least 32 characters, for example from `openssl rand -hex 32`, that callers send as `Authorization: Bearer <token>`. Neon Function URLs are public, so the function requires it.
+
+</EnvironmentVariables>
+
 Deploy once so Neon creates the bucket and pulls `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL_S3`, and `AWS_REGION` into `.env.local`:
 
 ```bash
@@ -48,7 +54,7 @@ neon deploy --env .env.local
 neon dev
 ```
 
-The default URL is `http://localhost:8787/` and prints the route list, the setup steps, and whether `UPLOADS_FUNCTION_TOKEN` is set. It's the only route that works without the token.
+`neon dev` serves the function at `http://localhost:8787/` by default. `GET /` returns the route list, the setup steps, and whether `UPLOADS_FUNCTION_TOKEN` is set, and it's the only route that works without the token.
 
 Get a presigned upload URL:
 
@@ -90,6 +96,8 @@ curl -s "http://localhost:8787/files/download?key=<key>" \
 
 ## Routes
 
+<Operations>
+
 | Route | Auth | Purpose |
 | --- | --- | --- |
 | `GET /` | None | Route list, bucket name, setup steps, and whether the token is set. |
@@ -97,7 +105,9 @@ curl -s "http://localhost:8787/files/download?key=<key>" \
 | `GET /files` | Bearer `UPLOADS_FUNCTION_TOKEN` | Lists up to 100 objects in the bucket. |
 | `GET /files/download?key=...` | Bearer `UPLOADS_FUNCTION_TOKEN` | Returns a presigned GET URL with an attachment filename that expires in 1 hour, or `404` if the key doesn't exist. |
 
-A missing or shorter-than-32-character `UPLOADS_FUNCTION_TOKEN` returns `503` with setup instructions, a missing or wrong token returns `401`, a malformed body returns `400`, and any other path or method returns `404` or `405`.
+</Operations>
+
+A missing or shorter-than-32-character `UPLOADS_FUNCTION_TOKEN` returns `503` with setup instructions, a missing or wrong bearer token returns `401`, a malformed body returns `400`, and any other path or method returns `404` or `405`.
 
 ## Deploy
 

@@ -1,12 +1,16 @@
 # OpenAI Agents SDK starter
 
-An [OpenAI Agents SDK](https://openai.github.io/openai-agents-js/) starter on Neon Functions and [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview). AI Gateway is OpenAI-compatible, so the template needs no OpenAI API key: it uses the branch's gateway credentials.
+This template is an [OpenAI Agents SDK](https://openai.github.io/openai-agents-js/) starter that runs on Neon Functions and [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview). AI Gateway is OpenAI-compatible, so the template uses the branch's gateway credentials instead of an OpenAI API key.
+
+<Operations>
 
 | Route | Default | What it does |
 | --- | --- | --- |
 | `POST /chat` | yes | Streams a reply from an agent with a `rollDice` tool as plain text. |
 | `POST /triage` | yes | Hands a support request to a billing or technical agent and reports which one answered. |
 | `POST /extract` | no | Returns typed JSON from an agent with a Zod `outputType`. |
+
+</Operations>
 
 ## Scaffold it
 
@@ -17,7 +21,7 @@ neon link
 neon functions new openai-agents
 ```
 
-The CLI asks which routes to include. Pass `--all-operations` to include `/extract` too. It writes the modules and a router `index.ts` under `functions/openaiagents/`, and declares the function in `neon.ts`.
+The CLI asks which routes to include, and `--all-operations` includes `/extract` too. It writes the modules and a router `index.ts` under `functions/openaiagents/` and declares the function in `neon.ts`.
 
 Enable AI Gateway on the linked branch:
 
@@ -39,7 +43,7 @@ neon deploy --env .env.local
 neon dev
 ```
 
-`neon dev` loads `.env.local` and injects the branch's AI Gateway credentials. Call the URL it prints. The examples below use `$URL` for that URL.
+`neon dev` loads `.env.local`, injects the branch's AI Gateway credentials, and prints the URL to call. The examples below use `$URL` for that URL.
 
 ### Chat
 
@@ -93,7 +97,7 @@ Change `ContactSchema` in `extract.ts` to extract the fields your app needs.
 
 ## Authentication
 
-Function URLs are public, and this template does not add authentication. Anyone with the URL can call these routes and spend AI Gateway credits. Before you expose the function use a simple token based check or use [Managed Better Auth](https://neon.com/docs/auth/overview) for secure access.
+Function URLs are public, and this template doesn't add authentication, so anyone with the URL can call these routes and spend AI Gateway credits. Before you expose the function, check a bearer token in each route or use [Managed Better Auth](https://neon.com/docs/auth/overview).
 
 ## Errors
 
@@ -104,12 +108,12 @@ Function URLs are public, and this template does not add authentication. Anyone 
 | `502` | The model request failed. |
 | `503` | AI Gateway is not enabled. |
 
-`/chat` returns `200` as soon as the stream starts. A model error after that truncates the stream and is logged in the function's output.
+`/chat` returns `200` as soon as the stream starts. A model error after that truncates the stream, and the function logs the error.
 
 ## Customize
 
-- **Model:** every module sets `MODEL = "gpt-5-mini"`. Use any tool-calling model from the [AI Gateway catalog](https://neon.com/docs/ai-gateway/overview#available-models).
-- **Chat tool:** edit `rollDice` in `chat.ts`, or replace it with a tool that reads your own data.
-- **Triage agents:** edit the instructions and `handoffs` in `triage.ts`.
-- **Structured output:** edit `ContactSchema` in `extract.ts`. The schema is passed as `outputType`, so the SDK validates the final output before it reaches your code.
-- **Responses API:** `useResponses: false` keeps every route on chat completions, which works with the whole catalog. For Responses-only features, see [OpenAI Responses on AI Gateway](https://neon.com/docs/ai-gateway/openai-responses), use `/openai/v1` and `useResponses: true`, and check that your model supports the Responses API.
+- **Model.** Every module sets `MODEL = "gpt-5-mini"`. You can use any tool-calling model from the [AI Gateway catalog](https://neon.com/docs/ai-gateway/overview#available-models).
+- **Chat tool.** Edit `rollDice` in `chat.ts`, or replace it with a tool that reads your own data.
+- **Triage agents.** Edit the instructions and `handoffs` in `triage.ts`.
+- **Structured output.** Edit `ContactSchema` in `extract.ts`. The module passes the schema as `outputType`, so the SDK validates the final output before it reaches your code.
+- **Responses API.** `useResponses: false` keeps every route on Chat Completions, which works with the whole catalog. For Responses-only features, see [OpenAI Responses on AI Gateway](https://neon.com/docs/ai-gateway/openai-responses). Use `/openai/v1` and `useResponses: true`, and check that your model supports the Responses API.

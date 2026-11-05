@@ -15,7 +15,7 @@ schemas/
   template.schema.json       # shape of each template.json; neon.com serves this
 <template-id>/
   template.json              # metadata, no inline source
-  README.md                  # optional, documents the template in this repo
+  README.md                  # required; neon.com renders it on the template page
   functions/
     <operation>.ts           # one module per operation
 ```
@@ -41,7 +41,9 @@ export default {
 ```
 
 Read configuration from `process.env`, declare every variable you read in `environment`, and do not
-do network work at import time. The CLI copies each module on its own, so a module must not import
+do network work at import time. Don't declare the variables Neon injects: `DATABASE_URL`, and the
+`NEON_AI_GATEWAY_*` and `NEON_AUTH_*` variables that Neon adds when AI Gateway or Managed Better
+Auth is enabled on the branch. The CLI copies each module on its own, so a module must not import
 a sibling from the template folder.
 
 ### 2. Write `template.json`
@@ -134,6 +136,41 @@ An entry that fails validation is dropped from the listing without an error, so 
 template shows up (see below). Do not add generated archives. The CLI builds what it needs from
 this folder's source files.
 
+## README components
+
+When `template.json` lists `operations`, wrap the README's routes section in an `<Operations>` block.
+When it lists `environment` entries, wrap the env var section in an `<EnvironmentVariables>` block.
+neon.com renders the README and replaces each block with its own component, built from
+`template.json`. GitHub drops the tags and shows the markdown inside, so the README still reads
+normally there.
+
+```md
+<Operations>
+
+...markdown list or table of the template's routes/operations...
+
+</Operations>
+
+<EnvironmentVariables>
+
+...markdown list or table of the env vars...
+
+</EnvironmentVariables>
+```
+
+- Wrap the README's existing routes and env var sections instead of writing them twice.
+- Put each tag on its own line at the top level of the README, never inside a list, blockquote, or
+  code block.
+- Leave a blank line after the opening tag and before the closing tag, so the markdown inside still
+  renders.
+- Keep the wrapped content consistent with `operations` and `environment` in `template.json`.
+- Leave a block out when the template has nothing to list for it, such as a single-module template
+  with no routes or a template with no env vars. neon.com shows nothing for an empty block.
+
+When a README leaves out a block that has data, neon.com adds its own section for it after the
+README. When you wrap content but `template.json` has no data for that block, neon.com shows the
+wrapped markdown instead.
+
 ## Limits
 
 | | |
@@ -171,8 +208,8 @@ A template that passes the schema but fails the commands above is not ready.
 - [ ] The template is listed, and `functions new <id> -y` succeeds against a local checkout.
 - [ ] Every operation was run once with `neon dev`.
 - [ ] Dependencies are pinned and come from the provider's official SDK.
-- [ ] Every `process.env` read is declared in `environment`, and no secret or default key is
-      hard-coded.
+- [ ] Every `process.env` read, other than the variables Neon injects, is declared in
+      `environment`, and no secret or default key is hard-coded.
 - [ ] No network calls at import time, and no telemetry the user didn't ask for.
 - [ ] Recommended operations are the ones most users want on day one.
 

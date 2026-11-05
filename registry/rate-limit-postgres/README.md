@@ -1,6 +1,6 @@
 # Rate limit with Postgres
 
-A Neon Function that enforces a fixed-window rate limit with one atomic Postgres upsert. Counters are stored in Postgres, so every function instance reads and writes the same state.
+This Neon Function enforces a fixed-window rate limit with one atomic Postgres upsert. The counters live in Postgres, so every function instance reads and writes the same state.
 
 The default is 10 requests per key per 60-second window. Both values are constants at the top of the module.
 
@@ -32,9 +32,7 @@ for i in $(seq 1 12); do
 done
 ```
 
-The first 10 requests return `200` while the last 2 return `429`.
-
-You should also see the following output from the last request:
+The first 10 requests return `200`, and the last 2 return `429` with a body like this one:
 
 ```json
 {
@@ -47,7 +45,7 @@ You should also see the following output from the last request:
 ```
 
 Every `200` or `429` `/check` response sets `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and
-`X-RateLimit-Reset`; a `429` also sets `Retry-After`.
+`X-RateLimit-Reset`. A `429` also sets `Retry-After`.
 
 Read the current window without incrementing it:
 
@@ -62,18 +60,22 @@ neon deploy
 neon functions get ratelimitpostgres
 ```
 
-No extra configuration is needed: the template uses the branch's `DATABASE_URL`.
+The template uses the branch's `DATABASE_URL`, so it needs no other configuration.
 
 ## Routes
+
+<Operations>
 
 | Route | Purpose |
 | --- | --- |
 | `POST /check` | `{ key }` counts one request and returns `200` or `429`. |
 | `GET /usage?key=...` | Reads the current window without counting. |
 
+</Operations>
+
 ## How it works
 
-The function creates `rate_limit_counters (key, window_start, count)` on first use. Each check runs one statement:
+The function creates `rate_limit_counters (key, window_start, count)` on first use, and each check runs one statement:
 
 ```sql
 INSERT INTO rate_limit_counters (key, window_start, count)
@@ -92,6 +94,6 @@ The conflict update is atomic, so concurrent requests in different function inst
 
 ## Notes
 
-- `key` is whatever the caller sends. In a real app, derive it from the authenticated user, API key, or client IP rather than trusting the body.
-- Change `LIMIT` and `WINDOW_SECONDS` to tune the policy. The window is fixed, not sliding: a burst at the end of one window and the start of the next can reach twice the limit.
+- `key` is whatever the caller sends. In a real app, derive it from the authenticated user, the API key, or the client IP instead of trusting the body.
+- Change `LIMIT` and `WINDOW_SECONDS` to tune the policy. The window is fixed, not sliding, so a burst at the end of one window and the start of the next can reach twice the limit.
 - Old keys stay in the table forever. Delete them with a scheduled job or Postgres `pg_cron` if you want to reclaim space.

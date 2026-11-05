@@ -1,12 +1,16 @@
 # Mastra agent with Postgres memory
 
-A Neon Function that runs a [Mastra](https://mastra.ai) agent on [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview) and keeps its memory in your Neon Postgres database. Mastra's built-in `neon/` models use the branch's own gateway credentials, so you don't need a provider API key.
+This Neon Function runs a [Mastra](https://mastra.ai) agent on [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview) and keeps its memory in your Neon Postgres database. Mastra's built-in `neon/` models use the branch's own gateway credentials, so you don't need a provider API key.
+
+<Operations>
 
 | Route | Default | What it does |
 | --- | --- | --- |
-| `POST /chat` | yes | Streams a reply in the AI SDK UI message format that `useChat` reads. Mastra Memory replays the thread's recent messages and keeps a profile per user that every thread of that user shares. Includes a sample `getCurrentTime` tool. |
+| `POST /chat` | yes | Streams a reply in the AI SDK UI message format that `useChat` reads. Mastra Memory replays the thread's recent messages and keeps a profile per user that every thread of that user shares. The agent has a sample `getCurrentTime` tool. |
 | `POST /history` | yes | Returns a thread's messages as `UIMessage`s, so a UI can restore a conversation after a reload. |
-| `POST /review` | no | A human-in-the-loop workflow: an agent drafts text from a brief and the run suspends until someone approves it, rejects it, or asks for a revision. |
+| `POST /review` | no | Runs a human-in-the-loop workflow. An agent drafts text from a brief, and the run suspends until someone approves it, rejects it, or asks for a revision. |
+
+</Operations>
 
 ## Scaffold it
 
@@ -19,7 +23,7 @@ neon link
 neon functions new mastra
 ```
 
-The CLI asks which routes to include. Pass `--all-operations` to include `/review` too. It writes the modules and a router `index.ts` to `functions/mastra/`, and declares the function in `neon.ts`.
+The CLI asks which routes to include, and `--all-operations` includes `/review` too. It writes the modules and a router `index.ts` to `functions/mastra/` and declares the function in `neon.ts`.
 
 Enable AI Gateway on the linked branch:
 
@@ -27,13 +31,19 @@ Enable AI Gateway on the linked branch:
 neon config add ai-gateway
 ```
 
-Or set `aiGateway: true` in `neon.ts`. AI Gateway requires a paid Neon plan with prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started).
+You can also set `aiGateway: true` in `neon.ts`. AI Gateway requires a paid Neon plan with prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started).
 
 Function URLs are public, so every route requires a bearer token. Generate one and add it to `.env.local`:
 
 ```bash
 echo "MASTRA_FUNCTION_TOKEN=$(openssl rand -hex 32)" >> .env.local
 ```
+
+<EnvironmentVariables>
+
+- `MASTRA_FUNCTION_TOKEN`: A random token of at least 32 characters, for example from `openssl rand -hex 32`, that callers send as `Authorization: Bearer <token>`. Neon Function URLs are public, so the function requires it.
+
+</EnvironmentVariables>
 
 Deploy once so Neon provisions the gateway and pulls `DATABASE_URL`, `NEON_AI_GATEWAY_BASE_URL`, and `NEON_AI_GATEWAY_TOKEN` into `.env.local`:
 
@@ -47,7 +57,7 @@ neon deploy --env .env.local
 neon dev
 ```
 
-`neon dev` loads `.env.local` and injects the branch's database and AI Gateway credentials. Call the URL it prints. The examples below use `$URL` for that URL and `$TOKEN` for your `MASTRA_FUNCTION_TOKEN`.
+`neon dev` loads `.env.local`, injects the branch's database and AI Gateway credentials, and prints the URL to call. The examples below use `$URL` for that URL and `$TOKEN` for your `MASTRA_FUNCTION_TOKEN`.
 
 ### Chat
 
@@ -77,7 +87,7 @@ curl -N "$URL/chat" \
   }'
 ```
 
-`useChat` resends the whole conversation on every turn. `/chat` passes only the latest turn to the agent, because Memory already stores the thread and replays its last 20 messages, so the history doesn't duplicate and a long thread doesn't grow the prompt.
+`useChat` resends the whole conversation on every turn, but `/chat` passes only the latest turn to the agent. Memory already stores the thread and replays its last 20 messages, so the prompt doesn't repeat the history and a long thread doesn't make the prompt grow.
 
 From a React app with the AI SDK, point `useChat` at the route and restore the thread from `/history`:
 
@@ -96,9 +106,9 @@ const { messages, sendMessage } = useChat({
 });
 ```
 
-`/chat` and `/history` answer CORS preflight requests from any origin, because the bearer token, not the origin, is what grants access.
+`/chat` and `/history` answer CORS preflight requests from any origin, because the bearer token grants access whatever the origin.
 
-User messages may contain text parts and file parts. A file part needs a `mediaType` and a `data:` URL, which is how `useChat` sends attached files, because Mastra fetches any other URL from the function. `/chat` drops every other field of a user message part.
+User messages may contain text parts and file parts. A file part needs a `mediaType` and a `data:` URL, which is how `useChat` sends attached files. `/chat` accepts only `data:` URLs because Mastra would fetch any other URL from inside the function. It drops every other field of a user message part.
 
 ### History
 
@@ -126,7 +136,7 @@ curl "$URL/review" \
 { "runId": "86fe515c-…", "status": "awaiting_review", "draft": "Dark mode is here! …" }
 ```
 
-Resume it with the `runId`. `approved: false` with `feedback` revises the draft and suspends the run again; `approved: false` without feedback ends it as `rejected`; `approved: true` ends it as `approved`:
+Resume it with the `runId`. With `approved: false` and `feedback`, the agent revises the draft and the run suspends again. `approved: false` without feedback ends the run as `rejected`, and `approved: true` ends it as `approved`. To ask for a revision:
 
 ```bash
 curl "$URL/review" \
@@ -136,10 +146,23 @@ curl "$URL/review" \
 ```
 
 ```json
+{ "runId": "86fe515c-…", "status": "awaiting_review", "draft": "Dark mode is here! 🌙 …" }
+```
+
+Then approve the revised draft to finish the run:
+
+```bash
+curl "$URL/review" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "runId": "86fe515c-…", "approved": true }'
+```
+
+```json
 { "runId": "86fe515c-…", "status": "approved", "text": "Dark mode is here! 🌙 …" }
 ```
 
-The run's state is a snapshot in Postgres, so any instance can resume it: after a redeploy, from `neon dev`, or days later. An unknown `runId` returns `404`, and a run that already finished returns `409`.
+Mastra stores the run's state as a snapshot in Postgres, so any instance can resume it, including after a redeploy, from `neon dev`, or days later. An unknown `runId` returns `404`, and a run that already finished returns `409`.
 
 ## Where the data lives
 
@@ -165,9 +188,9 @@ SELECT id, "workingMemory" FROM mastra.mastra_resources;
 
 ## Notes
 
-- **Model:** every module sets `MODEL = "neon/claude-haiku-5-5"`. Use any text model from the [AI Gateway catalog](https://neon.com/docs/ai-gateway/models) with the `neon/` prefix. Mastra sends GPT models to the gateway's Responses route and every other model to Chat Completions.
-- **Auth:** the shared token suits scripts and backend callers, which set `resourceId` for the user they've signed in. Don't ship the token in a browser bundle, and don't let browsers choose their own `resourceId`. For browser apps, verify a short-lived [Neon Auth](https://neon.com/docs/compute/functions/authentication) JWT instead and use its `sub` claim as the `resourceId`.
-- **Telemetry:** Mastra can send usage telemetry to PostHog. The modules set `MASTRA_TELEMETRY_DISABLED` to `true` unless you've set it yourself; set it to `false` to opt in.
-- **Cold start:** Mastra is a large dependency. The first request to a new instance takes a couple of seconds while it loads; warm requests don't.
-- **`@opentelemetry/api`:** Mastra's PostHog client imports it optionally. The template depends on it so the bundler can resolve that import.
-- **Customize:** change the agent's `instructions`, the working memory `template`, and `tools` in `chat.ts`, or the steps of the workflow in `review.ts`. See the [Mastra docs](https://mastra.ai/docs) for memory, tools, and workflows.
+- **Model.** Every module sets `MODEL = "neon/claude-haiku-5-5"`. You can use any text model from the [AI Gateway catalog](https://neon.com/docs/ai-gateway/models) with the `neon/` prefix. Mastra sends GPT models to the gateway's Responses route and every other model to Chat Completions.
+- **Auth.** The shared token suits scripts and backend callers, which set `resourceId` for the user they've signed in. Don't ship the token in a browser bundle, and don't let browsers choose their own `resourceId`. For browser apps, verify a short-lived [Neon Auth](https://neon.com/docs/compute/functions/authentication) JWT instead and use its `sub` claim as the `resourceId`.
+- **Telemetry.** Mastra can send usage telemetry to PostHog. The modules set `MASTRA_TELEMETRY_DISABLED` to `true` unless you've set it yourself. Set it to `false` to opt in.
+- **Cold start.** Mastra is a large dependency, so the first request to a new instance takes a couple of seconds while it loads. Later requests to that instance don't wait.
+- **`@opentelemetry/api`.** Mastra's PostHog client has an optional import of `@opentelemetry/api`, so the template depends on it to let the bundler resolve that import.
+- **Customize.** Change the agent's `instructions`, the working memory `template`, and `tools` in `chat.ts`, or the steps of the workflow in `review.ts`. See the [Mastra docs](https://mastra.ai/docs) for memory, tools, and workflows.

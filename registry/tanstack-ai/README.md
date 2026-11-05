@@ -1,12 +1,16 @@
 # TanStack AI on AI Gateway
 
-A Neon Function that runs [TanStack AI](https://tanstack.com/ai) on [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview). The `@tanstack/ai-neon` adapter reaches every model in the gateway catalog with the branch's own credentials, so you don't need a provider API key.
+This Neon Function runs [TanStack AI](https://tanstack.com/ai) on [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview). The `@tanstack/ai-neon` adapter reaches every model in the gateway catalog with the branch's own credentials, so you don't need a provider API key.
+
+<Operations>
 
 | Route | Default | What it does |
 | --- | --- | --- |
-| `POST /chat` | yes | Streams a chat reply over SSE in the AG-UI format that `useChat` reads. Includes a sample `getCurrentTime` server tool. |
+| `POST /chat` | yes | Streams a chat reply over SSE in the AG-UI format that `useChat` reads. The route has a sample `getCurrentTime` server tool. |
 | `POST /extract` | yes | Returns a typed JSON object validated against a Zod schema. |
 | `POST /summarize` | no | Returns a summary in a paragraph, bullet-point, or concise style. |
+
+</Operations>
 
 ## Scaffold it
 
@@ -19,7 +23,7 @@ neon link
 neon functions new tanstack-ai
 ```
 
-The CLI asks which routes to include. Pass `--all-operations` to include `/summarize` too. It writes the modules and a router `index.ts` to `functions/tanstackai/`, and declares the function in `neon.ts`.
+The CLI asks which routes to include, and `--all-operations` includes `/summarize` too. It writes the modules and a router `index.ts` to `functions/tanstackai/` and declares the function in `neon.ts`.
 
 Enable AI Gateway on the linked branch:
 
@@ -27,13 +31,19 @@ Enable AI Gateway on the linked branch:
 neon config add ai-gateway
 ```
 
-Or set `aiGateway: true` in `neon.ts`. AI Gateway requires a paid Neon plan with prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started).
+You can also set `aiGateway: true` in `neon.ts`. AI Gateway requires a paid Neon plan with prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started).
 
 Function URLs are public, so every route requires a bearer token. Generate one and add it to `.env.local`:
 
 ```bash
 echo "TANSTACK_AI_FUNCTION_TOKEN=$(openssl rand -hex 32)" >> .env.local
 ```
+
+<EnvironmentVariables>
+
+- `TANSTACK_AI_FUNCTION_TOKEN`: A random token of at least 32 characters, for example from `openssl rand -hex 32`, that callers send as `Authorization: Bearer <token>`. Neon Function URLs are public, so the function requires it.
+
+</EnvironmentVariables>
 
 Deploy once so Neon provisions the gateway and pulls `NEON_AI_GATEWAY_BASE_URL` and `NEON_AI_GATEWAY_TOKEN` into `.env.local`:
 
@@ -47,11 +57,11 @@ neon deploy --env .env.local
 neon dev
 ```
 
-`neon dev` loads `.env.local` and injects the branch's AI Gateway credentials. Call the URL it prints. The examples below use `$URL` for that URL and `$TOKEN` for your `TANSTACK_AI_FUNCTION_TOKEN`.
+`neon dev` loads `.env.local`, injects the branch's AI Gateway credentials, and prints the URL to call. The examples below use `$URL` for that URL and `$TOKEN` for your `TANSTACK_AI_FUNCTION_TOKEN`.
 
 ### Chat
 
-`/chat` takes an AG-UI `RunAgentInput` body: `threadId`, `runId`, `messages`, `tools`, and `context`. `useChat` sends it for you. With curl:
+`/chat` takes an AG-UI `RunAgentInput` body with `threadId`, `runId`, `messages`, `tools`, and `context`. `useChat` sends this body for you, and with curl it looks like this:
 
 ```bash
 curl -N "$URL/chat" \
@@ -81,7 +91,7 @@ const { messages, sendMessage } = useChat({
 });
 ```
 
-`/chat` answers CORS preflight requests from any origin, because the bearer token, not the origin, is what grants access.
+`/chat` answers CORS preflight requests from any origin, because the bearer token grants access whatever the origin.
 
 ### Extract
 
@@ -119,7 +129,7 @@ curl "$URL/summarize" \
   -d '{ "text": "...", "style": "bullet-points", "maxLength": 300 }'
 ```
 
-`style` is `paragraph` (the default), `bullet-points`, or `concise`. `maxLength` is the token budget the model is asked to stay under, from 100 to 2,000 (default 300). Models often run a little over it, so the hard output limit is twice `maxLength`; a summary cut off at that limit returns `502`. The response is `{ "summary", "model", "usage" }`.
+`style` is `paragraph` (the default), `bullet-points`, or `concise`. `maxLength` is the token budget the function asks the model to stay under, from 100 to 2,000, with a default of 300. Models often run a little over it, so the hard output limit is twice `maxLength`, and a summary cut off at that limit returns `502`. The response is `{ "summary", "model", "usage" }`.
 
 ## Errors
 
@@ -136,6 +146,6 @@ curl "$URL/summarize" \
 
 ## Customize
 
-- **Model:** every module sets `MODEL = "claude-haiku-5-5"`. Use any text model from the [AI Gateway catalog](https://neon.com/docs/ai-gateway/models); the adapter picks the gateway route for it. Claude 5.5 models reject `temperature` and `topP`, so the template doesn't set them.
-- **Prompt and tools:** edit `SYSTEM_PROMPT` and the `tools` array in `chat.ts`. Each tool is a `toolDefinition()` with a Zod input schema and a `.server()` implementation that runs inside the function. See [TanStack AI tools](https://tanstack.com/ai/latest/docs/tools/tools).
-- **Auth:** the shared token suits scripts and backend callers. Don't ship it in a browser bundle. For browser apps, verify a short-lived [Neon Auth](https://neon.com/docs/compute/functions/authentication) JWT instead; `fetchServerSentEvents` takes an async options function, so the client can fetch a fresh token for each request.
+- **Model.** Every module sets `MODEL = "claude-haiku-5-5"`. You can use any text model from the [AI Gateway catalog](https://neon.com/docs/ai-gateway/models), and the adapter picks the gateway route for it. Claude 5.5 models reject `temperature` and `topP`, so the template doesn't set them.
+- **Prompt and tools.** Edit `SYSTEM_PROMPT` and the `tools` array in `chat.ts`. Each tool is a `toolDefinition()` with a Zod input schema and a `.server()` implementation that runs inside the function. See [TanStack AI tools](https://tanstack.com/ai/latest/docs/tools/tools).
+- **Auth.** The shared token is for scripts and backend callers and doesn't belong in a browser bundle. For browser apps, verify a short-lived [Neon Auth](https://neon.com/docs/compute/functions/authentication) JWT instead. `fetchServerSentEvents` takes an async options function, so the client can fetch a fresh token for each request.

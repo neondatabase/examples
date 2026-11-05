@@ -1,6 +1,6 @@
 # Durable workflow with Upstash Workflow
 
-A minimal multi-step job running as a [Neon Function](https://neon.com/docs/compute/functions/overview). [Upstash Workflow](https://upstash.com/docs/workflow/getstarted) checkpoints each `context.run`, retries only failed steps, and hands `context.sleep` timers to QStash so the function stops running while it waits. Job state is stored in [Lakebase Postgres](https://neon.com/lakebase).
+This template runs a minimal multi-step job as a [Neon Function](https://neon.com/docs/compute/functions/overview). [Upstash Workflow](https://upstash.com/docs/workflow/getstarted) checkpoints each `context.run`, retries only the steps that fail, and hands `context.sleep` timers to QStash, so the function stops running while it waits. The function stores job state in [Lakebase Postgres](https://neon.com/lakebase).
 
 ## How it works
 
@@ -10,7 +10,9 @@ A minimal multi-step job running as a [Neon Function](https://neon.com/docs/comp
    - `wait-before-finishing` sleeps durably for 5 seconds
    - `finish-job` marks the job `completed`
 3. `GET /api/jobs/:id` shows the current row, so you can see the job change from `running` to `completed`.
-4. A failed step is retried without re-running the steps that already succeeded.
+4. Upstash Workflow retries a failed step without re-running the steps that already succeeded.
+
+<Operations>
 
 | Route | Purpose |
 | --- | --- |
@@ -18,6 +20,8 @@ A minimal multi-step job running as a [Neon Function](https://neon.com/docs/comp
 | `GET /api/jobs/:id` | Read a job's current state |
 | `POST /api/workflow` | QStash's signed workflow endpoint |
 | `GET /` | Route index |
+
+</Operations>
 
 ## Scaffold it
 
@@ -43,19 +47,23 @@ QSTASH_CURRENT_SIGNING_KEY="sig_..."
 QSTASH_NEXT_SIGNING_KEY="sig_..."
 ```
 
-`QSTASH_URL` depends on the region: the EU region uses `https://qstash.upstash.io` (or `https://qstash-eu-central-1.upstash.io`) and the US region uses `https://qstash-us-east-1.upstash.io`. The token and signing keys must come from the same region.
+<EnvironmentVariables>
+
+`QSTASH_URL` depends on the region. The EU region uses `https://qstash.upstash.io` or `https://qstash-eu-central-1.upstash.io`, and the US region uses `https://qstash-us-east-1.upstash.io`. The token and signing keys must come from the same region.
 
 The signing keys verify that requests to `/api/workflow` come from QStash, and the token lets `POST /api/jobs` start runs.
 
+</EnvironmentVariables>
+
 ## Run locally
 
-Local development uses the QStash CLI. Start it in one terminal:
+Local development uses the QStash CLI, which you start in one terminal:
 
 ```bash
 npx @upstash/qstash-cli dev
 ```
 
-It prints a local `QSTASH_URL` (typically `http://127.0.0.1:8080`), token, and signing keys. Put those values in `.env.local`, replacing the production ones. Then load the file and start the function:
+It prints a local `QSTASH_URL` (typically `http://127.0.0.1:8080`), token, and signing keys. Put those values in `.env.local` in place of the production ones, then load the file and start the function:
 
 ```bash
 set -a && . ./.env.local && set +a
@@ -70,7 +78,7 @@ curl -X POST http://localhost:8787/api/jobs \
   -d '{ "jobId": "job_1" }'
 ```
 
-The job starts in `running`. Check it immediately:
+The job starts in `running`, which you can check right away:
 
 ```bash
 curl http://localhost:8787/api/jobs/job_1
@@ -85,11 +93,11 @@ neon deploy --env .env.local
 neon functions get upstashworkflow
 ```
 
-Then trigger the deployed workflow with the same `curl`, replacing the host with the function URL.
+Then trigger the deployed workflow with the same `curl` and the function URL as the host.
 
 ## Notes
 
-- The `jobs` table is created on the first run with `CREATE TABLE IF NOT EXISTS`, so there is no migration step.
-- `POST /api/jobs` is unauthenticated in this demo. Anyone with the function URL can start a workflow. Add authentication before exposing it.
+- The function creates the `jobs` table on its first run with `CREATE TABLE IF NOT EXISTS`, so there is no migration step.
+- `POST /api/jobs` has no authentication in this demo, so anyone with the function URL can start a workflow. Add authentication before you expose it.
 - Code outside `context.run` runs again on every step delivery. Put side effects and non-deterministic values inside a step, and return anything a later step needs.
-- Add more `context.run` calls between the sleep to extend the workflow. `context.sleep("wait-before-finishing", "5s")` simulates a processing window without keeping the function running.
+- Add more `context.run` calls around the sleep to extend the workflow. `context.sleep("wait-before-finishing", "5s")` simulates a processing window without keeping the function running.
