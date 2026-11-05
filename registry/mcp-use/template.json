@@ -1,9 +1,9 @@
 {
 	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
-	"id": "mcp-use-events",
+	"id": "mcp-use",
 	"provider": "Manufact",
-	"title": "Event database MCP server with mcp-use",
-	"description": "Create, update, delete, and search events in Postgres through an MCP server built with mcp-use and Drizzle.",
+	"title": "MCP server with mcp-use",
+	"description": "Build an MCP server with mcp-use, using Postgres event tools as an example.",
 	"categories": ["mcp"],
 	"layout": "router",
 	"dependencies": [

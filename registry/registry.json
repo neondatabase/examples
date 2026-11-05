@@ -176,14 +176,14 @@
 			"website": "https://workos.com/"
 		},
 		{
-			"id": "mcp-use-events",
+			"id": "mcp-use",
 			"provider": "Manufact",
-			"title": "Event database MCP server with mcp-use",
-			"description": "Create, update, delete, and search events in Postgres through an MCP server built with mcp-use and Drizzle.",
-			"path": "mcp-use-events/template.json",
+			"title": "MCP server with mcp-use",
+			"description": "Build an MCP server with mcp-use, using Postgres event tools as an example.",
+			"path": "mcp-use/template.json",
 			"categories": ["mcp"],
-			"logo": "https://raw.githubusercontent.com/neondatabase/examples/main/registry/mcp-use-events/assets/symbol.svg",
-			"logoDark": "https://raw.githubusercontent.com/neondatabase/examples/main/registry/mcp-use-events/assets/symbol-light.svg",
+			"logo": "https://raw.githubusercontent.com/neondatabase/examples/main/registry/mcp-use/assets/symbol.svg",
+			"logoDark": "https://raw.githubusercontent.com/neondatabase/examples/main/registry/mcp-use/assets/symbol-light.svg",
 			"website": "https://manufact.com/"
 		}
 	]

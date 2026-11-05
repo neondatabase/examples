@@ -1,8 +1,10 @@
-# Event database MCP server with mcp-use
+# MCP server with mcp-use
 
-Built by [Manufact](https://manufact.com/), this template runs an event database [Model Context Protocol](https://modelcontextprotocol.io) server on Neon Functions. It uses [mcp-use](https://github.com/mcp-use/mcp-use) for streamable HTTP at `/mcp`, Drizzle ORM for queries, and a shared `pg` pool registered with `attachDatabasePool` for Lakebase Postgres.
+Built by [Manufact](https://manufact.com/), this template shows how to run a [Model Context Protocol](https://modelcontextprotocol.io) server on Neon Functions. It uses [mcp-use](https://github.com/mcp-use/mcp-use) for streamable HTTP at `/mcp`, Drizzle ORM for queries, and a shared `pg` pool registered with `attachDatabasePool` for Lakebase Postgres.
 
-It adapts the [Neon Functions example in mcp-use](https://github.com/mcp-use/mcp-use/pull/2988) into one independent registry module. The first database tool call creates `mcp_use_events`; no migration or sibling files are required. SDK telemetry is disabled in this template.
+The example tools create, update, delete, and search events in Postgres. Adapt them to your own use case.
+
+This template adapts the [Neon Functions example in mcp-use](https://github.com/mcp-use/mcp-use/pull/2988) into one independent registry module. The first database tool call creates `mcp_use_events`; no migration or sibling files are required. SDK telemetry is disabled in this template.
 
 ## Tools
 
@@ -25,10 +27,10 @@ Use a Neon project in a region that supports Functions. In your project director
 npm install -g neon@latest
 neon login
 neon link
-neon functions new mcp-use-events --slug mcpevents -y
+neon functions new mcp-use --slug mcpuse -y
 ```
 
-The CLI copies `functions/mcpevents/index.ts`, installs the pinned dependencies, and declares the function in `neon.ts`. It also adds the custom variable to `.env.example`. Neon injects `DATABASE_URL` from the linked branch automatically.
+The CLI copies `functions/mcpuse/index.ts`, installs the pinned dependencies, and declares the function in `neon.ts`. It also adds the custom variable to `.env.example`. Neon injects `DATABASE_URL` from the linked branch automatically.
 
 ## Configuration
 
@@ -54,9 +56,9 @@ import { defineConfig } from "@neon/config/v1";
 
 export default defineConfig({
 	functions: {
-		mcpevents: {
-			name: "Event database MCP server with mcp-use",
-			source: "./functions/mcpevents/index.ts",
+		mcpuse: {
+			name: "MCP server with mcp-use",
+			source: "./functions/mcpuse/index.ts",
 			env: { MCP_API_KEY: process.env.MCP_API_KEY! },
 		},
 	},
@@ -97,7 +99,7 @@ Connect any MCP client that supports streamable HTTP and custom headers to `/mcp
 
 ```bash
 neon deploy --env .env.local
-neon functions get mcpevents
+neon functions get mcpuse
 ```
 
 Pass `--env .env.local` so `neon.ts` can resolve the custom key during deployment. Connect your client to the returned function URL with `/mcp` appended and the same bearer token.
