@@ -182,6 +182,8 @@
 			"description": "Create, update, delete, and search events in Postgres through an MCP server built with mcp-use and Drizzle.",
 			"path": "mcp-use-events/template.json",
 			"categories": ["mcp"],
+			"logo": "https://raw.githubusercontent.com/neondatabase/examples/main/registry/mcp-use-events/assets/symbol.svg",
+			"logoDark": "https://raw.githubusercontent.com/neondatabase/examples/main/registry/mcp-use-events/assets/symbol-light.svg",
 			"website": "https://manufact.com/"
 		}
 	]
