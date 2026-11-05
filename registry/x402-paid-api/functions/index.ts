@@ -9,7 +9,8 @@
  * USDC and an x402 client:
  * https://docs.x402.org/getting-started/quickstart-for-buyers
  *
- * Change NETWORK, PRICE, and FACILITATOR_URL below for mainnet.
+ * Change NETWORK, PRICE, and FACILITATOR_URL below for mainnet. A mainnet
+ * facilitator such as the CDP one also needs credentials.
  */
 
 import { attachDatabasePool } from "@neon/functions";
@@ -24,16 +25,17 @@ import {
 import { Hono } from "hono";
 import { Pool } from "pg";
 
-const NETWORK = "eip155:84532";
+const NETWORK: `${string}:${string}` = "eip155:84532";
 const PRICE = "$0.001";
 const FACILITATOR_URL = "https://x402.org/facilitator";
 const PAID_PATH = "/premium";
+const TESTNET = NETWORK !== "eip155:8453";
 
 const payTo = process.env.X402_EVM_ADDRESS;
 
 if (!payTo || !/^0x[a-fA-F0-9]{40}$/.test(payTo)) {
 	throw new Error(
-		"Set X402_EVM_ADDRESS to a 0x-prefixed EVM address on Base Sepolia.",
+		`Set X402_EVM_ADDRESS to a 0x-prefixed EVM address${TESTNET ? " on Base Sepolia" : ""}.`,
 	);
 }
 
@@ -42,7 +44,6 @@ attachDatabasePool(pool);
 
 let schema: Promise<void> | undefined;
 
-// Create the payment ledger table and its idempotency index if they do not exist.
 function ensureSchema(): Promise<void> {
 	schema ??= (async () => {
 		await pool.query(
@@ -74,7 +75,6 @@ function ensureSchema(): Promise<void> {
 const USDC_DECIMALS = 6;
 const USDC_SCALE = 10n ** BigInt(USDC_DECIMALS);
 
-// Convert an atomic USDC amount (for example "1000") to a dollar string.
 function atomicToUsd(amount: string): string {
 	const atomic = BigInt(amount);
 	const whole = atomic / USDC_SCALE;
@@ -155,30 +155,30 @@ function ensureX402(): Promise<void> {
 	return x402Ready;
 }
 
-const app = new Hono();
+// `strict: false` makes `/premium/` hit the same route as `/premium`. Both
+// middleware and the x402 payment handler are scoped to that route, so odd
+// paths such as `//premium` stay 404s instead of reaching an uninitialized
+// payment handler.
+const app = new Hono({ strict: false });
 
-app.use("*", async (c, next) => {
-	if (c.req.path === PAID_PATH) {
-		try {
-			await ensureX402();
-		} catch (error) {
-			console.error("[x402-paid-api] could not initialize x402:", error);
-			return c.json({ error: "Payment facilitator unavailable" }, 503);
-		}
+app.use(PAID_PATH, async (c, next) => {
+	// Check the method before the payment middleware, which maps HEAD to GET.
+	if (c.req.method !== "GET") {
+		return c.json({ error: "Method not allowed" }, 405, { allow: "GET" });
+	}
+	try {
+		await ensureX402();
+	} catch (error) {
+		console.error("[x402-paid-api] could not initialize x402:", error);
+		return c.json({ error: "Payment facilitator unavailable" }, 503);
 	}
 	await next();
 });
 
 app.use(
+	PAID_PATH,
 	paymentMiddlewareFromHTTPServer(httpServer, undefined, undefined, false),
 );
-
-app.use(PAID_PATH, async (c, next) => {
-	if (c.req.method !== "GET") {
-		return c.json({ error: "Method not allowed" }, 405, { allow: "GET" });
-	}
-	await next();
-});
 
 app.get("/", (c) =>
 	c.json({
@@ -187,15 +187,17 @@ app.get("/", (c) =>
 		price: PRICE,
 		routes: {
 			"GET /": "This help.",
-			[`GET ${PAID_PATH}`]: `Paid with x402. Costs ${PRICE} in testnet USDC.`,
+			[`GET ${PAID_PATH}`]: `Paid with x402. Costs ${PRICE} in ${TESTNET ? "testnet USDC" : "USDC"}.`,
 			"GET /stats": "Payment totals.",
 		},
 		payments: {
-			testnet: true,
+			testnet: TESTNET,
 			facilitator: FACILITATOR_URL,
 			buyerQuickstart:
 				"https://docs.x402.org/getting-started/quickstart-for-buyers",
-			note: "The buyer needs Base Sepolia USDC. GET /stats needs DATABASE_URL.",
+			note: TESTNET
+				? "The buyer needs Base Sepolia USDC. GET /stats needs DATABASE_URL."
+				: "GET /stats needs DATABASE_URL.",
 		},
 	}),
 );

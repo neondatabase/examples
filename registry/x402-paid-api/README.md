@@ -6,7 +6,7 @@ A pay-per-request JSON API running as a [Neon Function](https://neon.com/docs/co
 - [`@x402/hono`](https://www.npmjs.com/package/@x402/hono) returns `402 Payment Required` and verifies payments through an x402 facilitator. [`@x402/evm`](https://www.npmjs.com/package/@x402/evm) provides the `exact` EVM payment scheme.
 - [`pg`](https://node-postgres.com) stores the payment ledger. `DATABASE_URL` is injected from the linked branch by Neon.
 
-The template is API-only: every client, including a browser, gets a JSON `402` with the payment requirements.
+The template is API-only: API clients get a JSON `402` with the payment requirements. A browser gets the x402 middleware's HTML payment page instead, because browsers send `Accept: text/html`.
 
 ## Scaffold it
 
@@ -84,7 +84,7 @@ To complete a payment, use an x402 buyer client with a funded Base Sepolia walle
 | `GET` | `/premium` | The paid JSON response, or `402` with payment instructions |
 | `GET` | `/stats` | Number of settled payments, total USD, and the latest settlement time |
 
-Non-`GET` requests to `/premium` return `405`. Any other path returns `404`.
+Non-`GET` requests to `/premium` return `405`. A single trailing slash (`/premium/`) is accepted as `/premium`; paths with duplicate slashes and any other path return `404`.
 
 ## Customize
 
@@ -96,7 +96,7 @@ const PRICE = "$0.001";
 const FACILITATOR_URL = "https://x402.org/facilitator";
 ```
 
-- **Network:** for mainnet, change `NETWORK` to `eip155:8453`, use a mainnet facilitator such as `https://api.cdp.coinbase.com/platform/v2/x402`, and use a mainnet receiving address. `https://x402.org/facilitator` is testnet-only.
+- **Network:** for mainnet, change `NETWORK` to `eip155:8453`, use a mainnet receiving address, and use a mainnet facilitator. `https://x402.org/facilitator` is testnet-only. The CDP facilitator at `https://api.cdp.coinbase.com/platform/v2/x402` requires CDP API credentials and returns `401` without them. Use `createCdpFacilitatorClient` from `@coinbase/cdp-sdk`, which signs a JWT from `CDP_API_KEY_ID` and `CDP_API_KEY_SECRET`, or pass an equivalent `createAuthHeaders` callback to `HTTPFacilitatorClient`. Add those variables to the function env in `neon.ts` and to `.env.local`.
 - **Price:** `PRICE` is a USD string. The template uses testnet USDC; test the full payment flow before switching to mainnet.
 
 ## Deploy
@@ -138,4 +138,4 @@ The x402 `onAfterSettle` hook inserts one row per settled payment with `ON CONFL
 ## Notes
 
 - A Neon Function URL is public. `/` and `/stats` are free; only `/premium` is gated by payment.
-- `/stats` is public too. Protect it by adding a secret token as a headers check if you want to restrict access. 
+- `/stats` is public too. Protect it by adding a secret token as a headers check if you want to restrict access.
