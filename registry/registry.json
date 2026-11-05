@@ -71,11 +71,13 @@
 		},
 		{
 			"id": "tanstack-ai",
-			"provider": "Neon",
+			"provider": "TanStack",
 			"title": "TanStack AI on AI Gateway",
 			"description": "Streaming chat with tool calling, structured extraction, and summaries with TanStack AI on Neon AI Gateway.",
 			"path": "tanstack-ai/template.json",
-			"categories": ["first-party", "ai"]
+			"categories": ["ai"],
+			"logo": "https://cdn.jsdelivr.net/gh/TanStack/tanstack.com@f24f323ba7ef981c7e1914e8aef1f161999da908/public/images/logos/logo-color-100.png",
+			"website": "https://tanstack.com/ai"
 		},
 		{
 			"id": "websocket-live-poll",
