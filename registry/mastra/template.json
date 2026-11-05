@@ -1,10 +1,10 @@
 {
 	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
 	"id": "mastra",
-	"provider": "Neon",
+	"provider": "Mastra",
 	"title": "Mastra agent with Postgres memory",
 	"description": "A Mastra agent that remembers users in Neon Postgres, streams chat for useChat on AI Gateway, and runs a resumable human-in-the-loop review workflow.",
-	"categories": ["first-party", "ai"],
+	"categories": ["ai", "agents"],
 	"layout": "router",
 	"dependencies": [
 		"@mastra/ai-sdk@1.11.2",
