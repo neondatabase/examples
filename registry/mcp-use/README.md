@@ -4,8 +4,6 @@ Built by [Manufact](https://manufact.com/), this template shows how to run a [Mo
 
 The example tools create, update, delete, and search events in Postgres. Adapt them to your own use case.
 
-This template adapts the [Neon Functions example in mcp-use](https://github.com/mcp-use/mcp-use/pull/2988) into one independent registry module. The first database tool call creates `mcp_use_events`; no migration or sibling files are required. SDK telemetry is disabled in this template.
-
 ## Tools
 
 All four tools share one MCP endpoint and database table:
@@ -73,24 +71,28 @@ All callers with this shared key can read, edit, and delete all events. A missin
 neon dev
 ```
 
-Use the URL printed by `neon dev` (shown here as `http://localhost:8787`). The following request lists the tools:
+Use the URL printed by `neon dev` (shown here as `http://localhost:8787`). In another terminal, set `MCP_API_KEY` to the same token and connect with the mcp-use client CLI:
 
 ```bash
-curl http://localhost:8787/mcp \
+npx mcp-use client connect neon-example http://localhost:8787/mcp \
   -H "Authorization: Bearer $MCP_API_KEY" \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json, text/event-stream' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+  --no-oauth
+npx mcp-use client neon-example tools list
 ```
 
-Create an event:
+Create an event, then search for it:
 
 ```bash
-curl http://localhost:8787/mcp \
-  -H "Authorization: Bearer $MCP_API_KEY" \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json, text/event-stream' \
-  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"create_event","arguments":{"title":"Product demo","startsAt":"2026-11-20T18:00:00-08:00","location":"Online"}}}'
+npx mcp-use client neon-example tools call create_event \
+  '{"title":"Product demo","startsAt":"2026-11-20T18:00:00-08:00","location":"Online"}'
+npx mcp-use client neon-example tools call search_events \
+  '{"query":"Product demo"}'
+```
+
+Remove the saved client connection when finished:
+
+```bash
+npx mcp-use client remove neon-example
 ```
 
 Connect any MCP client that supports streamable HTTP and custom headers to `/mcp` with `Authorization: Bearer <MCP_API_KEY>`. Authentication covers every route, including the root information page.
