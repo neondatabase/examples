@@ -90,7 +90,7 @@ const limitMessage = "limit must be an integer from 1 to 20";
 const candidatesMessage = "candidates must be an integer between limit and 100";
 const rrfKMessage = "rrfK must be an integer from 1 to 200";
 
-const searchSchema = z
+export const searchSchema = z
   .strictObject(
     {
       query: searchableText("query"),
@@ -130,6 +130,8 @@ const searchSchema = z
     error: candidatesMessage,
   });
 
+export type SearchInput = z.output<typeof searchSchema>;
+
 export function documentId(value: unknown): string {
   return parse(documentIdSchema, value);
 }
@@ -147,7 +149,11 @@ export function parseSearch(value: unknown) {
 }
 
 export function validateVector(value: number[]): number[] {
-  if (value.length !== 1024 || value.some((n) => !Number.isFinite(n))) {
+  if (
+    value.length !== 1024 ||
+    value.some((n) => !Number.isFinite(n)) ||
+    value.every((n) => n === 0)
+  ) {
     throw new Error("Gateway returned an invalid 1024-dimensional embedding");
   }
   return value;

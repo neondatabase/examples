@@ -12,12 +12,19 @@ import {
   parsePatch,
   parsePut,
   parseSearch,
+  type SearchInput,
 } from "./input.js";
 import { searchResults } from "./search-results.js";
-import { hybridSearchSql, keywordSearchSql } from "./search-sql.js";
+import {
+  hybridSearchSql,
+  keywordSearchSql,
+  type HybridCandidate,
+} from "./search-sql.js";
 import { chunks, documents } from "./schema.js";
 import { chunkMarkdown } from "./chunking.js";
 import { copyChunks, type EmbeddedChunk } from "./chunk-copy.js";
+import { createSearchMcpHandler } from "./mcp.js";
+import { rerankResults } from "./rerank.js";
 
 const apiKey = process.env.SEARCH_API_KEY;
 if (!apiKey || apiKey.length < 32)
@@ -54,23 +61,16 @@ async function documentTransaction<T>(
 
 async function prepareChunks(content: string) {
   const parsed = chunkMarkdown(content);
-  const prepared: EmbeddedChunk[] = [];
-  for (let offset = 0; offset < parsed.length; offset += 32) {
-    const batch = parsed.slice(offset, offset + 32);
-    const vectors = await embed(
-      batch.map((chunk) =>
-        chunk.heading ? `${chunk.heading}\n\n${chunk.content}` : chunk.content,
-      ),
-    );
-    prepared.push(
-      ...batch.map((chunk, index) => ({
-        ...chunk,
-        chunkIndex: offset + index,
-        embedding: vectors[index]!,
-      })),
-    );
-  }
-  return prepared;
+  const vectors = await embed(
+    parsed.map((chunk) =>
+      chunk.heading ? `${chunk.heading}\n\n${chunk.content}` : chunk.content,
+    ),
+  );
+  return parsed.map((chunk, index): EmbeddedChunk => ({
+    ...chunk,
+    chunkIndex: index,
+    embedding: vectors[index]!,
+  }));
 }
 
 async function saveDocument(
@@ -182,13 +182,12 @@ app.delete("/documents/:id", async (c) => {
   return rows.length ? c.body(null, 204) : c.json({ error: "not found" }, 404);
 });
 
-app.post("/search", async (c) => {
-  const input = parseSearch(await body(c));
+async function search(input: SearchInput) {
   if (input.mode === "keyword") {
     const { rows } = await db.execute(
       keywordSearchSql(input.query, input.filter, input.limit),
     );
-    return c.json({ mode: input.mode, results: searchResults(rows) });
+    return { mode: input.mode, results: searchResults(rows) };
   }
   const queryVector = await embed(input.query, "query");
   if (input.mode === "vector") {
@@ -211,19 +210,32 @@ app.post("/search", async (c) => {
       )
       .orderBy(distance, chunks.id)
       .limit(input.limit);
-    return c.json({ mode: input.mode, results: searchResults(rows) });
+    return { mode: input.mode, results: searchResults(rows) };
   }
-  const { rows } = await db.execute(
-    hybridSearchSql(
-      queryVector,
-      input.query,
-      input.filter,
-      input.candidates,
-      input.rrfK,
-      input.limit,
-    ),
+  const { rows } = await db.execute<HybridCandidate>(
+    hybridSearchSql({
+      embedding: queryVector,
+      query: input.query,
+      filter: input.filter,
+      candidates: input.candidates,
+      rrfK: input.rrfK,
+    }),
   );
-  return c.json({ mode: input.mode, results: searchResults(rows) });
-});
+  const ranked = await rerankResults({
+    query: input.query,
+    candidates: rows,
+    limit: input.limit,
+  });
+  return {
+    mode: input.mode,
+    ...ranked,
+    results: searchResults(ranked.results),
+  };
+}
+
+app.post("/search", async (c) =>
+  c.json(await search(parseSearch(await body(c)))),
+);
+app.all("/mcp", createSearchMcpHandler(search));
 
 export default app;

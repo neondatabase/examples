@@ -1,10 +1,10 @@
 # Hybrid search API
 
-A [Hono](https://hono.dev) API on [Neon Functions](https://neon.com/docs/compute/functions/overview) for storing Markdown documents and searching their chunks. It uses Drizzle, [Neon AI Gateway](https://neon.com/docs/ai-gateway/embeddings) embeddings, and [Lakebase Search](https://neon.com/docs/ai/lakebase-search-get-started) for vector search, BM25 keyword search, or both combined.
+A [Hono](https://hono.dev) API on [Neon Functions](https://neon.com/docs/compute/functions/overview) for storing Markdown documents and searching their chunks. It uses Drizzle, [Neon AI Gateway](https://neon.com/docs/ai-gateway/embeddings) embeddings, and [Lakebase Search](https://neon.com/docs/ai/lakebase-search-get-started) to combine vector search and BM25-ranked full-text search.
 
 ## Setup
 
-Requires Node.js 24, Neon CLI 6.2.3+, and a Neon project on Postgres 16+ with Functions and AI Gateway access to `qwen3-embedding-0-6b`.
+Requires Node.js 24, Neon CLI 6.2.3+, and a Neon project on Postgres 16+ with Functions and AI Gateway access to `qwen3-embedding-0-6b` and `typesafeai-jev-1-14-0`. AI Gateway requires a paid plan and prepaid credits.
 
 ```bash
 npx degit neondatabase/examples/with-hybrid-search-api ./with-hybrid-search-api
@@ -27,7 +27,7 @@ npm run db:setup
 npm run dev
 ```
 
-Use `db:setup`, rather than `drizzle-kit push`, to create the Lakebase extensions before the tables and indexes. Document writes batch chunks through binary COPY in the same transaction as the document update.
+Use `db:setup` rather than `drizzle-kit push`; the migration also installs the required Lakebase extensions.
 
 ## Try it
 
@@ -46,9 +46,9 @@ curl -sS -X POST "$BASE_URL/search" \
   -d '{"query":"isolated branches","filter":{"source":"docs"},"limit":5}'
 ```
 
-Search defaults to hybrid mode, combining vector and BM25 ranks with reciprocal rank fusion (RRF). Set `mode` to `vector` or `keyword` to use either alone; keyword search makes no AI Gateway call.
+Search defaults to hybrid mode, combining vector search and BM25-ranked full-text search, using reciprocal rank fusion (RRF) in SQL to select a shortlist. [Jev](https://neon.com/docs/ai-gateway/decisions) reranks that shortlist before the final result limit. Set `mode` to `vector` for vector search only, or `keyword` for BM25-ranked full-text search only. Both modes skip reranking; `keyword` mode makes no AI Gateway call.
 
-Results contain chunk content, heading context, metadata, and the parent document `id`. Several hits can belong to one document; `limit` counts chunks. Use `GET /documents/:id` to retrieve the full document.
+Results contain chunks with heading context, metadata, and the parent document `id`. `limit` counts chunks, so several hits can belong to one document. Use `GET /documents/:id` for the full document.
 
 ## API
 
@@ -62,13 +62,31 @@ All endpoints require `Authorization: Bearer <SEARCH_API_KEY>`.
 | `DELETE /documents/:id` | —                                                                                                                                              | Delete the document and all its chunks.                                                          |
 | `POST /search`          | `{ "query": string, "mode"?: "hybrid" \| "vector" \| "keyword", "filter"?: object, "limit"?: number, "candidates"?: number, "rrfK"?: number }` | Return ranked chunks. `filter` matches JSONB metadata fields.                                    |
 
-Search defaults: `limit=10`, `candidates=40` per retriever, `rrfK=60`. Hybrid retrieval includes ties at the candidate cutoff, then limits the final results. BM25 allows partial query-term matches and excludes zero-score chunks. Invalid input returns HTTP 400.
+Search defaults: `limit=10`, `candidates=40` per retriever and for the fused shortlist, and `rrfK=60` for RRF fusion. Invalid input returns HTTP 400.
+
+Hybrid responses identify the `reranker` as `"jev"` or `"rrf"`. Both return the same result fields without scores or probabilities. Results are ordered from most to least relevant.
+
+Non-retryable Jev errors return the shortlist in its RRF order. Retryable errors get up to two retries per batch within a shared 15-second deadline. Retry exhaustion or timeout returns HTTP 503.
+
+## MCP
+
+Connect an MCP client using Streamable HTTP to `<BASE_URL>/mcp` and set the `Authorization: Bearer <SEARCH_API_KEY>` header. For clients supporting URL and header configuration:
+
+```json
+{
+  "url": "http://localhost:8787/mcp",
+  "headers": { "Authorization": "Bearer <SEARCH_API_KEY>" }
+}
+```
+
+The read-only `search_documents` tool uses the same arguments, ranking behavior, and response fields as `POST /search`. Search failures are returned as MCP tool errors. Requests are stateless; no session ID is needed. Use the deployed Function URL in place of the local URL after deployment.
 
 ## Notes
 
-- Markdown chunks follow heading sections and preserve code, tables, lists, quotes, and HTML blocks. The target is 4,096 characters; oversized blocks stay intact. YAML/TOML front matter stays in the full document but is excluded from search. Writes with no searchable content or more than 100 chunks return HTTP 400.
-- Documents and queries use `qwen3-embedding-0-6b` with 1024 dimensions. Only query embeddings receive a [Qwen task instruction](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B/blob/main/config_sentence_transformers.json). Changing the model requires re-embedding documents and updating the vector schema.
-- With highly selective metadata filters, BM25 can return fewer matches than requested: its index candidate cap (`lakebase_bm25.default_limit`, default 1,000) applies before the parent-document filter. Raising the cap can help; BM25 prefilter alone cannot filter metadata on the parent table.
+- Markdown documents are split into searchable chunks by heading. Documents with no searchable content return HTTP 400.
+- Embeddings use `qwen3-embedding-0-6b` with 1024 dimensions. Re-embed documents when changing models, and keep the vector schema dimensions in sync.
+- After many document updates or deletes, run `npm run db:refresh` for [full-text index maintenance](https://neon.com/docs/extensions/lakebase-text#keep-the-index-accurate).
+- Highly selective metadata filters can return fewer full-text matches than requested. See the [full-text search reference](https://neon.com/docs/extensions/lakebase-text) for tuning.
 
 This starter uses one shared service key. Add user authorization and tenant scoping before sharing it across customers.
 

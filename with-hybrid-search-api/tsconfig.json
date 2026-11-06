@@ -10,5 +10,11 @@
     "types": ["node"],
     "skipLibCheck": true
   },
-  "include": ["neon.ts", "drizzle.config.ts", "src/**/*.ts", "tests/**/*.ts"]
+  "include": [
+    "neon.ts",
+    "drizzle.config.ts",
+    "src/**/*.ts",
+    "scripts/**/*.ts",
+    "tests/**/*.ts"
+  ]
 }

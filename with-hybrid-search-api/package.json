@@ -1,40 +1,43 @@
 {
   "name": "with-hybrid-search-api",
-  "description": "A document API that combines vector search and full-text search with BM25 ranking on Neon Functions.",
   "private": true,
+  "description": "A document API that combines vector search and BM25-ranked full-text search on Neon Functions.",
   "type": "module",
   "scripts": {
     "check": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/*.test.ts",
-    "fmt": "prettier --write '**/*' --ignore-unknown",
-    "db:setup": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate",
-    "dev": "neon dev",
+    "db:refresh": "node --env-file=.env.local --experimental-strip-types scripts/refresh-search.ts",
+    "db:setup": "drizzle-kit migrate",
     "deploy": "neon deploy --env .env.local",
-    "endpoint": "neon functions get search"
+    "dev": "neon dev",
+    "endpoint": "neon functions get search",
+    "fmt": "prettier --write '**/*' --ignore-unknown",
+    "test": "node --experimental-strip-types --test tests/*.test.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@neon/ai-sdk-provider": "1.1.0",
     "@neon/config": "^1.7.0",
     "@neon/functions": "^0.11.0",
+    "ai": "7.0.133",
     "drizzle-orm": "^0.45.3",
     "hono": "^4.7.8",
-    "openai": "^6.0.0",
-    "pg": "^8.21.0",
-    "zod": "^4.4.3",
     "mdast-util-from-markdown": "^2.0.2",
-    "mdast-util-gfm-table": "^2.0.0",
-    "micromark-extension-gfm-table": "^2.1.1",
     "mdast-util-frontmatter": "^2.0.1",
+    "mdast-util-gfm-table": "^2.0.0",
     "micromark-extension-frontmatter": "^2.0.0",
-    "pg-copy-streams": "^7.0.0"
+    "micromark-extension-gfm-table": "^2.1.1",
+    "pg": "^8.21.0",
+    "pg-copy-streams": "^7.0.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/mdast": "^4.0.4",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.11.10",
+    "@types/pg-copy-streams": "^1.2.5",
     "drizzle-kit": "^0.31.11",
     "prettier": "^3.3.2",
-    "typescript": "^5.6.3",
-    "@types/mdast": "^4.0.4",
-    "@types/pg-copy-streams": "^1.2.5"
+    "typescript": "^5.6.3"
   }
 }
