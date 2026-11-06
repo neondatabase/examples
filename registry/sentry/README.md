@@ -21,6 +21,12 @@ The CLI writes `functions/sentry/index.ts`, declares `sentry` in `neon.ts`, and 
 
 ## Configure Sentry
 
+<EnvironmentVariables>
+
+- `SENTRY_DSN`: The DSN from your Sentry project settings. Leave it empty (`SENTRY_DSN=`) to keep the SDK disabled; the function still runs.
+
+</EnvironmentVariables>
+
 Create a Node.js project in Sentry and copy its DSN. Add it to `.env.local`:
 
 ```bash
@@ -73,7 +79,7 @@ Check **Explore > Traces** for the `POST /todos` root span with the `todo.save` 
 curl -i "$URL/debug-sentry"
 ```
 
-This returns `500` with `{"error":"internal_error"}`. Check **Issues** for the grouped error.
+This returns `500` with `{"error":"internal_error"}`. Check **Issues** for the grouped error. The SDK's default Dedupe integration drops an error identical to the one just before it, so calling this route again on the same instance doesn't send a second event.
 
 ## Routes
 
@@ -106,4 +112,5 @@ neon functions get sentry
 
 ## Notes
 
+- Function URLs are public. Anyone with the URL can call `/debug-sentry` and create events against your Sentry quota, and the in-memory store grows with every `POST /todos`. Remove the debug route and use a real database before you ship this.
 - Neon Functions do not emit source maps today, so Sentry stack traces point at bundle positions. Errors, logs, and traces are still grouped correctly.
