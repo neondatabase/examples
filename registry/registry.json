@@ -179,7 +179,7 @@
 			"id": "openapi-postgres",
 			"provider": "Neon",
 			"title": "CRUD API with OpenAPI and Postgres",
-			"description": "A CRUD API with Zod request validation and generated OpenAPI docs, backed by Lakebase Postgres.",
+			"description": "A typed CRUD API whose Zod schemas validate requests and generate OpenAPI 3.1 docs with Swagger UI, backed by Lakebase Postgres.",
 			"path": "openapi-postgres/template.json",
 			"categories": ["first-party", "api"]
 		}

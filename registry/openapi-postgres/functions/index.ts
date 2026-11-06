@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { swaggerUI } from "@hono/swagger-ui";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { attachDatabasePool } from "@neon/functions";
@@ -5,6 +6,7 @@ import { HTTPException } from "hono/http-exception";
 import { Pool } from "pg";
 
 const DEFAULT_LIMIT = 50;
+const SWAGGER_UI_VERSION = "5.34.1";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5 });
 attachDatabasePool(pool);
@@ -111,6 +113,38 @@ const app = new OpenAPIHono({
 	},
 });
 
+app.openAPIRegistry.registerComponent("securitySchemes", "bearerAuth", {
+	type: "http",
+	scheme: "bearer",
+});
+
+function isAuthorized(header: string | undefined, expected: string): boolean {
+	if (!header?.startsWith("Bearer ")) return false;
+	const provided = Buffer.from(header.slice("Bearer ".length));
+	const secret = Buffer.from(expected);
+	return provided.length === secret.length && timingSafeEqual(provided, secret);
+}
+
+// Function URLs are public, so writes need BOOKMARKS_API_TOKEN. Reads stay open.
+app.use("*", async (c, next) => {
+	const isRead = c.req.method === "GET" || c.req.method === "HEAD";
+	if (isRead || !c.req.path.startsWith("/bookmarks")) {
+		return next();
+	}
+	const expected = process.env.BOOKMARKS_API_TOKEN;
+	if (!expected || expected.length < 32) {
+		return c.json({ error: "BOOKMARKS_API_TOKEN is not configured" }, 503);
+	}
+	if (!isAuthorized(c.req.header("authorization"), expected)) {
+		return c.json({ error: "Unauthorized" }, 401);
+	}
+	await next();
+});
+
+const writeAuth = {
+	security: [{ bearerAuth: [] }],
+};
+
 app.openapi(
 	createRoute({
 		method: "get",
@@ -142,6 +176,7 @@ app.openapi(
 		method: "post",
 		path: "/bookmarks",
 		summary: "Create a bookmark",
+		...writeAuth,
 		request: {
 			body: {
 				required: true,
@@ -151,6 +186,7 @@ app.openapi(
 		responses: {
 			201: { description: "The created bookmark.", ...json(BookmarkSchema) },
 			400: error("The body is invalid."),
+			401: error("The bearer token is missing or wrong."),
 		},
 	}),
 	async (c) => {
@@ -195,6 +231,7 @@ app.openapi(
 		method: "patch",
 		path: "/bookmarks/{id}",
 		summary: "Update a bookmark",
+		...writeAuth,
 		request: {
 			params: IdParamsSchema,
 			body: {
@@ -205,6 +242,7 @@ app.openapi(
 		responses: {
 			200: { description: "The updated bookmark.", ...json(BookmarkSchema) },
 			400: error("The id or body is invalid."),
+			401: error("The bearer token is missing or wrong."),
 			404: error("No bookmark has that id."),
 		},
 	}),
@@ -232,10 +270,12 @@ app.openapi(
 		method: "delete",
 		path: "/bookmarks/{id}",
 		summary: "Delete a bookmark",
+		...writeAuth,
 		request: { params: IdParamsSchema },
 		responses: {
 			204: { description: "The bookmark was deleted." },
 			400: error("The id is invalid."),
+			401: error("The bearer token is missing or wrong."),
 			404: error("No bookmark has that id."),
 		},
 	}),
@@ -254,12 +294,12 @@ app.doc31("/openapi.json", {
 	info: {
 		version: "1.0.0",
 		title: "Bookmarks API",
-		description: "A typed CRUD API built with Hono, Zod, and Neon Postgres.",
+		description: "A typed CRUD API built with Hono, Zod, and Lakebase Postgres.",
 	},
 	servers: [{ url: "/" }],
 });
 
-app.get("/docs", swaggerUI({ url: "/openapi.json" }));
+app.get("/docs", swaggerUI({ url: "/openapi.json", version: SWAGGER_UI_VERSION }));
 
 app.notFound((c) => c.json({ error: "Not found" }, 404));
 
