@@ -1,10 +1,10 @@
 # Live poll over WebSockets
 
-A poll API running as a [Neon Function](https://neon.com/docs/compute/functions/overview). Votes are written over HTTP and the results are pushed to every connected client over a WebSocket. Votes live in [Lakebase Postgres](https://neon.com/lakebase), so results stay in sync across clients and isolates.
+This template is a poll API that runs as a [Neon Function](https://neon.com/docs/compute/functions/overview). Clients vote over HTTP, and the function pushes the results to every connected client over a WebSocket. Votes live in [Lakebase Postgres](https://neon.com/lakebase), so results stay in sync across clients and isolates.
 
 - [`upgradeWebSocket`](https://neon.com/docs/compute/functions/websockets) from `@neon/functions` turns a `GET /ws` request into a live socket.
-- [`pg`](https://node-postgres.com) reads and writes the votes through a connection pool registered with `attachDatabasePool`.
-- `DATABASE_URL` is injected from the linked branch by Neon; there is nothing to configure.
+- [`pg`](https://node-postgres.com) reads and writes the votes through a connection pool that the function registers with `attachDatabasePool`.
+- Neon injects `DATABASE_URL` from the linked branch, so there is nothing to configure.
 
 ## Scaffold it
 
@@ -44,6 +44,8 @@ The HTTP routes work on their own too. `GET /` prints the route index, `GET /res
 
 ## Routes
 
+<Operations>
+
 | Method | Path | Result |
 | --- | --- | --- |
 | `GET` | `/` | Plain-text index of the routes |
@@ -51,9 +53,11 @@ The HTTP routes work on their own too. `GET /` prints the route index, `GET /res
 | `POST` | `/vote` | `{ "optionId": "ws", "voterId": "<random id>" }`; returns the updated counts |
 | `GET` | `/ws` | WebSocket upgrade; pushes `{ "type": "results" }` frames and `{ "type": "ping" }` keepalives |
 
+</Operations>
+
 `optionId` must be one of `ws`, `sse`, or `http`, and `voterId` must be 8-64 letters, digits, hyphens, or underscores. Bad input returns `400`, an unknown route returns `404`, and a non-upgrade request to `/ws` returns `426`.
 
-Votes are written over HTTP; results stream back over the socket.
+In the diagram below, clients send votes over HTTP and get results back over the socket.
 
 ```mermaid
 sequenceDiagram
@@ -72,12 +76,12 @@ sequenceDiagram
 ```
 
 - `votes` has `voter_id` as its primary key, so each voter has one current vote. Voting again updates that row instead of adding another.
-- The table is created lazily with `CREATE TABLE IF NOT EXISTS` on the first request that needs it, so there is no migration step.
-- Each isolate keeps its connected sockets in memory. Every second, while it has clients, it reads the counts from Postgres and pushes them when they change. No cross-isolate messaging is needed.
+- The function creates the table with `CREATE TABLE IF NOT EXISTS` on the first request that needs it, so there is no migration step.
+- Each isolate keeps its connected sockets in memory. Every second, while it has clients, it reads the counts from Postgres and pushes them when they change, so isolates don't need to message each other.
 - The timer starts with the first client and stops with the last, so an idle isolate can scale to zero. A 25-second `ping` keeps proxies from dropping idle sockets.
 - A new client gets the current counts as soon as its socket opens, so it doesn't wait for the next change.
 
-`POST /vote` is unauthenticated. This is a demo; add authentication and a verified user identity before exposing writes. Polling Postgres every second is fine for a demo and works with scale-to-zero; for production fan-out with many isolates, use [Neon Realtime](https://neon.com/docs/realtime) or accept `LISTEN/NOTIFY` and the long-lived connection it needs.
+`POST /vote` has no authentication, so add authentication and a verified user identity before you expose writes. Polling Postgres every second is fine for a demo and works with scale-to-zero. For production fan-out across many isolates, use [Neon Realtime](https://neon.com/docs/realtime), or use `LISTEN/NOTIFY` and accept the long-lived connection it needs.
 
 ## Deploy
 

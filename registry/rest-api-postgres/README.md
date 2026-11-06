@@ -1,10 +1,10 @@
 # REST API with Hono and Postgres
 
-A CRUD REST API for a `todos` table, running as a [Neon Function](https://neon.com/docs/compute/functions/overview) on long-lived Node.js compute next to your database.
+This template is a CRUD REST API for a `todos` table. It runs as a [Neon Function](https://neon.com/docs/compute/functions/overview) on long-lived Node.js compute next to your database.
 
 - [Hono](https://hono.dev) handles routing and JSON responses.
 - [`pg`](https://node-postgres.com) queries Lakebase Postgres through a connection pool.
-- `DATABASE_URL` is injected from the linked branch by Neon; there is nothing to configure.
+- Neon injects `DATABASE_URL` from the linked branch, so there is nothing to configure.
 
 ## Scaffold it
 
@@ -52,14 +52,18 @@ curl -X DELETE http://localhost:8787/todos/1
 
 ## Routes
 
+<Operations>
+
 | Method | Path | Body | Result |
 | --- | --- | --- | --- |
-| `GET` | `/` | — | The API name and route list |
-| `GET` | `/todos` | — | Up to 100 todos, newest first |
+| `GET` | `/` | None | The API name and route list |
+| `GET` | `/todos` | None | Up to 100 todos, newest first |
 | `POST` | `/todos` | `{ "title": string, "completed"?: boolean }` | `201` with the created todo |
-| `GET` | `/todos/:id` | — | The todo, or `404` |
+| `GET` | `/todos/:id` | None | The todo, or `404` |
 | `PATCH` | `/todos/:id` | `{ "title"?: string, "completed"?: boolean }` | The updated todo, or `404` |
-| `DELETE` | `/todos/:id` | — | `204`, or `404` |
+| `DELETE` | `/todos/:id` | None | `204`, or `404` |
+
+</Operations>
 
 A non-numeric `:id`, a body that isn't a JSON object, an empty `title`, or a non-boolean `completed` returns `400`. Any other path or method returns `404`.
 
@@ -76,7 +80,7 @@ neon functions get todos
 neon functions deploy todos --src functions/todos
 ```
 
-`neon functions get` prints the function's public URL. Call the same routes there:
+`neon functions get` prints the function's public URL, where the same routes work:
 
 ```bash
 curl https://<branch-id>-todos.compute.<cell>.<region>.aws.neon.tech/todos

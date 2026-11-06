@@ -1,15 +1,19 @@
 # MCP server backed by Postgres
 
-A [Model Context Protocol](https://modelcontextprotocol.io) server that runs as a Neon Function. It uses [Hono](https://hono.dev) and the [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) to serve streamable HTTP at `/mcp`, and stores a todo list in [Lakebase Postgres](https://neon.com/lakebase) through a pooled `pg` connection registered with `attachDatabasePool` from `@neon/functions`.
+This template is a [Model Context Protocol](https://modelcontextprotocol.io) server that runs as a Neon Function. It uses [Hono](https://hono.dev) and the [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) to serve streamable HTTP at `/mcp`. It stores a todo list in [Lakebase Postgres](https://neon.com/lakebase) through a `pg` pool that it registers with `attachDatabasePool` from `@neon/functions`.
 
 The server exposes four tools:
+
+<Operations>
 
 | Tool | Description |
 | --- | --- |
 | `create_todo` | Insert a todo. `title` is required; `notes` is optional. |
-| `list_todos` | Filter by completion and search the title or notes. Omit filters to list todos. `limit` defaults to 20 and caps at 50. |
-| `update_todo` | Update the fields you pass for a todo `id`, including `completed`. Title and notes cannot be cleared. |
+| `list_todos` | List todos, optionally filtered by completion or by a search of the title or notes. `limit` defaults to 20, with a maximum of 50. |
+| `update_todo` | Update the fields you pass for a todo `id`, including `completed`. You can't clear the title or notes. |
 | `delete_todo` | Delete a todo by `id` and return the deleted row. |
+
+</Operations>
 
 Every request to `/mcp` must send `Authorization: Bearer <MCP_API_KEY>`.
 
@@ -53,7 +57,13 @@ export MCP_API_KEY="$(openssl rand -hex 32)"
 printf 'MCP_API_KEY=%s\n' "$MCP_API_KEY" >> .env.local
 ```
 
-`neon dev` loads `.env.local`; `neon deploy` needs `--env .env.local` to resolve the value while evaluating `neon.ts`. A missing key and a wrong key both return 401, so if every request fails, check that `MCP_API_KEY` was set in the environment you deployed with.
+<EnvironmentVariables>
+
+- `MCP_API_KEY`: A random token, for example from `openssl rand -hex 32`, that MCP clients send as `Authorization: Bearer <token>`. The function URL is public, so the function requires it.
+
+</EnvironmentVariables>
+
+`neon dev` loads `.env.local`, but `neon deploy` needs `--env .env.local` to resolve the value when it evaluates `neon.ts`. A missing key and a wrong key both return 401. If every request fails, check that `MCP_API_KEY` was set in the environment you deployed with.
 
 ## Run locally
 
@@ -86,7 +96,7 @@ mcporter call "http://localhost:8787/mcp.create_todo" --allow-http \
   title="Write the rollback notes" notes="Include the migration step"
 ```
 
-`--allow-http` is only needed for local plain-HTTP URLs. To write the config for Cursor, Claude Code, or another supported client instead, use [`add-mcp`](https://add-mcp.com):
+You only need `--allow-http` for local plain-HTTP URLs. To write the config for Cursor, Claude Code, or another supported client instead, use [`add-mcp`](https://add-mcp.com):
 
 ```bash
 npx add-mcp http://localhost:8787/mcp \
@@ -102,7 +112,7 @@ npx add-mcp http://localhost:8787/mcp \
 neon deploy --env .env.local
 ```
 
-`--env .env.local` lets `neon.ts` resolve `MCP_API_KEY` before deployment. Get the deployed invocation URL:
+`--env .env.local` lets `neon.ts` resolve `MCP_API_KEY` during deployment, and `neon functions get` prints the deployed function's URL:
 
 ```bash
 neon functions get mcppostgres
@@ -116,7 +126,7 @@ npx add-mcp https://<function-url>/mcp \
   --name mcp-postgres -a cursor
 ```
 
-A Neon Function URL is public. This template gates `/mcp` with a static bearer token.
+A Neon Function URL is public, so this template protects `/mcp` with a static bearer token.
 
 ## Data model
 

@@ -50,6 +50,8 @@ several: Neon-maintained ones have `first-party` plus a topical label.
 | `bots` | Chat or messaging bot. |
 | `email` | Transactional or marketing email. |
 | `mcp` | Model Context Protocol server. |
+| `observability` | Logging, tracing, or error reporting. |
+| `payments` | Charges for requests through x402 or another payment rail. |
 | `storage` | Uses Neon Object Storage. |
 | `websocket` | Live updates over a WebSocket connection. |
 | `workflow` | Durable or background job orchestration. |
