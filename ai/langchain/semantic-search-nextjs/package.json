@@ -1,5 +1,7 @@
 {
   "name": "langchain-semantic-search-nextjs",
+  "description": "Semantic search app built with Next.js, Neon Postgres with pgvector, OpenAI, and LangChain.",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",

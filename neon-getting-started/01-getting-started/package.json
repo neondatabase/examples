@@ -1,6 +1,6 @@
 {
-  "name": "neon-getting-started",
-  "version": "0.1.0",
+  "name": "neon-getting-started-basics",
+  "description": "Getting started todo app built with Neon Postgres, Drizzle ORM, and Next.js App Router with Server Actions.",
   "private": true,
   "scripts": {
     "dev": "next dev",

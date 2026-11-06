@@ -1,5 +1,7 @@
 {
   "name": "langchain-rag-nextjs",
+  "description": "Retrieval-Augmented Generation chatbot built with Next.js, Neon Postgres with pgvector, OpenAI, and LangChain.",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",

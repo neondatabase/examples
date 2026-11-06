@@ -1,6 +1,6 @@
 {
-  "name": "rag-starter-nextjs",
-  "version": "0.1.0",
+  "name": "auto-embeddings-nextjs",
+  "description": "Automatically generate and store document embeddings with Next.js, OpenAI, Neon Postgres with pgvector, and Inngest background jobs.",
   "private": true,
   "scripts": {
     "dev": "next dev",

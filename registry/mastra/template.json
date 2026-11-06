@@ -1,0 +1,53 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "mastra",
+	"provider": "Mastra",
+	"title": "Mastra agent with Postgres memory",
+	"description": "A Mastra agent that remembers users in Neon Postgres, streams chat for useChat on AI Gateway, and runs a resumable human-in-the-loop review workflow.",
+	"categories": ["ai", "agents"],
+	"layout": "router",
+	"dependencies": [
+		"@mastra/ai-sdk@1.11.2",
+		"@mastra/core@1.79.0",
+		"@mastra/memory@1.39.0",
+		"@mastra/pg@1.32.0",
+		"@neon/functions@0.11.0",
+		"@opentelemetry/api@1.10.0",
+		"@types/pg@8.23.1",
+		"ai@7.0.153",
+		"pg@8.23.1",
+		"zod@4.6.7"
+	],
+	"environment": [
+		{
+			"name": "MASTRA_FUNCTION_TOKEN",
+			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public."
+		}
+	],
+	"operations": [
+		{
+			"id": "chat",
+			"title": "Chat with memory",
+			"description": "POST the useChat body plus a resourceId to stream a reply; Mastra Memory keeps the thread and a per-user profile in Postgres.",
+			"source": "functions/chat.ts",
+			"route": "/chat",
+			"recommended": true
+		},
+		{
+			"id": "history",
+			"title": "Load a thread",
+			"description": "POST a threadId and resourceId to get the thread's messages in the UIMessage format useChat takes.",
+			"source": "functions/history.ts",
+			"route": "/history",
+			"recommended": true
+		},
+		{
+			"id": "review",
+			"title": "Review a draft",
+			"description": "POST a brief to start a workflow that drafts text and suspends for approval; POST the runId with approved and optional feedback to resume it.",
+			"source": "functions/review.ts",
+			"route": "/review",
+			"recommended": false
+		}
+	]
+}

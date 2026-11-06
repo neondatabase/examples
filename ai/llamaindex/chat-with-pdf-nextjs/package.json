@@ -1,5 +1,7 @@
 {
   "name": "llamaindex-chat-with-pdf-nextjs",
+  "description": "Chat with a PDF built with Next.js, Neon Postgres with pgvector, OpenAI, and LlamaIndex.",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -49,10 +49,10 @@ npx degit neondatabase/examples/bots/telegram-bot-http ./telegram-bot-http
 cd telegram-bot-http
 ```
 
-## Install and authenticate the Neon CLI
+## Install and update the Neon CLI to latest
 
 ```bash
-npm i -g neon
+npm i -g neon@latest
 neon login
 ```
 
@@ -64,24 +64,26 @@ npm install
 
 ## Link your Neon project
 
-Link (or create) a Neon project by running the `link` command from the workspace root:
+Copy `.env.example` to `.env.local`, then link (or create) a Neon project from the workspace root. Linking merges the Neon vars into `.env.local`, keeping your keys:
 
 ```bash
+cp .env.example .env.local
 neon link
 ```
 
-If you let your agent drive this, add `--agent` to skip interactive mode.
-
 ## Configure Telegram
 
-Create a bot with [BotFather](https://t.me/BotFather), then copy `.env.example` to `.env` and fill in:
+Create a bot with [BotFather](https://t.me/BotFather), then uncomment and fill in the required keys in `.env.local`:
 
 ```env
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_WEBHOOK_SECRET=
+# Required. Add real values before deploying; a missing key throws at deploy, an empty one uploads "".
+# TELEGRAM_BOT_TOKEN=
+# TELEGRAM_WEBHOOK_SECRET=
+
+# Local only, used by the set:webhook script. Set after you deploy.
 TELEGRAM_WEBHOOK_URL=
 
-# Set automatically by Neon.
+# Written by `neon link` or `neon env pull` (and refreshed on deploy).
 NEON_BRANCH=
 DATABASE_URL=
 DATABASE_URL_UNPOOLED=
@@ -114,7 +116,7 @@ Neon serves the configured function from `neon.ts`. To receive real Telegram web
 Deploy the Telegram webhook function with your Telegram secrets:
 
 ```bash
-neon deploy --env .env
+neon deploy --env .env.local
 ```
 
 ## Register the Telegram bot
@@ -131,7 +133,7 @@ Grab the function invocation URL:
 neon functions get telegram
 ```
 
-Append `/api/webhook`, set `TELEGRAM_WEBHOOK_URL` in `.env`, then register the webhook with Telegram:
+Append `/api/webhook`, set `TELEGRAM_WEBHOOK_URL` in `.env.local`, then register the webhook with Telegram:
 
 ```bash
 npm run set:webhook

@@ -1,0 +1,36 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "openai-agents",
+	"provider": "Neon",
+	"title": "OpenAI Agents SDK starter",
+	"description": "Streaming agent with tools, agent handoffs, and structured output on Neon AI Gateway.",
+	"categories": ["first-party", "ai", "agents"],
+	"layout": "router",
+	"dependencies": ["@openai/agents@0.21.0", "zod@4.6.7"],
+	"operations": [
+		{
+			"id": "chat",
+			"title": "Stream an agent reply",
+			"description": "POST messages to stream a tool-using agent reply as plain text.",
+			"source": "functions/chat.ts",
+			"route": "/chat",
+			"recommended": true
+		},
+		{
+			"id": "triage",
+			"title": "Hand off to a specialist",
+			"description": "POST a request to a triage agent that hands it to a billing or technical agent.",
+			"source": "functions/triage.ts",
+			"route": "/triage",
+			"recommended": true
+		},
+		{
+			"id": "extract",
+			"title": "Return structured output",
+			"description": "POST text to get a typed JSON object using the agent's outputType schema.",
+			"source": "functions/extract.ts",
+			"route": "/extract",
+			"recommended": false
+		}
+	]
+}

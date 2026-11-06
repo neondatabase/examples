@@ -39,10 +39,10 @@ npx degit neondatabase/examples/with-mcp ./with-mcp
 cd with-mcp
 ```
 
-## Install and authenticate the Neon CLI
+## Install and update the Neon CLI to latest
 
 ```bash
-npm i -g neon
+npm i -g neon@latest
 neon login
 ```
 
@@ -59,8 +59,6 @@ Link (or create) a Neon project by running the `link` command from the workspace
 ```bash
 neon link
 ```
-
-If you let your agent drive this, add `--agent` to skip interactive mode.
 
 `neon link` pulls your branch-scoped environment variables — including `DATABASE_URL` — into `.env.local`. You can also find your connection string in the [Neon Console](https://console.neon.tech).
 
@@ -130,4 +128,4 @@ neon functions get contacts
 mcporter list https://<your-branch>-contacts.compute.<region>.aws.neon.tech/mcp --schema
 ```
 
-> A Neon Function has a **public HTTPS URL — it is reachable by anyone.** This example keeps things minimal and does not authenticate callers. Before exposing a real MCP server, verify a token/API key at the top of the handler (see the `neon-functions` skill in `.agents/skills`).
+> A Neon Function has a **public HTTPS URL — it is reachable by anyone.** This example keeps things minimal and does not authenticate callers. Before exposing a real MCP server, verify a token/API key at the top of the handler (see the `neon-functions` skill after `neon init` or `neon skills`).

@@ -1,5 +1,7 @@
 {
   "name": "with-nextjs-drizzle-local-vercel",
+  "description": "Getting started example for using Neon Postgres and Drizzle ORM with Next.js across local and Vercel environments.",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",

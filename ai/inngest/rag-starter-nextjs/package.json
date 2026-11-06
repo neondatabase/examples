@@ -1,6 +1,6 @@
 {
   "name": "rag-starter-nextjs",
-  "version": "0.1.0",
+  "description": "Retrieval-Augmented Generation starter built with Next.js, OpenAI, Neon Postgres with pgvector, and Inngest.",
   "private": true,
   "scripts": {
     "dev": "next dev",

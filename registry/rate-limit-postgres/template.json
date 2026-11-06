@@ -1,0 +1,15 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "rate-limit-postgres",
+	"provider": "Neon",
+	"title": "Rate limit with Postgres",
+	"description": "Fixed-window rate limiting with an atomic Postgres upsert.",
+	"categories": ["first-party", "api"],
+	"layout": "router",
+	"dependencies": [
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"pg@8.23.1"
+	],
+	"environment": []
+}

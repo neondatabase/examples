@@ -1,0 +1,24 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "openapi-postgres",
+	"provider": "Neon",
+	"title": "CRUD API with OpenAPI and Postgres",
+	"description": "A typed CRUD API whose Zod schemas validate requests and generate OpenAPI 3.1 docs with Swagger UI, backed by Lakebase Postgres.",
+	"categories": ["first-party", "api"],
+	"layout": "router",
+	"dependencies": [
+		"@hono/swagger-ui@0.6.2",
+		"@hono/zod-openapi@1.6.3",
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"hono@4.13.13",
+		"pg@8.23.1",
+		"zod@4.6.7"
+	],
+	"environment": [
+		{
+			"name": "BOOKMARKS_API_TOKEN",
+			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) that callers send as Authorization: Bearer <token> on POST, PATCH, and DELETE. Required because Neon Function URLs are public."
+		}
+	]
+}
