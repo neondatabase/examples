@@ -1,0 +1,24 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "x402-paid-api",
+	"provider": "Neon",
+	"title": "Paid API with x402 and Hono",
+	"description": "Charge per request in testnet USDC on Base Sepolia with x402, and keep a payment ledger in Lakebase Postgres.",
+	"categories": ["first-party", "api", "payments"],
+	"layout": "router",
+	"dependencies": [
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"@x402/core@2.30.0",
+		"@x402/evm@2.30.0",
+		"@x402/hono@2.30.0",
+		"hono@4.13.13",
+		"pg@8.23.1"
+	],
+	"environment": [
+		{
+			"name": "X402_EVM_ADDRESS",
+			"description": "EVM wallet address (0x...) on Base Sepolia that receives payments. The buyer needs Base Sepolia USDC."
+		}
+	]
+}

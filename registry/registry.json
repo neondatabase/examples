@@ -182,6 +182,14 @@
 			"categories": ["sync"],
 			"logo": "https://avatars.githubusercontent.com/u/47638084?v=4",
 			"website": "https://workos.com/"
+		},
+		{
+			"id": "x402-paid-api",
+			"provider": "Neon",
+			"title": "Paid API with x402 and Hono",
+			"description": "Charge per request in testnet USDC on Base Sepolia with x402, and keep a payment ledger in Lakebase Postgres.",
+			"path": "x402-paid-api/template.json",
+			"categories": ["first-party", "api", "payments"]
 		}
 	]
 }
