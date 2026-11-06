@@ -6,7 +6,7 @@ A pay-per-request JSON API running as a [Neon Function](https://neon.com/docs/co
 - [`@x402/hono`](https://www.npmjs.com/package/@x402/hono) returns `402 Payment Required` and verifies payments through an x402 facilitator. [`@x402/evm`](https://www.npmjs.com/package/@x402/evm) provides the `exact` EVM payment scheme.
 - [`pg`](https://node-postgres.com) stores the payment ledger. `DATABASE_URL` is injected from the linked branch by Neon.
 
-The template is API-only: API clients get a JSON `402` with the payment requirements. A browser gets the x402 middleware's HTML payment page instead, because browsers send `Accept: text/html`.
+The template is API-only: API clients get a JSON `402` with the payment requirements. A browser gets the x402 middleware's HTML payment page instead. The middleware treats a request as a browser when it sends `Accept: text/html` and a `Mozilla` user agent.
 
 ## Scaffold it
 
@@ -39,13 +39,19 @@ export default defineConfig({
 
 ## Set the receiving address
 
+<EnvironmentVariables>
+
+- `X402_EVM_ADDRESS`: An EVM wallet address (`0x...`) on Base Sepolia that receives payments. It's a public receiving address, not a secret, and doesn't need funds.
+
+</EnvironmentVariables>
+
 Add an EVM address you control to `.env.local`:
 
 ```bash
 printf 'X402_EVM_ADDRESS=%s\n' "0xYourAddress" >> .env.local
 ```
 
-`X402_EVM_ADDRESS` is a public receiving address, not a secret. It does not need funds. The buyer needs Base Sepolia USDC from a [faucet](https://faucet.circle.com/). On mainnet, use a real receiving address.
+The buyer needs Base Sepolia USDC from a [faucet](https://faucet.circle.com/). On mainnet, use a real receiving address.
 
 ## Run locally
 
