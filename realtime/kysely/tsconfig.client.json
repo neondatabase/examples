@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ES2023",
+    "types": ["node", "vite/client"]
+  },
+  "include": ["src/App.tsx", "src/main.tsx", "src/api-types.ts"]
+}
