@@ -166,6 +166,14 @@
 			"website": "https://aiinbx.com/"
 		},
 		{
+			"id": "sentry",
+			"provider": "Neon",
+			"title": "Sentry-instrumented API",
+			"description": "Errors, structured logs, and request traces for a Hono API on Neon Functions.",
+			"path": "sentry/template.json",
+			"categories": ["first-party", "observability"]
+		},
+		{
 			"id": "workos-sync",
 			"provider": "WorkOS",
 			"title": "Mirror WorkOS data into Postgres",
