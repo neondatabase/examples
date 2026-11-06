@@ -190,6 +190,14 @@
 			"description": "Charge per request in testnet USDC on Base Sepolia with x402, and keep a payment ledger in Lakebase Postgres.",
 			"path": "x402-paid-api/template.json",
 			"categories": ["first-party", "api", "payments"]
+		},
+		{
+			"id": "openapi-postgres",
+			"provider": "Neon",
+			"title": "CRUD API with OpenAPI and Postgres",
+			"description": "A typed CRUD API whose Zod schemas validate requests and generate OpenAPI 3.1 docs with Swagger UI, backed by Lakebase Postgres.",
+			"path": "openapi-postgres/template.json",
+			"categories": ["first-party", "api"]
 		}
 	]
 }
