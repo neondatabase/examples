@@ -9,7 +9,7 @@
 	"dependencies": [
 		"@neon/functions@0.11.0",
 		"@types/pg@8.23.1",
-		"@workos/sync-postgres@0.1.0",
+		"@workos/sync-postgres@0.2.0",
 		"pg@8.23.1"
 	],
 	"environment": [
