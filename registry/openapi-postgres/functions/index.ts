@@ -38,22 +38,12 @@ type BookmarkRow = {
 	url: string;
 	title: string;
 	tags: string[];
-	created_at: Date;
-	updated_at: Date;
+	createdAt: Date;
+	updatedAt: Date;
 };
 
-const COLUMNS = "id, url, title, tags, created_at, updated_at";
-
-function toBookmark(row: BookmarkRow) {
-	return {
-		id: row.id,
-		url: row.url,
-		title: row.title,
-		tags: row.tags,
-		createdAt: row.created_at.toISOString(),
-		updatedAt: row.updated_at.toISOString(),
-	};
-}
+const COLUMNS = `id, url, title, tags,
+	created_at AS "createdAt", updated_at AS "updatedAt"`;
 
 const bookmarkUrl = z.string().url().max(2048).openapi({ example: "https://neon.com/docs" });
 const bookmarkTitle = z
@@ -143,7 +133,7 @@ app.openapi(
 			 LIMIT $2`,
 			[tag ?? null, limit],
 		);
-		return c.json(rows.map(toBookmark), 200);
+		return c.json(rows, 200);
 	},
 );
 
@@ -172,7 +162,7 @@ app.openapi(
 			 RETURNING ${COLUMNS}`,
 			[url, title, tags],
 		);
-		return c.json(toBookmark(rows[0]!), 201);
+		return c.json(rows[0]!, 201);
 	},
 );
 
@@ -196,7 +186,7 @@ app.openapi(
 			[id],
 		);
 		const row = rows[0];
-		return row ? c.json(toBookmark(row), 200) : c.json({ error: "Bookmark not found" }, 404);
+		return row ? c.json(row, 200) : c.json({ error: "Bookmark not found" }, 404);
 	},
 );
 
@@ -233,7 +223,7 @@ app.openapi(
 			[title ?? null, tags ?? null, id],
 		);
 		const row = rows[0];
-		return row ? c.json(toBookmark(row), 200) : c.json({ error: "Bookmark not found" }, 404);
+		return row ? c.json(row, 200) : c.json({ error: "Bookmark not found" }, 404);
 	},
 );
 
