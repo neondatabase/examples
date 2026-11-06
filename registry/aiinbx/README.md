@@ -1,6 +1,14 @@
 # Send emails with AI Inbx
 
-A Neon Function that sends email through [AI Inbx](https://aiinbx.com).
+This Neon Function sends email through [AI Inbx](https://aiinbx.com/).
+
+<Operations>
+
+| Route | What it does |
+| --- | --- |
+| `POST /send-email` | Sends an AI Inbx send request with `from`, `to`, `subject`, and `html` or `text`. Add `thread_id` to follow up, `scheduled_at` to send later, or `draft` to hold the email for review. |
+
+</Operations>
 
 ## Setup
 
@@ -8,7 +16,7 @@ A Neon Function that sends email through [AI Inbx](https://aiinbx.com).
 neon functions new aiinbx
 ```
 
-In the [AI Inbx console](https://aiinbx.com/app), pick a plan under **Settings → Billing** and create an API key with the `sending` scope.
+In the [AI Inbx console](https://aiinbx.com/app), pick a plan on the **Billing** page under **Settings**, and create an API key with the `sending` scope.
 
 ```bash
 echo "AI_INBX_API_KEY=..." >> .env.local
@@ -16,6 +24,13 @@ export AI_INBX_FUNCTION_TOKEN=$(openssl rand -hex 32)
 echo "AI_INBX_FUNCTION_TOKEN=$AI_INBX_FUNCTION_TOKEN" >> .env.local
 neon dev
 ```
+
+<EnvironmentVariables>
+
+- `AI_INBX_API_KEY`: An API key from aiinbx.com/app with the sending scope. Keep it server-side.
+- `AI_INBX_FUNCTION_TOKEN`: A random token of at least 32 characters, for example from `openssl rand -hex 32`, that callers send as `Authorization: Bearer <token>`. Neon Function URLs are public, so the function requires it.
+
+</EnvironmentVariables>
 
 ## Send
 
@@ -43,23 +58,23 @@ curl -s http://localhost:8787/send-email \
 }
 ```
 
-The body is an AI Inbx [send request](https://docs.aiinbx.com/guides/sending), passed on as is: `from`, `to`, `subject` and `html` and/or `text`, plus any other field AI Inbx takes, such as attachments, unsubscribe headers or tracking.
+The function passes the body to AI Inbx unchanged, so it takes any field of an AI Inbx [send request](https://docs.aiinbx.com/guides/sending). It needs `from`, `to`, `subject`, and `html`, `text`, or both. It also takes optional fields such as attachments, unsubscribe headers, and tracking.
 
-`from` can be any address on a domain the workspace sends from or a connected mailbox; AI Inbx rejects the rest. Every workspace can send from `<slug>.aiinbx.app` without DNS setup. To send from your own domain, [verify it](https://docs.aiinbx.com/guides/domains); to send from a Gmail or Outlook account, [connect it](https://docs.aiinbx.com/guides/mailboxes).
+`from` must be an address on a domain the workspace sends from or a connected mailbox, and AI Inbx rejects any other sender. Every workspace can send from `<slug>.aiinbx.app` without DNS setup. To send from your own domain, [verify it](https://docs.aiinbx.com/guides/domains), and to send from a Gmail or Outlook account, [connect it](https://docs.aiinbx.com/guides/mailboxes).
 
-A few AI Inbx extras:
+AI Inbx also takes these fields:
 
 | Field | Effect |
 | --- | --- |
-| `thread_id` | Follows up in an earlier email's thread, with `In-Reply-To` and `References` set. |
-| `scheduled_at` | Sends at an RFC 3339 time with an offset, up to 30 days out. |
-| `draft: true` | Sends nothing; returns a `review_url` where a person edits and sends it. |
+| `thread_id` | Follows up in an earlier email's thread and sets `In-Reply-To` and `References`. |
+| `scheduled_at` | Sends at an RFC 3339 time with an offset, up to 30 days ahead. |
+| `draft: true` | Holds the email instead of sending it and returns a `review_url` where a person can edit and send it. |
 
-An `Idempotency-Key` header makes retries safe: a retry with the same key returns the first email instead of sending it twice.
+With an `Idempotency-Key` header, a retry that sends the same key returns the first email instead of sending a second one.
 
-`suppressed` lists recipients dropped by a [suppression list](https://docs.aiinbx.com/guides/suppressions). `pacing` is set when a [sending limit or sending hours](https://docs.aiinbx.com/guides/pacing) apply to the email, with an estimated send time.
+`suppressed` lists the recipients that a [suppression list](https://docs.aiinbx.com/guides/suppressions) removed. AI Inbx sets `pacing`, with an estimated send time, when a [sending limit or sending hours](https://docs.aiinbx.com/guides/pacing) apply to the email.
 
-Errors from AI Inbx keep their status, [`code`](https://docs.aiinbx.com/reference/errors), `issues` and `request_id`. A rejected API key returns `502`.
+The function passes AI Inbx errors through with their status, [`code`](https://docs.aiinbx.com/reference/errors), `issues`, and `request_id`. If AI Inbx rejects the API key, the function returns `502`.
 
 ## Deploy
 

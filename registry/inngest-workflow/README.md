@@ -1,6 +1,6 @@
 # Durable workflow with Inngest
 
-A minimal multi-step workflow running as a [Neon Function](https://neon.com/docs/compute/functions/overview). [Inngest](https://www.inngest.com) orchestrates the steps, so each `step.run` is checkpointed and retried on its own, and `step.sleep` waits without keeping the function running. Job state is stored in [Lakebase Postgres](https://neon.com/lakebase).
+This template runs a minimal multi-step workflow as a [Neon Function](https://neon.com/docs/compute/functions/overview). [Inngest](https://www.inngest.com) orchestrates the steps. It checkpoints and retries each `step.run` on its own, and `step.sleep` waits without keeping the function running. The function stores job state in [Lakebase Postgres](https://neon.com/lakebase).
 
 ## How it works
 
@@ -10,7 +10,9 @@ A minimal multi-step workflow running as a [Neon Function](https://neon.com/docs
    - `wait-before-finishing` sleeps durably for 5 seconds
    - `finish-job` marks the job `completed`
 3. `GET /api/jobs/:id` shows the current row, so you can see the job change from `running` to `completed`.
-4. A failed step is retried without re-running the steps that already succeeded.
+4. Inngest retries a failed step without re-running the steps that already succeeded.
+
+<Operations>
 
 | Route | Purpose |
 | --- | --- |
@@ -18,6 +20,8 @@ A minimal multi-step workflow running as a [Neon Function](https://neon.com/docs
 | `GET /api/jobs/:id` | Read a job's current state |
 | `GET`, `PUT`, `POST` `/api/inngest` | Inngest's serve endpoint |
 | `GET /` | Route index |
+
+</Operations>
 
 ## Scaffold it
 
@@ -41,10 +45,14 @@ INNGEST_SIGNING_KEY="signkey-prod-..."
 INNGEST_EVENT_KEY="..."
 ```
 
+<EnvironmentVariables>
+
 - `INNGEST_SIGNING_KEY` verifies the requests Inngest sends to `/api/inngest`.
 - `INNGEST_EVENT_KEY` lets `POST /api/events` send events.
 
-For local runs, any non-empty values work because the Inngest Dev Server ignores them. `neon dev` still validates the env declared in `neon.ts`, so add placeholders before starting:
+</EnvironmentVariables>
+
+For local runs, any non-empty values work because the Inngest Dev Server ignores them. `neon dev` still validates the env declared in `neon.ts`, so add placeholders before you start it:
 
 ```bash
 INNGEST_SIGNING_KEY=dev
@@ -55,7 +63,7 @@ INNGEST_EVENT_KEY=dev
 
 Local development uses the Inngest Dev Server, so the placeholder keys above are enough.
 
-`neon dev` prints the URL it serves. The examples below use `http://localhost:8787`, which is the port it picks when free; if it prints a different one, use that instead.
+`neon dev` prints the URL it serves. The examples below use `http://localhost:8787`, the port it picks when that port is free. If it prints a different URL, use that one instead.
 
 ```bash
 # Terminal 1
@@ -76,13 +84,13 @@ curl -X POST http://localhost:8787/api/events \
   }'
 ```
 
-The job starts in `running`. Check it immediately:
+The job starts in `running`, which you can check right away:
 
 ```bash
 curl http://localhost:8787/api/jobs/job_1
 ```
 
-After the 5-second sleep, the same request returns `completed`. The Inngest Dev Server UI is at [http://localhost:8288](http://localhost:8288), where the run and each step are visible.
+After the 5-second sleep, the same request returns `completed`. The Inngest Dev Server UI at [http://localhost:8288](http://localhost:8288) shows the run and each of its steps.
 
 ## Deploy
 
@@ -91,13 +99,13 @@ neon deploy --env .env.local
 neon functions get inngestworkflow
 ```
 
-In Inngest Cloud, open **Apps → Sync new app** and enter:
+In Inngest Cloud, open **Apps**, choose **Sync new app**, and enter this URL:
 
 ```text
 https://<function-url>/api/inngest
 ```
 
-Then trigger the deployed workflow with the same `curl`, replacing the host with the function URL.
+Then trigger the deployed workflow with the same `curl` and the function URL as the host.
 
 ```bash
 curl -X POST https://<function-url>/api/events \
@@ -112,7 +120,7 @@ curl -X POST https://<function-url>/api/events \
 
 ## Notes
 
-- The `jobs` table is created on the first run with `CREATE TABLE IF NOT EXISTS`, so there is no migration step.
-- `POST /api/events` is unauthenticated in this demo. Anyone with the function URL can start a workflow. Add authentication before exposing it.
-- Add more `step.run` calls between the sleep to extend the workflow. Keep side effects inside `step.run` so a retry does not repeat completed work.
-- `step.sleep("wait-before-finishing", "5s")` simulates a processing window. Inngest holds the timer; the function is not running or billed while it waits.
+- The function creates the `jobs` table on its first run with `CREATE TABLE IF NOT EXISTS`, so there is no migration step.
+- `POST /api/events` has no authentication in this demo, so anyone with the function URL can start a workflow. Add authentication before you expose it.
+- Add more `step.run` calls around the sleep to extend the workflow. Keep side effects inside `step.run` so a retry doesn't repeat completed work.
+- `step.sleep("wait-before-finishing", "5s")` simulates a processing window. Inngest holds the timer, so the function isn't running or billed while it waits.

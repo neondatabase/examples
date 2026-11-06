@@ -9,14 +9,11 @@ import {
 import { neonText } from "@tanstack/ai-neon";
 import { z } from "zod";
 
-// Any text model in the AI Gateway catalog: https://neon.com/docs/ai-gateway/models
 const MODEL = "claude-haiku-5-5";
 
 const SYSTEM_PROMPT =
 	"You are a helpful assistant. Answer concisely. Call getCurrentTime when the user asks about the current date or time.";
 
-// The bearer token is the gate, not the origin: no cookies are involved, so any
-// origin may call the function as long as it sends the token.
 const CORS_HEADERS = {
 	"Access-Control-Allow-Origin": "*",
 	"Access-Control-Allow-Headers": "authorization, content-type",
@@ -72,7 +69,6 @@ export default {
 			return errorResponse("Unauthorized", 401);
 		}
 
-		// The AG-UI RunAgentInput body that useChat + fetchServerSentEvents send.
 		let params: Awaited<ReturnType<typeof chatParamsFromRequestBody>>;
 		try {
 			params = await chatParamsFromRequestBody(await request.json());
@@ -94,7 +90,6 @@ export default {
 			);
 		}
 
-		// Aborted when the client disconnects, which cancels the model call.
 		const abortController = new AbortController();
 		const stream = chat({
 			adapter,
@@ -107,7 +102,6 @@ export default {
 			abortController,
 		});
 
-		// Model errors arrive as RUN_ERROR events in the stream, after the 200.
 		return toServerSentEventsResponse(stream, {
 			abortController,
 			headers: CORS_HEADERS,
@@ -119,8 +113,6 @@ function errorResponse(error: string, status: number): Response {
 	return Response.json({ error }, { status, headers: CORS_HEADERS });
 }
 
-// Reads NEON_AI_GATEWAY_BASE_URL and NEON_AI_GATEWAY_TOKEN, which Neon injects
-// when aiGateway is enabled in neon.ts. Throws when either is missing.
 function createAdapter() {
 	try {
 		return neonText(MODEL);

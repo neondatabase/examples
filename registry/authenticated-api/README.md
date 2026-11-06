@@ -1,9 +1,9 @@
 # Authenticated API with Hono and Managed Better Auth
 
-A protected [Hono](https://hono.dev) API for a [Neon Function](https://neon.com/docs/compute/functions/overview). `GET /me` requires a [Managed Better Auth](https://neon.com/docs/auth/overview) JWT and returns the caller's identity. Requests without a valid token get `401`.
+This template is a protected [Hono](https://hono.dev) API that runs as a [Neon Function](https://neon.com/docs/compute/functions/overview). `GET /me` requires a [Managed Better Auth](https://neon.com/docs/auth/overview) JWT and returns the caller's identity. A request without a valid token gets `401`.
 
 - [Hono](https://hono.dev) handles routing, CORS, and JSON responses. [`jose`](https://github.com/panva/jose) verifies the EdDSA-signed token against the branch's JWKS and checks the issuer and audience.
-- `NEON_AUTH_BASE_URL` and `NEON_AUTH_JWKS_URL` are injected by Neon when Managed Better Auth is enabled on the branch.
+- Neon injects `NEON_AUTH_BASE_URL` and `NEON_AUTH_JWKS_URL` when you enable Managed Better Auth on the branch.
 
 ## Scaffold it
 
@@ -20,7 +20,7 @@ The CLI writes `functions/authapi/index.ts`, declares `authapi` in `neon.ts`, an
 
 ## Enable Managed Better Auth
 
-The scaffolded `neon.ts` sets `auth: false` by default. Change it to `true`, then apply the policy:
+The scaffolded `neon.ts` sets `auth: false` by default, so change it to `true` and then apply the policy:
 
 ```ts
 import { defineConfig } from "@neon/config/v1";
@@ -48,7 +48,7 @@ neon deploy
 neon dev
 ```
 
-The root endpoint is public. Without a token, `GET /me` returns `401`:
+The root endpoint is public, but `GET /me` returns `401` without a token:
 
 ```bash
 curl -i http://localhost:8787/
@@ -84,14 +84,16 @@ curl http://localhost:8787/me \
 
 ## Routes
 
+<Operations>
+
 | Method | Path  | Auth | Result |
 | --- | --- | --- | --- |
-| `GET` | `/` | — | The API name and the protected route |
+| `GET` | `/` | None | The API name and the protected route |
 | `GET` | `/me` | Bearer JWT | The verified caller's `id`, `email`, and `name`, or `401` |
 
-The `/me` route is a simple example. In a real API, you would have more complex routes and business logic.
+</Operations>
 
-Use the verified `user.id` from the token to scope queries and writes. Never trust a user id supplied in a request body or query string.
+`/me` only returns the caller's identity. In the routes you add, scope queries and writes with the verified `user.id` from the token, and never trust a user id from a request body or query string.
 
 > [!NOTE]
-> CORS is open to every origin so a browser can call the function directly. In production, pass your app's domain to Hono's [`cors` middleware](https://hono.dev/docs/middleware/builtin/cors) instead, for example `cors({ origin: "https://example.com" })`. See [Neon Functions authentication](https://neon.com/docs/compute/functions/authentication#call-a-function-directly-from-the-client).
+> The function allows CORS from every origin, so a browser can call it directly. In production, pass your app's domain to Hono's [`cors` middleware](https://hono.dev/docs/middleware/builtin/cors) instead, for example `cors({ origin: "https://example.com" })`. See [Neon Functions authentication](https://neon.com/docs/compute/functions/authentication#call-a-function-directly-from-the-client).

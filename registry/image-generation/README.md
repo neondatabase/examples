@@ -1,6 +1,6 @@
 # AI image generation with Neon Storage
 
-A Neon Function that generates an image through [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview), stores the JPEG in [Neon Object Storage](https://neon.com/docs/storage/overview), and returns a presigned URL.
+This Neon Function generates an image through [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview), stores the JPEG in [Neon Object Storage](https://neon.com/docs/storage/overview), and returns a presigned URL.
 
 ## Scaffold it
 
@@ -22,7 +22,7 @@ neon config add ai-gateway
 neon config add bucket images
 ```
 
-Or add both to `neon.ts`:
+You can also add both to `neon.ts`:
 
 ```ts
 import { defineConfig } from "@neon/config/v1";
@@ -87,8 +87,8 @@ The presigned URL is valid for one hour. The bucket is private, so the object ha
 | --- | --- |
 | `prompt` | Required. A non-empty string up to 2,000 characters. |
 
-Only `POST /` is supported.
+The function only accepts `POST /`.
 
-This template does not authenticate requests, so anyone with the function URL can call it. Add auth before exposing a paid endpoint.
+This template doesn't authenticate requests, so anyone with the function URL can call it and spend AI Gateway credits. Add authentication before you expose it.
 
-The template uses `gpt-5-mini` to call the `gpt-image-2` image-generation tool at 1024x1024, JPEG, low quality. Change `MODEL`, `IMAGE_MODEL`, or the tool options in `functions/index.ts` to tune cost and output.
+The template uses `gpt-5-mini` to call the `gpt-image-2` image-generation tool, which makes a 1024x1024 low-quality JPEG. Change `MODEL`, `IMAGE_MODEL`, or the tool options in `functions/index.ts` to tune cost and output.
