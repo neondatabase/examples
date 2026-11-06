@@ -87,7 +87,8 @@ test("reject unexpected gateway vector shapes before writing", () => {
     () => validateVector([...Array(1023).fill(0), Infinity]),
     /invalid/,
   );
-  assert.equal(validateVector(Array(1024).fill(0)).length, 1024);
+  assert.throws(() => validateVector(Array(1024).fill(0)), /invalid/);
+  assert.equal(validateVector([1, ...Array(1023).fill(0)]).length, 1024);
 });
 
 test("document whitespace preserves indented Markdown code; queries still trim", () => {

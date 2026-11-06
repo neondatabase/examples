@@ -299,7 +299,7 @@ templates:
       subdir: with-trpc
   - id: hybrid-search-api
     title: "Hybrid search API"
-    description: "A document API that combines vector search and full-text search with BM25 ranking on Neon Functions, backed by Lakebase Search and AI Gateway embeddings."
+    description: "A document API that combines vector search and BM25-ranked full-text search on Neon Functions, backed by Lakebase Search and AI Gateway embeddings."
     tools:
       - Lakebase Search
       - Hono
