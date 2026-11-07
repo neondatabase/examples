@@ -30,6 +30,14 @@
 			"categories": ["first-party", "ai"]
 		},
 		{
+			"id": "jev-triage",
+			"provider": "Neon",
+			"title": "Support triage with Jev",
+			"description": "Route support messages by topic, urgency, churn risk, and spam with calibrated probabilities from the Jev decision model on Neon AI Gateway.",
+			"path": "jev-triage/template.json",
+			"categories": ["first-party", "ai"]
+		},
+		{
 			"id": "mcp-postgres",
 			"provider": "Neon",
 			"title": "MCP server backed by Postgres",
