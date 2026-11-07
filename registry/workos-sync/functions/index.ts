@@ -16,6 +16,14 @@ const ENVIRONMENT = "production";
 // WorkOS list requests per backfill or reconcile slice.
 const MAX_PAGES = 50;
 
+// Streams the scheduled reconcile routes leave out. A stream whose listing
+// alone needs more than MAX_PAGES pages is abandoned, reported `oversized`
+// in that response and in GET /status, and tried again by every fresh pass.
+// Name it here, and reconcile it on its own schedule from a host without a
+// time limit: `npx workos-sync-postgres reconcile --repair --streams <name>`
+// against the same DATABASE_URL.
+const RECONCILE_EXCLUDE: string[] = [];
+
 // The cursor carries the remaining events to the next tick.
 const MAX_EVENTS_PER_TICK = 2000;
 
@@ -28,7 +36,7 @@ const ROUTES = {
 		"Continue the reconcile pass in progress and repair drift; a no-op once complete. Schedule trigger, hourly.",
 	"POST /reconcile/fresh": "Start a new reconcile pass. Schedule trigger, weekly.",
 	"POST /webhook": "WorkOS webhook endpoint. A verified delivery polls now.",
-	"GET /status": "Per-stream counts, poll age, and lag. Send `Authorization: Bearer <WORKOS_SYNC_STATUS_TOKEN>`.",
+	"GET /status": "Per-stream counts, poll age, lag, and oversized streams. Send `Authorization: Bearer <WORKOS_SYNC_STATUS_TOKEN>`.",
 };
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 3 });
@@ -122,7 +130,9 @@ async function handle(request: Request): Promise<Response> {
 			const rejected = await rejectUnlessTrigger(request);
 			if (rejected) return rejected;
 			const resume = pathname === "/reconcile";
-			return Response.json(await getEngine().reconcile({ repair: true, resume, maxPages: MAX_PAGES }));
+			return Response.json(
+				await getEngine().reconcile({ repair: true, resume, maxPages: MAX_PAGES, excludeStreams: RECONCILE_EXCLUDE }),
+			);
 		}
 
 		case "POST /webhook":
