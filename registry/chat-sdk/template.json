@@ -21,23 +21,28 @@
 	"environment": [
 		{
 			"name": "SLACK_BOT_TOKEN",
-			"description": "For /slack: the Bot User OAuth Token (xoxb-...) from your Slack app's OAuth & Permissions page. If you didn't scaffold /slack, delete this key from neon.ts."
+			"description": "For /slack: the Bot User OAuth Token (xoxb-...) from your Slack app's OAuth & Permissions page. If you didn't scaffold /slack, delete this key from neon.ts.",
+			"required": true
 		},
 		{
 			"name": "SLACK_SIGNING_SECRET",
-			"description": "For /slack: the Signing Secret from your Slack app's Basic Information page; verifies that requests come from Slack. If you didn't scaffold /slack, delete this key from neon.ts."
+			"description": "For /slack: the Signing Secret from your Slack app's Basic Information page; verifies that requests come from Slack. If you didn't scaffold /slack, delete this key from neon.ts.",
+			"required": true
 		},
 		{
 			"name": "TELEGRAM_BOT_TOKEN",
-			"description": "For /telegram: the bot token from @BotFather. If you didn't scaffold /telegram, delete this key from neon.ts."
+			"description": "For /telegram: the bot token from @BotFather. If you didn't scaffold /telegram, delete this key from neon.ts.",
+			"required": true
 		},
 		{
 			"name": "TELEGRAM_WEBHOOK_SECRET_TOKEN",
-			"description": "For /telegram: a random secret (letters, digits, _ and -, for example from openssl rand -hex 32) you also pass to setWebhook; verifies that requests come from Telegram. If you didn't scaffold /telegram, delete this key from neon.ts."
+			"description": "For /telegram: a random secret (letters, digits, _ and -, for example from openssl rand -hex 32) you also pass to setWebhook; verifies that requests come from Telegram. If you didn't scaffold /telegram, delete this key from neon.ts.",
+			"required": true
 		},
 		{
 			"name": "CHAT_WEB_TOKEN",
-			"description": "For /web: a random token (at least 32 characters, for example from openssl rand -hex 32) your backend sends as Authorization: Bearer <token>; required because Neon Function URLs are public. If you didn't scaffold /web, delete this key from neon.ts."
+			"description": "For /web: a random token (at least 32 characters, for example from openssl rand -hex 32) your backend sends as Authorization: Bearer <token>; required because Neon Function URLs are public. If you didn't scaffold /web, delete this key from neon.ts.",
+			"required": true
 		}
 	],
 	"operations": [

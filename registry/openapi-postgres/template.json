@@ -18,7 +18,8 @@
 	"environment": [
 		{
 			"name": "BOOKMARKS_API_TOKEN",
-			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) that callers send as Authorization: Bearer <token> on POST, PATCH, and DELETE. Required because Neon Function URLs are public."
+			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) that callers send as Authorization: Bearer <token> on POST, PATCH, and DELETE. Required because Neon Function URLs are public.",
+			"required": true
 		}
 	]
 }

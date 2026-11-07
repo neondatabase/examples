@@ -33,11 +33,7 @@ Create a Node.js project in Sentry and copy its DSN. Add it to `.env.local`:
 echo "SENTRY_DSN=https://examplePublicKey@o0.ingest.us.sentry.io/0" >> .env.local
 ```
 
-`neon deploy` requires every declared function variable to have a value, so `SENTRY_DSN` must be present in `.env.local`. To try the API without Sentry, set it to an empty value instead; the SDK stays disabled:
-
-```bash
-echo "SENTRY_DSN=" >> .env.local
-```
+`SENTRY_DSN` is declared `required: false`, so `neon deploy` and `neon dev` run without it and the SDK stays disabled. An empty value (`SENTRY_DSN=`) does the same, and removes a DSN that an earlier deploy set.
 
 ## Run locally
 

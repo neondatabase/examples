@@ -40,7 +40,7 @@ export default defineConfig({
     mcppostgres: {
       name: "MCP server backed by Postgres",
       source: "./functions/mcppostgres/index.ts",
-      env: { MCP_API_KEY: process.env.MCP_API_KEY! },
+      env: { MCP_API_KEY: { value: process.env.MCP_API_KEY, required: true } },
     },
   },
 });
