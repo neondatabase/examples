@@ -51,9 +51,9 @@ export default defineConfig({
       name: "Mirror WorkOS data into Postgres",
       source: "./functions/workossync/index.ts",
       env: {
-        WORKOS_API_KEY: process.env.WORKOS_API_KEY!,
-        WORKOS_WEBHOOK_SECRET: process.env.WORKOS_WEBHOOK_SECRET!,
-        WORKOS_SYNC_STATUS_TOKEN: process.env.WORKOS_SYNC_STATUS_TOKEN!,
+        WORKOS_API_KEY: { value: process.env.WORKOS_API_KEY, required: true },
+        WORKOS_WEBHOOK_SECRET: { value: process.env.WORKOS_WEBHOOK_SECRET, required: true },
+        WORKOS_SYNC_STATUS_TOKEN: { value: process.env.WORKOS_SYNC_STATUS_TOKEN, required: true },
       },
     },
   },

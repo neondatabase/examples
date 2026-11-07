@@ -10,11 +10,13 @@
 	"environment": [
 		{
 			"name": "CONTEXT_DEV_API_KEY",
-			"description": "Context.dev API key with data:execute access. Keep this server-side."
+			"description": "Context.dev API key with data:execute access. Keep this server-side.",
+			"required": true
 		},
 		{
 			"name": "CONTEXT_FUNCTION_TOKEN",
-			"description": "Random token (at least 32 characters) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public."
+			"description": "Random token (at least 32 characters) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public.",
+			"required": true
 		}
 	],
 	"operations": [
