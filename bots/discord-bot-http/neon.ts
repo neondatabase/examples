@@ -6,10 +6,10 @@ export default defineConfig({
       name: "Discord interactions",
       source: "./functions/discord.ts",
       env: {
-        DISCORD_PUBLIC_KEY: process.env.DISCORD_PUBLIC_KEY!,
-        DISCORD_APPLICATION_ID: process.env.DISCORD_APPLICATION_ID!,
-        DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN!,
-        ...(process.env.DISCORD_GUILD_ID ? { DISCORD_GUILD_ID: process.env.DISCORD_GUILD_ID } : {}),
+        DISCORD_PUBLIC_KEY: { value: process.env.DISCORD_PUBLIC_KEY, required: true },
+        DISCORD_APPLICATION_ID: { value: process.env.DISCORD_APPLICATION_ID, required: true },
+        DISCORD_BOT_TOKEN: { value: process.env.DISCORD_BOT_TOKEN, required: true },
+        DISCORD_GUILD_ID: { value: process.env.DISCORD_GUILD_ID, required: false, onUndefined: "skip" },
       },
       dev: {
         port: 8787,

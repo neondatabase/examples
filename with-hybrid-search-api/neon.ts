@@ -11,7 +11,7 @@ export default defineConfig({
       name: "Hybrid search API",
       source: "src/index.ts",
       env: {
-        SEARCH_API_KEY: process.env.SEARCH_API_KEY!,
+        SEARCH_API_KEY: { value: process.env.SEARCH_API_KEY, required: true },
       },
       dev: { port: 8787 },
     },

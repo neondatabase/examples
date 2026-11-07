@@ -6,8 +6,8 @@ export default defineConfig({
       name: "Telegram webhook",
       source: "./functions/telegram.ts",
       env: {
-        TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN!,
-        TELEGRAM_WEBHOOK_SECRET: process.env.TELEGRAM_WEBHOOK_SECRET!,
+        TELEGRAM_BOT_TOKEN: { value: process.env.TELEGRAM_BOT_TOKEN, required: true },
+        TELEGRAM_WEBHOOK_SECRET: { value: process.env.TELEGRAM_WEBHOOK_SECRET, required: true },
       },
       dev: {
         port: 8787,
