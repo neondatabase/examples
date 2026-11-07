@@ -4,7 +4,7 @@
 	"provider": "Neon",
 	"title": "Support triage with Jev",
 	"description": "Route support messages by topic, urgency, churn risk, and spam with calibrated probabilities from the Jev decision model on Neon AI Gateway.",
-	"categories": ["first-party", "ai"],
+	"categories": ["ai"],
 	"layout": "router",
 	"dependencies": [
 		"@neon/ai-sdk-provider@1.3.1",

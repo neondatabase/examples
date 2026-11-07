@@ -35,11 +35,10 @@ website deploy. The next `functions new` then sees the new files in the tarball.
 
 ## Categories
 
-Each index entry has a `categories` array, mirrored in its `template.json`. Listings such as the
-templates page on neon.com use it to filter and group; the CLI ignores it. A template can carry
-several: source labels that say who wrote it, plus topical labels.
+Categories are split across the two files, and neither repeats the other. Listings such as the
+templates page on neon.com combine them to filter and group; the CLI ignores both.
 
-Every template has at least one source label:
+The index entry in `registry.json` has exactly one source label that says who wrote the template:
 
 | Category | Meaning |
 | --- | --- |
@@ -47,7 +46,8 @@ Every template has at least one source label:
 | `partner` | Written by a company Neon works with closely, such as Mastra, TanStack, Context.dev, or WorkOS. |
 | `community` | Written by someone outside Neon who is not a partner. |
 
-Topical labels:
+Each `template.json` has the topical labels, as many as fit. Leave `categories` out of
+`template.json` when none apply, as `basic` does:
 
 | Category | Meaning |
 | --- | --- |
@@ -65,8 +65,8 @@ Topical labels:
 | `websocket` | Live updates over a WebSocket connection. |
 | `workflow` | Durable or background job orchestration. |
 
-Categories are lowercase hyphenated strings, not a fixed list. To add one, use it in the entry and
-add a row here.
+Topical labels are lowercase hyphenated strings, not a fixed list. To add one, use it in a
+`template.json` and add a row here.
 
 ## Trying a change
 

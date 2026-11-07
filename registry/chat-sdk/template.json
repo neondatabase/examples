@@ -4,7 +4,7 @@
 	"provider": "Neon",
 	"title": "Chat SDK bot for Slack, Telegram, and the web",
 	"description": "A Vercel Chat SDK bot that answers on Slack, Telegram, and useChat, streams replies from AI Gateway, and keeps conversations, subscriptions, and locks in Neon Postgres.",
-	"categories": ["first-party", "bots", "ai"],
+	"categories": ["bots", "ai"],
 	"layout": "router",
 	"dependencies": [
 		"@chat-adapter/slack@4.43.0",

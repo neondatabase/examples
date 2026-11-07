@@ -31,7 +31,7 @@
 							"maxLength": 64,
 							"pattern": "^[a-z0-9][a-z0-9-]*$"
 						},
-						"description": "Display-only listing labels. A template can belong to several, e.g. first-party and bots. The CLI never fetches them."
+						"description": "Display-only source label: first-party, partner, or community. Topical labels such as ai or bots go in the template's template.json. The CLI ignores them."
 					},
 					"path": {
 						"type": "string",

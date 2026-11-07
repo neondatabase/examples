@@ -4,7 +4,7 @@
 	"provider": "Neon",
 	"title": "Telegram AI chat bot",
 	"description": "Telegram bot with Neon Functions, AI Gateway, and Postgres for message storage.",
-	"categories": ["first-party", "bots"],
+	"categories": ["bots"],
 	"layout": "router",
 	"dependencies": [
 		"@neon/ai-sdk-provider@1.1.0",

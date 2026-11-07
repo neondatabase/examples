@@ -4,7 +4,7 @@
 	"provider": "AI Inbx",
 	"title": "Send emails with AI Inbx",
 	"description": "Send email from your domains or connected Gmail and Outlook mailboxes, and follow up in the same thread, schedule it, or draft it for review.",
-	"categories": ["community", "email"],
+	"categories": ["email"],
 	"layout": "router",
 	"dependencies": ["aiinbx@3.0.1"],
 	"environment": [
