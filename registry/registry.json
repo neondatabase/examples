@@ -17,7 +17,7 @@
 			"title": "Context.dev web data",
 			"description": "Search the web and news, read pages, answer questions, and retrieve brand data with Context.dev.",
 			"path": "context-dev/template.json",
-			"categories": ["ai-infrastructure"],
+			"categories": ["partner", "ai-infrastructure"],
 			"logo": "https://www.context.dev/logo.svg",
 			"website": "https://www.context.dev/"
 		},
@@ -83,7 +83,7 @@
 			"title": "TanStack AI on AI Gateway",
 			"description": "Streaming chat with tool calling, structured extraction, and summaries with TanStack AI on Neon AI Gateway.",
 			"path": "tanstack-ai/template.json",
-			"categories": ["ai"],
+			"categories": ["partner", "ai"],
 			"logo": "https://cdn.jsdelivr.net/gh/TanStack/tanstack.com@f24f323ba7ef981c7e1914e8aef1f161999da908/public/images/logos/logo-color-100.png",
 			"website": "https://tanstack.com/ai"
 		},
@@ -125,7 +125,7 @@
 			"title": "Mastra agent with Postgres memory",
 			"description": "A Mastra agent that remembers users in Neon Postgres, streams chat for useChat on AI Gateway, and runs a resumable human-in-the-loop review workflow.",
 			"path": "mastra/template.json",
-			"categories": ["ai", "agents"],
+			"categories": ["partner", "ai", "agents"],
 			"logo": "https://svgl.app/library/mastra-icon-light.svg",
 			"logoDark": "https://svgl.app/library/mastra-icon-dark.svg",
 			"website": "https://mastra.ai/"
@@ -168,7 +168,7 @@
 			"title": "Send emails with AI Inbx",
 			"description": "Send email from your domains or connected Gmail and Outlook mailboxes, and follow up in the same thread, schedule it, or draft it for review.",
 			"path": "aiinbx/template.json",
-			"categories": ["email"],
+			"categories": ["community", "email"],
 			"logo": "https://aiinbx.com/logo-dark.svg",
 			"logoDark": "https://aiinbx.com/logo-light.svg",
 			"website": "https://aiinbx.com/"
@@ -187,7 +187,7 @@
 			"title": "Mirror WorkOS data into Postgres",
 			"description": "Backfill, tail the Events API, and reconcile drift on a cron, with a WorkOS webhook nudge. Join users, organizations, and memberships in SQL.",
 			"path": "workos-sync/template.json",
-			"categories": ["sync"],
+			"categories": ["community", "sync"],
 			"logo": "https://avatars.githubusercontent.com/u/47638084?v=4",
 			"website": "https://workos.com/"
 		},

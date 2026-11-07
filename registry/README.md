@@ -37,11 +37,20 @@ website deploy. The next `functions new` then sees the new files in the tarball.
 
 Each index entry has a `categories` array, mirrored in its `template.json`. Listings such as the
 templates page on neon.com use it to filter and group; the CLI ignores it. A template can carry
-several: Neon-maintained ones have `first-party` plus a topical label.
+several: source labels that say who wrote it, plus topical labels.
+
+Every template has at least one source label:
 
 | Category | Meaning |
 | --- | --- |
-| `first-party` | Maintained by Neon. |
+| `first-party` | Written and maintained by Neon (`provider` is `Neon`), even when it wraps a third-party SDK. |
+| `partner` | Written by a company Neon works with closely, such as Mastra, TanStack, or Context.dev. |
+| `community` | Written by someone outside Neon who is not a partner. |
+
+Topical labels:
+
+| Category | Meaning |
+| --- | --- |
 | `agents` | Multi-turn agent framework or agent runtime. |
 | `ai` | Uses AI Gateway or an AI framework. |
 | `ai-infrastructure` | Third-party AI data or tooling provider. |

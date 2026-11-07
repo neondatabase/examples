@@ -4,7 +4,7 @@
 	"provider": "WorkOS",
 	"title": "Mirror WorkOS data into Postgres",
 	"description": "Backfill, tail the Events API, and reconcile drift on a cron, with a WorkOS webhook nudge. Join users, organizations, and memberships in SQL.",
-	"categories": ["sync"],
+	"categories": ["community", "sync"],
 	"layout": "router",
 	"dependencies": [
 		"@neon/functions@0.11.0",
