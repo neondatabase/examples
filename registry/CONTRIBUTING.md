@@ -78,7 +78,7 @@ a sibling from the template folder.
 | --- | --- | --- |
 | `id` | yes | Lowercase letters, digits and hyphens, starting with a letter or digit. Must match the index entry's `id`; use it as the folder name too. |
 | `title`, `description` | yes | Non-empty. |
-| `categories` | no | Topical listing labels (`lowercase-with-hyphens`), such as `ai` or `email`. The source label (`first-party`, `partner`, `community`) goes in the index entry, not here. Display-only; the CLI does not use it to scaffold. See [Categories](README.md#categories). |
+| `categories` | no | Topical listing labels (`lowercase-with-hyphens`), such as `ai` or `email`. The schema allows leaving it out, but every template in this registry has at least one; reuse an existing label where it fits. The source label (`first-party`, `partner`, `community`) goes in the index entry, not here. Display-only; the CLI does not use it to scaffold. See [Categories](README.md#categories). |
 | `provider` | no | Who built and maintains the template, shown in listings. Defaults to `Neon`. Use `Neon` for templates Neon writes, even when they wrap a third-party SDK, and give the index entry the `first-party` category. Name another company only when that company wrote the template, and give the index entry `partner` if Neon works with that company closely, otherwise `community`. |
 | `layout` | yes | `router` or `separate`; see below. |
 | `dependencies` | no | Exact `name@version` pins, scoped packages included. No ranges, no `latest`. The version a reviewer approved is the version that gets installed. |
@@ -216,6 +216,8 @@ A template that passes the schema but fails the commands above is not ready.
       `environment`, and no secret or default key is hard-coded.
 - [ ] No network calls at import time, and no telemetry the user didn't ask for.
 - [ ] Recommended operations are the ones most users want on day one.
+- [ ] The index entry has one source label, and `template.json` has at least one topical label
+      from the [categories table](README.md#categories).
 
 ## Changing the schema
 

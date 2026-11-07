@@ -4,6 +4,7 @@
 	"provider": "Neon",
 	"title": "Basic function",
 	"description": "A minimal Neon Function with a JSON response.",
+	"categories": ["api"],
 	"layout": "router",
 	"dependencies": [],
 	"environment": []

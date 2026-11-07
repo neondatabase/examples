@@ -46,15 +46,15 @@ The index entry in `registry.json` has exactly one source label that says who wr
 | `partner` | Written by a company Neon works with closely, such as Mastra, TanStack, Context.dev, or WorkOS. |
 | `community` | Written by someone outside Neon who is not a partner. |
 
-Each `template.json` has the topical labels, as many as fit. Leave `categories` out of
-`template.json` when none apply, as `basic` does:
+Each `template.json` has at least one topical label, and more when several fit. Reuse a label from
+this table before adding a new one:
 
 | Category | Meaning |
 | --- | --- |
 | `agents` | Multi-turn agent framework or agent runtime. |
 | `ai` | Uses AI Gateway or an AI framework. |
 | `ai-infrastructure` | Third-party AI data or tooling provider. |
-| `api` | HTTP API backed by Postgres. |
+| `api` | HTTP API, with or without Postgres. |
 | `auth` | Authentication or access control. |
 | `bots` | Chat or messaging bot. |
 | `email` | Transactional or marketing email. |
@@ -65,8 +65,8 @@ Each `template.json` has the topical labels, as many as fit. Leave `categories` 
 | `websocket` | Live updates over a WebSocket connection. |
 | `workflow` | Durable or background job orchestration. |
 
-Topical labels are lowercase hyphenated strings, not a fixed list. To add one, use it in a
-`template.json` and add a row here.
+Topical labels are lowercase hyphenated strings, not a fixed list. Add one only when no existing
+label fits: use it in a `template.json` and add a row here.
 
 ## Trying a change
 
