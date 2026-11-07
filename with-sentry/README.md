@@ -49,7 +49,7 @@ neon deploy --env .env
 neon functions get withsentry   # invocation_url
 ```
 
-A missing `SENTRY_DSN` makes `defineConfig` throw. `SENTRY_DSN=` with no value uploads `""` and deploys with Sentry disabled.
+An unset or empty `SENTRY_DSN` deploys with Sentry disabled: the deploy removes the DSN from the Function.
 
 ## Try it
 

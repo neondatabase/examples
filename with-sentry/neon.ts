@@ -12,7 +12,7 @@ export default defineConfig({
           SENTRY_DSN: { value: process.env.SENTRY_DSN, required: false },
           SENTRY_RELEASE: { value: process.env.SENTRY_RELEASE, required: false, onUndefined: "skip" },
           SENTRY_TRACES_SAMPLE_RATE: {
-            value: process.env.SENTRY_TRACES_SAMPLE_RATE ?? "1",
+            value: process.env.SENTRY_TRACES_SAMPLE_RATE || "1",
             required: true,
           },
           PRODUCTION_BRANCH: {
