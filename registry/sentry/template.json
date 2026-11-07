@@ -4,7 +4,7 @@
 	"provider": "Neon",
 	"title": "Sentry-instrumented API",
 	"description": "Errors, structured logs, and request traces for a Hono API on Neon Functions.",
-	"categories": ["first-party", "observability"],
+	"categories": ["observability"],
 	"layout": "router",
 	"dependencies": ["@sentry/node@11.10.0", "hono@4.13.16"],
 	"environment": [

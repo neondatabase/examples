@@ -4,7 +4,7 @@
 	"provider": "Neon",
 	"title": "Paid API with x402 and Hono",
 	"description": "Charge per request in testnet USDC on Base Sepolia with x402, and keep a payment ledger in Lakebase Postgres.",
-	"categories": ["first-party", "api", "payments"],
+	"categories": ["api", "payments"],
 	"layout": "router",
 	"dependencies": [
 		"@neon/functions@0.11.0",

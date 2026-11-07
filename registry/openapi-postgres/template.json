@@ -4,7 +4,7 @@
 	"provider": "Neon",
 	"title": "CRUD API with OpenAPI and Postgres",
 	"description": "A typed CRUD API whose Zod schemas validate requests and generate OpenAPI 3.1 docs with Swagger UI, backed by Lakebase Postgres.",
-	"categories": ["first-party", "api"],
+	"categories": ["api"],
 	"layout": "router",
 	"dependencies": [
 		"@hono/swagger-ui@0.6.2",

@@ -35,17 +35,26 @@ website deploy. The next `functions new` then sees the new files in the tarball.
 
 ## Categories
 
-Each index entry has a `categories` array, mirrored in its `template.json`. Listings such as the
-templates page on neon.com use it to filter and group; the CLI ignores it. A template can carry
-several: Neon-maintained ones have `first-party` plus a topical label.
+Categories are split across the two files, and neither repeats the other. Listings such as the
+templates page on neon.com combine them to filter and group; the CLI ignores both.
+
+The index entry in `registry.json` has exactly one source label that says who wrote the template:
 
 | Category | Meaning |
 | --- | --- |
-| `first-party` | Maintained by Neon. |
+| `first-party` | Written and maintained by Neon (`provider` is `Neon`), even when it wraps a third-party SDK. |
+| `partner` | Written by a company Neon works with closely, such as Mastra, TanStack, Context.dev, or WorkOS. |
+| `community` | Written by someone outside Neon who is not a partner. |
+
+Each `template.json` has at least one topical label, and more when several fit. Reuse a label from
+this table before adding a new one:
+
+| Category | Meaning |
+| --- | --- |
 | `agents` | Multi-turn agent framework or agent runtime. |
 | `ai` | Uses AI Gateway or an AI framework. |
 | `ai-infrastructure` | Third-party AI data or tooling provider. |
-| `api` | HTTP API backed by Postgres. |
+| `api` | HTTP API, with or without Postgres. |
 | `auth` | Authentication or access control. |
 | `bots` | Chat or messaging bot. |
 | `email` | Transactional or marketing email. |
@@ -56,8 +65,8 @@ several: Neon-maintained ones have `first-party` plus a topical label.
 | `websocket` | Live updates over a WebSocket connection. |
 | `workflow` | Durable or background job orchestration. |
 
-Categories are lowercase hyphenated strings, not a fixed list. To add one, use it in the entry and
-add a row here.
+Topical labels are lowercase hyphenated strings, not a fixed list. Add one only when no existing
+label fits: use it in a `template.json` and add a row here.
 
 ## Trying a change
 

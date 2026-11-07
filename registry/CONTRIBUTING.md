@@ -78,8 +78,8 @@ a sibling from the template folder.
 | --- | --- | --- |
 | `id` | yes | Lowercase letters, digits and hyphens, starting with a letter or digit. Must match the index entry's `id`; use it as the folder name too. |
 | `title`, `description` | yes | Non-empty. |
-| `categories` | no | Array of listing labels (`lowercase-with-hyphens`). Should match the index entry. Display-only; the CLI does not use it to scaffold. |
-| `provider` | no | Who built and maintains the template, shown in listings. Defaults to `Neon`. Use `Neon` and add the `first-party` category for templates Neon writes, even when they wrap a third-party SDK. Name another company only when that company wrote the template. |
+| `categories` | no | Topical listing labels (`lowercase-with-hyphens`), such as `ai` or `email`. The schema allows leaving it out, but every template in this registry has at least one; reuse an existing label where it fits. The source label (`first-party`, `partner`, `community`) goes in the index entry, not here. Display-only; the CLI does not use it to scaffold. See [Categories](README.md#categories). |
+| `provider` | no | Who built and maintains the template, shown in listings. Defaults to `Neon`. Use `Neon` for templates Neon writes, even when they wrap a third-party SDK, and give the index entry the `first-party` category. Name another company only when that company wrote the template, and give the index entry `partner` if Neon works with that company closely, otherwise `community`. |
 | `layout` | yes | `router` or `separate`; see below. |
 | `dependencies` | no | Exact `name@version` pins, scoped packages included. No ranges, no `latest`. The version a reviewer approved is the version that gets installed. |
 | `environment` | no | `UPPER_SNAKE` names, each with a description. The CLI declares each one on every scaffolded function in `neon.ts` and adds it, with the description as a comment, to the project's `.env.example`. Write the description for someone filling that file in. |
@@ -119,21 +119,22 @@ Append to `templates` in `registry.json`:
 	"title": "Send email with SendGrid",
 	"description": "Send transactional email through the SendGrid v3 API.",
 	"path": "sendgrid/template.json",
-	"categories": ["email"],
+	"categories": ["community"],
 	"logo": "https://example.com/sendgrid.svg",
 	"website": "https://example.com/"
 }
 ```
 
-`id`, `title`, `description`, and `categories` should match `template.json`. `categories` is a
-required array of lowercase hyphenated strings you can change without a schema edit (`first-party`,
-`ai`, `bots`, `ai-infrastructure`, and so on). A template can belong to several; listings can gate
-on a value such as `first-party`. `logo`, `logoDark`, and `website` are optional display metadata:
-absolute `https://` URLs that the CLI never fetches or writes. The templates page uses them for the
-Built by block; omit them on first-party templates so listings default to Neon, even when the
-template wraps a third-party SDK. Set them only when another company wrote the template. Set
-`logoDark` when `logo` is dark on a transparent background; listings show it in dark mode and fall
-back to `logo` without it.
+`id`, `title`, `description`, and `provider` should match `template.json`. `categories` is required
+here and holds exactly one source label: `first-party` when Neon wrote the template, `partner` when
+a company Neon works with closely wrote it, and `community` otherwise. Topical labels go in
+`template.json` and are not repeated here; listings combine the two. The labels are defined in
+[README.md](README.md#categories). `logo`, `logoDark`, and `website` are optional
+display metadata: absolute `https://` URLs that the CLI never fetches or writes. The templates page
+uses them for the Built by block; omit them on first-party templates so listings default to Neon,
+even when the template wraps a third-party SDK. Set them only when another company wrote the
+template. Set `logoDark` when `logo` is dark on a transparent background; listings show it in dark
+mode and fall back to `logo` without it.
 
 An entry that fails validation is dropped from the listing without an error, so check that your
 template shows up (see below). Do not add generated archives. The CLI builds what it needs from
@@ -215,6 +216,8 @@ A template that passes the schema but fails the commands above is not ready.
       `environment`, and no secret or default key is hard-coded.
 - [ ] No network calls at import time, and no telemetry the user didn't ask for.
 - [ ] Recommended operations are the ones most users want on day one.
+- [ ] The index entry has one source label, and `template.json` has at least one topical label
+      from the [categories table](README.md#categories).
 
 ## Changing the schema
 
