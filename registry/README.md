@@ -44,7 +44,7 @@ Every template has at least one source label:
 | Category | Meaning |
 | --- | --- |
 | `first-party` | Written and maintained by Neon (`provider` is `Neon`), even when it wraps a third-party SDK. |
-| `partner` | Written by a company Neon works with closely, such as Mastra, TanStack, or Context.dev. |
+| `partner` | Written by a company Neon works with closely, such as Mastra, TanStack, Context.dev, or WorkOS. |
 | `community` | Written by someone outside Neon who is not a partner. |
 
 Topical labels:

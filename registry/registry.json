@@ -187,7 +187,7 @@
 			"title": "Mirror WorkOS data into Postgres",
 			"description": "Backfill, tail the Events API, and reconcile drift on a cron, with a WorkOS webhook nudge. Join users, organizations, and memberships in SQL.",
 			"path": "workos-sync/template.json",
-			"categories": ["community", "sync"],
+			"categories": ["partner", "sync"],
 			"logo": "https://avatars.githubusercontent.com/u/47638084?v=4",
 			"website": "https://workos.com/"
 		},
