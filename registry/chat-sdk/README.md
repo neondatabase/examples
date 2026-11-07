@@ -47,7 +47,7 @@ neon config add ai-gateway
 
 You can also set `aiGateway: true` in `neon.ts`. AI Gateway requires a paid Neon plan with prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started).
 
-Set up the platforms you scaffolded as described below, then deploy. The first deploy provisions the gateway and pulls `DATABASE_URL`, `NEON_AI_GATEWAY_BASE_URL`, `NEON_AI_GATEWAY_TOKEN`, and the function's URL (`NEON_FUNCTION_CHATSDK_BASE_URL`) into `.env.local`:
+Set up the platforms you scaffolded as described below, then deploy. The first deploy provisions the gateway and pulls `DATABASE_URL`, `NEON_AI_GATEWAY_BASE_URL`, `NEON_AI_GATEWAY_TOKEN`, `NEON_BRANCH_ID`, and `NEON_FUNCTION_HOST_SUFFIX` into `.env.local`. `functionBaseUrl("chatsdk")` from `@neon/env` builds the function's URL from the last two:
 
 ```bash
 neon deploy --env .env.local
@@ -146,11 +146,13 @@ Keep the token on your server and call `/web` from a backend route that knows wh
 
 ```ts
 // app/api/chat/route.ts
+import { functionBaseUrl } from "@neon/env";
+
 export async function POST(request: Request) {
   const userId = await getSignedInUserId(request); // your auth
   if (!userId) return new Response("Unauthorized", { status: 401 });
 
-  return fetch(`${process.env.NEON_FUNCTION_CHATSDK_BASE_URL}/web`, {
+  return fetch(`${functionBaseUrl("chatsdk")}/web`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${process.env.CHAT_WEB_TOKEN}`,
