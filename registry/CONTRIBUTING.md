@@ -82,7 +82,7 @@ a sibling from the template folder.
 | `provider` | no | Who built and maintains the template, shown in listings. Defaults to `Neon`. Use `Neon` for templates Neon writes, even when they wrap a third-party SDK, and give the index entry the `first-party` category. Name another company only when that company wrote the template, and give the index entry `partner` if Neon works with that company closely, otherwise `community`. |
 | `layout` | yes | `router` or `separate`; see below. |
 | `dependencies` | no | Exact `name@version` pins, scoped packages included. No ranges, no `latest`. The version a reviewer approved is the version that gets installed. |
-| `environment` | no | `UPPER_SNAKE` names, each with a description. The CLI declares each one on every scaffolded function in `neon.ts` and adds it, with the description as a comment, to the project's `.env.example`. Write the description for someone filling that file in. |
+| `environment` | no | `UPPER_SNAKE` names, each with a description and an optional `required`. The CLI declares each one on every scaffolded function in `neon.ts` as `{ value: process.env.<NAME>, required }` and adds it, with the description as a comment, to the project's `.env.example`. Write the description for someone filling that file in. |
 | `operations` | no | 1-40 entries. Omit them for a single-module template. |
 
 Each operation needs:
@@ -107,6 +107,18 @@ A `separate` template scaffolds one Neon function per selected operation, each u
 
 If you omit `operations`, the template ships exactly one module at `functions/index.ts`, which the
 CLI scaffolds as `index.ts`. Set `layout` to `router`.
+
+### `required`
+
+Set `required` on each `environment` entry to say when the variable must be set. The CLI copies it into the declaration in `neon.ts`:
+
+| `required` | Unset on `neon deploy` | Unset in `neon dev` |
+| --- | --- | --- |
+| `true` (the default) | fails before any change | fails before any function starts |
+| `"default-branch"` | fails on the project's default branch; left out of the deployment elsewhere | runs without it |
+| `false` | left out of the deployment | runs without it |
+
+Use `false` only when the module handles the variable being unset, for example an SDK that stays disabled without its key. `neon` 9.3.0 and later write `required`; older versions ignore it and write `process.env.<NAME>!`.
 
 ### 3. Add the index entry
 

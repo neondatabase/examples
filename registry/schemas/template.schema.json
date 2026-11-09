@@ -44,7 +44,11 @@
 				"additionalProperties": false,
 				"properties": {
 					"name": { "type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$" },
-					"description": { "type": "string" }
+					"description": { "type": "string" },
+					"required": {
+						"description": "Written as the variable's required in neon.ts. true (the default) fails neon deploy and neon dev while it is unset; false lets both run without it; \"default-branch\" requires it only when deploying the project's default branch.",
+						"oneOf": [{ "type": "boolean" }, { "const": "default-branch" }]
+					}
 				}
 			}
 		},
