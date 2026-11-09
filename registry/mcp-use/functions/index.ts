@@ -1,4 +1,3 @@
-// Adapted from mcp-use/mcp-use#2988 (Apache-2.0), by Manufact.
 import { timingSafeEqual } from "node:crypto";
 import { and, eq, gte, ilike, lt, or } from "drizzle-orm";
 import { z } from "zod";
