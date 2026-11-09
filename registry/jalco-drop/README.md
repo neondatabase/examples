@@ -100,5 +100,6 @@ neon functions get jalcodrop
 
 ## Notes
 
+- Neon caps a request body at 10 MB, so that is the largest single drop.
 - Neon Functions have no headless browser, so link previews use a summary card instead of a rendered image.
 - The CLI (`curl -fsSL <your-url>/cli -o jalco-drop && chmod +x jalco-drop`) uploads folders, Scrawl captures and Superwhisper notes, and `npx skills add jal-co/jalco-drop` gives your coding agent the same abilities. See the [docs](https://drop.justinlevine.me).
