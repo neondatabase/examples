@@ -1,0 +1,56 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "jalco-drop",
+	"provider": "jalco-drop",
+	"title": "Self-hosted file transfer with jalco-drop",
+	"description": "Share files, folders, pastes and screen recordings as links that open properly, stored in Neon Object Storage. Agents can upload and read them too.",
+	"categories": [
+		"storage"
+	],
+	"layout": "router",
+	"dependencies": [
+		"jalco-drop@1.2.0"
+	],
+	"environment": [
+		{
+			"name": "ADMIN_TOKEN",
+			"description": "Long random string (for example from openssl rand -base64 32) that signs in to /admin and the upload API. Keep it in a password manager.",
+			"required": true
+		},
+		{
+			"name": "OWNER_NAME",
+			"description": "Name shown as \"<name> sent you\" on shared links. Defaults to Someone; you can also change it later under Settings in /admin.",
+			"required": false
+		},
+		{
+			"name": "SITE_NAME",
+			"description": "Site name shown in the interface. Defaults to jalco-drop.",
+			"required": false
+		},
+		{
+			"name": "ACCENT_COLOR",
+			"description": "Accent colour as a hex value such as #ff4f00.",
+			"required": false
+		},
+		{
+			"name": "CODE_THEME",
+			"description": "Code highlighting theme, such as pierre-dark, vesper or github-dark.",
+			"required": false
+		},
+		{
+			"name": "HOME_URL",
+			"description": "Where visitors to the bare URL are redirected. Defaults to https://www.google.com/.",
+			"required": false
+		},
+		{
+			"name": "DROPS_BUCKET",
+			"description": "Object Storage bucket for drops. Defaults to drops.",
+			"required": false
+		},
+		{
+			"name": "RATE_LIMIT",
+			"description": "Set to off to disable the 60-requests-a-minute limit per IP, for example in tests.",
+			"required": false
+		}
+	]
+}
