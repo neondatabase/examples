@@ -69,6 +69,7 @@ function asTextResult(payload: unknown, isError = false) {
 	};
 }
 
+// Disable SDK telemetry.
 process.env.MCP_USE_ANONYMIZED_TELEMETRY = "false";
 
 const server = new MCPServer({
