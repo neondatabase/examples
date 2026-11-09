@@ -1,0 +1,23 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "notra-geo-scan",
+	"provider": "Notra",
+	"title": "AI visibility scan with Notra",
+	"description": "Ask GPT, Claude, and Gemini the questions your buyers ask, then track how often they recommend your brand, at what position, and next to which competitors.",
+	"categories": ["ai", "api"],
+	"layout": "router",
+	"dependencies": [
+		"@neon/ai-sdk-provider@1.3.1",
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"ai@7.0.166",
+		"pg@8.23.1",
+		"zod@4.6.7"
+	],
+	"environment": [
+		{
+			"name": "GEO_SCAN_TOKEN",
+			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public."
+		}
+	]
+}

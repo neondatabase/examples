@@ -227,6 +227,16 @@
 			"logo": "https://manufact.com/branding/symbol.svg",
 			"logoDark": "https://manufact.com/branding/symbol-light.svg",
 			"website": "https://manufact.com/"
+		},
+		{
+			"id": "notra-geo-scan",
+			"provider": "Notra",
+			"title": "AI visibility scan with Notra",
+			"description": "Ask GPT, Claude, and Gemini the questions your buyers ask, then track how often they recommend your brand, at what position, and next to which competitors.",
+			"path": "notra-geo-scan/template.json",
+			"categories": ["partner"],
+			"logo": "https://avatars.githubusercontent.com/u/250950776?v=4",
+			"website": "https://www.usenotra.com/"
 		}
 	]
 }
