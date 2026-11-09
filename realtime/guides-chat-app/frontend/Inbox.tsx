@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function Inbox({ messagesCollection, channelId, userId }: Props) {
-  const { data, isReady, isError } = useCollectionQuery({
+  const { data, isReady, isLoadingError, isCrashed } = useCollectionQuery({
     query: (q) =>
       q
         .from({ message: messagesCollection })
@@ -43,7 +43,7 @@ export function Inbox({ messagesCollection, channelId, userId }: Props) {
     }
   }
 
-  if (isError) {
+  if (isLoadingError || isCrashed) {
     return <p role="alert">Couldn't sync messages</p>;
   }
 
