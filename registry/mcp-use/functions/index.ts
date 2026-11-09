@@ -69,8 +69,6 @@ function asTextResult(payload: unknown, isError = false) {
 	};
 }
 
-// Registry templates must not send unsolicited SDK telemetry. The SDK reads
-// this when it records usage, not at import, so setting it here is sufficient.
 process.env.MCP_USE_ANONYMIZED_TELEMETRY = "false";
 
 const server = new MCPServer({
