@@ -18,7 +18,8 @@
 	"environment": [
 		{
 			"name": "X402_EVM_ADDRESS",
-			"description": "EVM wallet address (0x...) on Base Sepolia that receives payments. The buyer needs Base Sepolia USDC."
+			"description": "EVM wallet address (0x...) on Base Sepolia that receives payments. The buyer needs Base Sepolia USDC.",
+			"required": true
 		}
 	]
 }

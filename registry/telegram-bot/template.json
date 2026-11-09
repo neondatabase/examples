@@ -16,11 +16,13 @@
 	"environment": [
 		{
 			"name": "TELEGRAM_BOT_TOKEN",
-			"description": "Bot token from @BotFather; used to reply to messages."
+			"description": "Bot token from @BotFather; used to reply to messages.",
+			"required": true
 		},
 		{
 			"name": "TELEGRAM_WEBHOOK_SECRET",
-			"description": "Random secret (letters, digits, _ and -) used to verify that incoming requests are from Telegram."
+			"description": "Random secret (letters, digits, _ and -) used to verify that incoming requests are from Telegram.",
+			"required": true
 		}
 	]
 }

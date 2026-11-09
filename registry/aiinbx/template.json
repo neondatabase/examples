@@ -10,11 +10,13 @@
 	"environment": [
 		{
 			"name": "AI_INBX_API_KEY",
-			"description": "API key from aiinbx.com/app with the sending scope. Keep this server-side."
+			"description": "API key from aiinbx.com/app with the sending scope. Keep this server-side.",
+			"required": true
 		},
 		{
 			"name": "AI_INBX_FUNCTION_TOKEN",
-			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public."
+			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public.",
+			"required": true
 		}
 	],
 	"operations": [

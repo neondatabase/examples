@@ -16,19 +16,23 @@
 	"environment": [
 		{
 			"name": "QSTASH_URL",
-			"description": "QStash endpoint, copied from the Quickstart section of the Upstash Console. It is region-specific and may differ from https://qstash.upstash.io. Locally, use the URL printed by `npx @upstash/qstash-cli dev`."
+			"description": "QStash endpoint, copied from the Quickstart section of the Upstash Console. It is region-specific and may differ from https://qstash.upstash.io. Locally, use the URL printed by `npx @upstash/qstash-cli dev`.",
+			"required": true
 		},
 		{
 			"name": "QSTASH_TOKEN",
-			"description": "QStash token, copied from the Quickstart section of the Upstash Console. It is region-specific and must match QSTASH_URL. POST /api/jobs uses it to start workflow runs."
+			"description": "QStash token, copied from the Quickstart section of the Upstash Console. It is region-specific and must match QSTASH_URL. POST /api/jobs uses it to start workflow runs.",
+			"required": true
 		},
 		{
 			"name": "QSTASH_CURRENT_SIGNING_KEY",
-			"description": "Current signing key, copied from the Quickstart section of the Upstash Console. It must match QSTASH_URL's region. The workflow endpoint uses it to verify that requests come from QStash."
+			"description": "Current signing key, copied from the Quickstart section of the Upstash Console. It must match QSTASH_URL's region. The workflow endpoint uses it to verify that requests come from QStash.",
+			"required": true
 		},
 		{
 			"name": "QSTASH_NEXT_SIGNING_KEY",
-			"description": "Next signing key, copied from the Quickstart section of the Upstash Console. It must match QSTASH_URL's region and is used to verify requests during key rotation."
+			"description": "Next signing key, copied from the Quickstart section of the Upstash Console. It must match QSTASH_URL's region and is used to verify requests during key rotation.",
+			"required": true
 		}
 	]
 }

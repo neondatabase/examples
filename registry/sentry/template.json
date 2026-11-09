@@ -10,7 +10,8 @@
 	"environment": [
 		{
 			"name": "SENTRY_DSN",
-			"description": "DSN from the Sentry project settings. Leave it empty (SENTRY_DSN=) to keep the SDK disabled; the function still runs."
+			"description": "DSN from the Sentry project settings. Leave it empty (SENTRY_DSN=) to keep the SDK disabled; the function still runs.",
+			"required": false
 		}
 	]
 }

@@ -16,11 +16,13 @@
 	"environment": [
 		{
 			"name": "INNGEST_SIGNING_KEY",
-			"description": "Signing key from Inngest Cloud. Inngest uses it to sign requests to /api/inngest; find it under Apps > Sync new app."
+			"description": "Signing key from Inngest Cloud. Inngest uses it to sign requests to /api/inngest; find it under Apps > Sync new app.",
+			"required": true
 		},
 		{
 			"name": "INNGEST_EVENT_KEY",
-			"description": "Event key from Inngest Cloud. The function uses it to send app/job.created events; find it under Manage > Keys."
+			"description": "Event key from Inngest Cloud. The function uses it to send app/job.created events; find it under Manage > Keys.",
+			"required": true
 		}
 	]
 }
