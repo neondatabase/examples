@@ -1,4 +1,5 @@
 // Adapted from mcp-use/mcp-use#2988 (Apache-2.0), by Manufact.
+import { timingSafeEqual } from "node:crypto";
 import { and, eq, gte, ilike, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import { MCPServer } from "mcp-use";
@@ -69,7 +70,8 @@ function asTextResult(payload: unknown, isError = false) {
 	};
 }
 
-// Registry templates must not send unsolicited SDK telemetry.
+// Registry templates must not send unsolicited SDK telemetry. The SDK reads
+// this when it records usage, not at import, so setting it here is sufficient.
 process.env.MCP_USE_ANONYMIZED_TELEMETRY = "false";
 
 const server = new MCPServer({
@@ -220,11 +222,13 @@ server.tool(
 			),
 	},
 	async ({ query, from, to, limit }) => {
-		const where = query
+		// Escape LIKE wildcards so "%" and "_" match literally.
+		const pattern = query ? `%${query.replace(/[\\%_]/g, "\\$&")}%` : undefined;
+		const where = pattern
 			? or(
-					ilike(events.title, `%${query}%`),
-					ilike(events.location, `%${query}%`),
-					ilike(events.description, `%${query}%`),
+					ilike(events.title, pattern),
+					ilike(events.location, pattern),
+					ilike(events.description, pattern),
 				)
 			: undefined;
 		await ensureSchema();
@@ -248,16 +252,31 @@ server.get("/", (c) =>
 	c.text("Neon events MCP server — connect an MCP client to POST /mcp"),
 );
 
+const MIN_API_KEY_LENGTH = 32;
 const apiKey = process.env.MCP_API_KEY;
+
+/** Constant-time bearer token check; unequal lengths fail before comparing. */
+function isAuthorized(request: Request, expected: string): boolean {
+	const header = request.headers.get("authorization");
+	if (!header?.startsWith("Bearer ")) return false;
+
+	const provided = Buffer.from(header.slice("Bearer ".length));
+	const secret = Buffer.from(expected);
+	return provided.length === secret.length && timingSafeEqual(provided, secret);
+}
 
 /** Neon invokes this authenticated fetch handler directly. */
 export default {
 	async fetch(request: Request): Promise<Response> {
+		// A missing or weak key rejects every request, so it can't be used by accident.
+		if (!apiKey || apiKey.length < MIN_API_KEY_LENGTH) {
+			return Response.json(
+				{ error: "MCP server is not configured" },
+				{ status: 503 },
+			);
+		}
 		// Gate the whole server, including transport and inspector routes.
-		if (
-			!apiKey ||
-			request.headers.get("authorization") !== `Bearer ${apiKey}`
-		) {
+		if (!isAuthorized(request, apiKey)) {
 			return Response.json({ error: "Unauthorized" }, { status: 401 });
 		}
 		return server.fetch(request);

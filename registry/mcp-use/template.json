@@ -7,7 +7,6 @@
 	"categories": ["mcp"],
 	"layout": "router",
 	"dependencies": [
-		"@mcp-use/client@2.4.5",
 		"@neon/functions@0.11.0",
 		"@types/pg@8.23.1",
 		"drizzle-orm@0.45.2",
@@ -18,7 +17,7 @@
 	"environment": [
 		{
 			"name": "MCP_API_KEY",
-			"description": "Random token (for example, from openssl rand -hex 32) that clients send as Authorization: Bearer <token>; required because the function URL is public."
+			"description": "Random token of at least 32 characters (for example, from openssl rand -hex 32) that clients send as Authorization: Bearer <token>; required because the function URL is public."
 		}
 	]
 }

@@ -34,9 +34,9 @@ The CLI copies `functions/mcpuse/index.ts`, installs the pinned dependencies, an
 
 <EnvironmentVariables>
 
-| Variable      | Description                                                                                                                                        |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MCP_API_KEY` | Random token, for example from `openssl rand -hex 32`. Every request must send `Authorization: Bearer <token>` because the function URL is public. |
+| Variable      | Description                                                                                                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MCP_API_KEY` | Random token of at least 32 characters, for example from `openssl rand -hex 32`. Every request must send `Authorization: Bearer <token>` because the function URL is public. |
 
 </EnvironmentVariables>
 
