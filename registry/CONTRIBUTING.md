@@ -148,6 +148,45 @@ even when the template wraps a third-party SDK. Set them only when another compa
 template. Set `logoDark` when `logo` is dark on a transparent background; listings show it in dark
 mode and fall back to `logo` without it.
 
+#### Templates hosted in another repo
+
+A partner can keep the template in its own public GitHub repo while Neon keeps the index entry.
+Such entries go in the index of
+[neondatabase/registry](https://github.com/neondatabase/registry), not in this one. `neon` 9.4.0
+and later ignore an entry here that sets `source`, and older versions would list it and then fail
+to load it, because they read `path` from this folder. Older versions never read
+`neondatabase/registry`, so an entry there is safe for every user.
+
+```json
+{
+	"id": "acme-sync",
+	"provider": "Acme",
+	"title": "Sync Acme users",
+	"description": "Sync Acme users and organizations into Postgres.",
+	"path": "template.json",
+	"categories": ["partner"],
+	"source": {
+		"github": {
+			"owner": "acme",
+			"repo": "neon-templates",
+			"ref": "v1.2.3",
+			"dir": "packages/neon"
+		}
+	}
+}
+```
+
+| `source.github` field | Required | Meaning |
+| --- | --- | --- |
+| `owner` | yes | GitHub user or organization. |
+| `repo` | yes | Repository name. The repo must be public; the CLI sends no token. |
+| `ref` | no | Branch, tag, or commit SHA. Defaults to `HEAD`, the repo's default branch. Pin a tag or full commit SHA so a push mid-download cannot mix files from two commits. |
+| `dir` | no | Directory in the repo that `path` and the template's module paths are relative to. Defaults to the repo root. |
+
+The CLI reads `template.json` and each module it names from
+`raw.githubusercontent.com/<owner>/<repo>/<ref>/<dir>/`, file by file. The same path rules apply:
+every path is relative and must stay inside `dir`.
+
 An entry that fails validation is dropped from the listing without an error, so check that your
 template shows up (see below). Do not add generated archives. The CLI builds what it needs from
 this folder's source files.
