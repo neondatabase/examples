@@ -206,6 +206,16 @@
 			"description": "A typed CRUD API whose Zod schemas validate requests and generate OpenAPI 3.1 docs with Swagger UI, backed by Lakebase Postgres.",
 			"path": "openapi-postgres/template.json",
 			"categories": ["first-party"]
+		},
+		{
+			"id": "jalco-drop",
+			"provider": "jalco-drop",
+			"title": "Self-hosted file transfer with jalco-drop",
+			"description": "Share files, folders, pastes and screen recordings as links that open properly, stored in Neon Object Storage. Agents can upload and read them too.",
+			"path": "jalco-drop/template.json",
+			"categories": ["community"],
+			"logo": "https://drop.justinlevine.me/logo.svg",
+			"website": "https://drop.justinlevine.me"
 		}
 	]
 }
