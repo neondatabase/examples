@@ -223,7 +223,7 @@
 			"title": "MCP server with mcp-use",
 			"description": "Build an MCP server with mcp-use, using Postgres event tools as an example.",
 			"path": "mcp-use/template.json",
-			"categories": ["community"],
+			"categories": ["partner"],
 			"logo": "https://raw.githubusercontent.com/neondatabase/examples/main/registry/mcp-use/assets/symbol.svg",
 			"logoDark": "https://raw.githubusercontent.com/neondatabase/examples/main/registry/mcp-use/assets/symbol-light.svg",
 			"website": "https://manufact.com/"
