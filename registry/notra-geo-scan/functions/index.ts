@@ -20,6 +20,24 @@ const CONCURRENCY = 8;
 // remaining brands to a redelivery of the same trigger event.
 const CRON_BUDGET_MS = 8 * 60_000;
 
+const ERRORS = {
+	notEnabled: "AI Gateway is not enabled. Run `neon config add ai-gateway`, then `neon deploy --env .env.local`.",
+	spendLimit: "AI Gateway daily spend limit reached. Retry after it resets, or ask Neon support to raise it.",
+	rateLimit: "AI Gateway rate limit reached",
+	credentials: "AI Gateway rejected the credentials",
+	modelNotFound: "The model is not available on this branch",
+	badRequest: "The model rejected the request",
+	failed: "Model request failed",
+	noPrompts: "The model wrote no usable prompts. Pass your own prompts.",
+};
+
+// Any other error answers 502.
+const ERROR_STATUS: Record<string, number> = {
+	[ERRORS.notEnabled]: 503,
+	[ERRORS.spendLimit]: 429,
+	[ERRORS.rateLimit]: 429,
+};
+
 const ROUTES = {
 	"GET /": "This route index.",
 	"POST /prompts": "Write buyer prompts for a brand, grounded in its homepage when you pass a domain.",
@@ -135,7 +153,7 @@ type Check = {
 	mentioned: boolean;
 	position: number | null;
 	competitors: string[];
-	sentiment: "positive" | "neutral" | "negative" | null;
+	sentiment: z.infer<typeof Reading>["sentiment"];
 	error: string | null;
 };
 
@@ -168,6 +186,7 @@ async function handle(request: Request): Promise<Response> {
 	if (!bearerMatches(request, token)) {
 		return Response.json({ error: "Unauthorized" }, { status: 401 });
 	}
+	await ensureSchema();
 
 	if (route === "POST /prompts") {
 		const input = await parseBody(request, PromptsInput);
@@ -189,14 +208,9 @@ async function handle(request: Request): Promise<Response> {
 		} catch (error) {
 			return gatewayError(error);
 		}
-		if (config.prompts.length === 0) {
-			return Response.json({ error: "The model wrote no usable prompts. Pass your own prompts." }, { status: 502 });
-		}
+		if (config.prompts.length === 0) return errorResponse(ERRORS.noPrompts);
 		const checks = await runChecks(config);
-		if (checks.every((check) => check.error)) {
-			return errorFor(checks[0]?.error ?? "Model request failed");
-		}
-		await ensureSchema();
+		if (checks.every((check) => check.error)) return errorResponse(checks[0]?.error ?? ERRORS.failed);
 		if (track) {
 			await pool.query(
 				`INSERT INTO geo_tracked (brand, config) VALUES ($1, $2)
@@ -206,14 +220,13 @@ async function handle(request: Request): Promise<Response> {
 		}
 		const scan = await saveScan(config, checks, null);
 		return Response.json(
-			{ ...scan, tracked: track, checks: checks.map(({ answer, brands, ...check }) => ({ ...check, snippet: snippet(answer, config) })) },
+			{ ...scan, tracked: track, checks: checks.map(({ answer, ...check }) => ({ ...check, snippet: snippet(answer, config) })) },
 			{ status: 201 },
 		);
 	}
 
 	const scanMatch = route.match(/^GET \/scans\/([0-9a-f-]{36})$/);
 	if (scanMatch) {
-		await ensureSchema();
 		const { rows } = await pool.query(
 			`SELECT s.id, s.brand, s.config, s.summary, s.created_at AS "createdAt",
 				coalesce((
@@ -239,7 +252,6 @@ async function handle(request: Request): Promise<Response> {
 	}
 
 	if (route === "GET /tracked") {
-		await ensureSchema();
 		const { rows } = await pool.query(
 			`SELECT brand, config, updated_at AS "updatedAt" FROM geo_tracked ORDER BY lower(brand)`,
 		);
@@ -248,7 +260,6 @@ async function handle(request: Request): Promise<Response> {
 
 	const untrackMatch = route.match(/^DELETE \/tracked\/(.+)$/);
 	if (untrackMatch) {
-		await ensureSchema();
 		const { rowCount } = await pool.query(`DELETE FROM geo_tracked WHERE lower(brand) = lower($1)`, [
 			decodeURIComponent(untrackMatch[1]),
 		]);
@@ -287,7 +298,7 @@ async function runSchedule(request: Request): Promise<Response> {
 		}
 		const checks = await runChecks(config);
 		if (checks.every((check) => check.error)) {
-			failed.push({ brand: config.brand, error: checks[0]?.error ?? "Model request failed" });
+			failed.push({ brand: config.brand, error: checks[0]?.error ?? ERRORS.failed });
 			continue;
 		}
 		const scan = await saveScan(config, checks, invocationId);
@@ -359,19 +370,9 @@ async function runCheck(config: ScanConfig, prompt: string, model: string): Prom
 				`<answer>\n${answer}\n</answer>`,
 			].join("\n\n"),
 		});
-		// The reader model decides which names are products. The answer text decides whether they
-		// appear and in what order, because the reader can invent or drop names.
 		const names = brandNames(config);
 		const mentioned = names.some((name) => namesBrand(answer, name));
-		const found = reading.brands.flatMap((brand) => {
-			const at = Math.max(firstIndex(answer, brand), firstIndex(answer, brand.split(/[\s/(,]/)[0]));
-			return at >= 0 ? [{ brand, at }] : [];
-		});
-		if (mentioned && !found.some(({ brand }) => names.some((name) => namesBrand(brand, name)))) {
-			const at = Math.min(...names.map((name) => firstIndex(answer, name)).filter((value) => value >= 0));
-			found.push({ brand: config.brand, at });
-		}
-		const brands = found.sort((a, b) => a.at - b.at).map(({ brand }) => brand);
+		const brands = rankBrands(answer, reading.brands, mentioned ? config.brand : null, names);
 		const index = mentioned ? brands.findIndex((brand) => names.some((name) => namesBrand(brand, name))) : -1;
 		return {
 			prompt,
@@ -398,6 +399,20 @@ async function runCheck(config: ScanConfig, prompt: string, model: string): Prom
 			error: describeError(error),
 		};
 	}
+}
+
+// The reader model decides which names are products. The answer text decides whether they appear
+// and in what order, because the reader can invent names or leave out the brand it was asked about.
+function rankBrands(answer: string, products: string[], brand: string | null, ownNames: string[]): string[] {
+	const found = products.flatMap((name) => {
+		// "Amazon RDS (Aurora)" still counts when the answer only says "Amazon".
+		const at = Math.max(firstIndex(answer, name), firstIndex(answer, name.split(/[\s/(,]/)[0]));
+		return at >= 0 ? [{ name, at }] : [];
+	});
+	if (brand && !found.some(({ name }) => ownNames.some((own) => namesBrand(name, own)))) {
+		found.push({ name: brand, at: firstMention(answer, ownNames) });
+	}
+	return found.sort((a, b) => a.at - b.at).map(({ name }) => name);
 }
 
 function summarize(config: ScanConfig, checks: Check[]) {
@@ -488,7 +503,6 @@ async function saveScan(config: ScanConfig, checks: Check[], invocationId: strin
 }
 
 async function report(brand: string, days: number) {
-	await ensureSchema();
 	const [timeline, latest] = await Promise.all([
 		pool.query<{ day: string; model: string; answers: number; mentions: number; avg_position: number | null }>(
 			`SELECT to_char(date_trunc('day', s.created_at), 'YYYY-MM-DD') AS day, c.model,
@@ -530,7 +544,7 @@ async function report(brand: string, days: number) {
 	};
 }
 
-function brandNames(config: Pick<ScanConfig, "brand" | "aliases" | "domain">): string[] {
+function brandNames(config: ScanConfig): string[] {
 	return [config.brand, ...config.aliases, ...(config.domain ? [config.domain] : [])];
 }
 
@@ -547,14 +561,17 @@ function firstIndex(text: string, brand: string): number {
 	return match ? match.index + match[1].length : -1;
 }
 
+// Where the earliest of `names` appears in `text`, or -1.
+function firstMention(text: string, names: string[]): number {
+	const found = names.map((name) => firstIndex(text, name)).filter((index) => index >= 0);
+	return found.length ? Math.min(...found) : -1;
+}
+
 function snippet(answer: string | null, config: ScanConfig): string | null {
 	if (!answer) return null;
 	const text = answer.replace(/[*_#`>|]/g, "").replace(/\s+/g, " ");
-	const names = brandNames(config);
-	const index = Math.min(
-		...names.map((name) => text.toLowerCase().indexOf(name.toLowerCase())).filter((value) => value >= 0),
-	);
-	if (!Number.isFinite(index)) return null;
+	const index = firstMention(text, brandNames(config));
+	if (index < 0) return null;
 	// About 80 characters before the mention and 160 after, cut at spaces.
 	const start = index > 80 ? text.indexOf(" ", index - 80) + 1 : 0;
 	const end = index + 160 < text.length ? text.lastIndexOf(" ", index + 160) : text.length;
@@ -562,7 +579,7 @@ function snippet(answer: string | null, config: ScanConfig): string | null {
 }
 
 async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
-	const results: R[] = new Array(items.length);
+	const results: R[] = [];
 	let next = 0;
 	const worker = async () => {
 		while (next < items.length) {
@@ -590,28 +607,32 @@ function bearerMatches(request: Request, token: string): boolean {
 
 function describeError(error: unknown): string {
 	const cause = RetryError.isInstance(error) ? error.lastError : error;
-	const status = APICallError.isInstance(cause) ? cause.statusCode : undefined;
-	if (APICallError.isInstance(cause) && cause.responseBody?.includes("REQUEST_LIMIT_EXCEEDED")) {
-		return "AI Gateway daily spend limit reached. Retry after it resets, or ask Neon support to raise it.";
+	if (!APICallError.isInstance(cause)) {
+		return process.env.NEON_AI_GATEWAY_BASE_URL ? ERRORS.failed : ERRORS.notEnabled;
 	}
-	if (status === 429) return "AI Gateway rate limit reached";
-	if (status === 401 || status === 403) return "AI Gateway rejected the credentials";
-	if (status === 404) return "The model is not available on this branch";
-	if (status === 400) return "The model rejected the request";
-	if (!process.env.NEON_AI_GATEWAY_BASE_URL) {
-		return "AI Gateway is not enabled. Run `neon config add ai-gateway`, then `neon deploy --env .env.local`.";
+	if (cause.responseBody?.includes("REQUEST_LIMIT_EXCEEDED")) return ERRORS.spendLimit;
+	switch (cause.statusCode) {
+		case 429:
+			return ERRORS.rateLimit;
+		case 401:
+		case 403:
+			return ERRORS.credentials;
+		case 404:
+			return ERRORS.modelNotFound;
+		case 400:
+			return ERRORS.badRequest;
+		default:
+			return ERRORS.failed;
 	}
-	return "Model request failed";
 }
 
 function gatewayError(error: unknown): Response {
 	console.error("[notra-geo-scan]", error);
-	return errorFor(describeError(error));
+	return errorResponse(describeError(error));
 }
 
-function errorFor(message: string): Response {
-	const status = message.startsWith("AI Gateway is not enabled") ? 503 : message.includes(" limit ") ? 429 : 502;
-	return Response.json({ error: message }, { status });
+function errorResponse(message: string): Response {
+	return Response.json({ error: message }, { status: ERROR_STATUS[message] ?? 502 });
 }
 
 function round(value: number): number {

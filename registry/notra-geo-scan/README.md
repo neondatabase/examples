@@ -117,7 +117,7 @@ The function reads your homepage and writes five questions a buyer in your categ
 - `averagePosition` is where your brand lands in the answers that name it, where 1 is the first product the answer offers.
 - `shareOfVoice` splits the mentions among your brand and the competitors you listed.
 - `discoveredCompetitors` are the products the models offer that you did not list.
-- Each check has a `snippet` of the answer around the first mention. `GET /scans/:id` returns the full answers.
+- Each check lists the products its answer offers in order (`brands`), with a `snippet` of the answer around the first mention. `GET /scans/:id` returns the full answers.
 
 To scan your own questions or other models, pass `prompts` (up to 10) and `models` (up to 5, any text model in the [model catalog](https://neon.com/docs/ai-gateway/models)). Pass `aliases` when your brand goes by more than one name.
 
