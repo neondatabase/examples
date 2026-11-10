@@ -9,7 +9,7 @@
 	],
 	"layout": "router",
 	"dependencies": [
-		"jalco-drop@1.2.0"
+		"jalco-drop@1.3.0"
 	],
 	"environment": [
 		{

@@ -11,7 +11,7 @@ neon link
 neon functions new jalco-drop
 ```
 
-The CLI writes `functions/jalcodrop/index.ts`, declares the function in `neon.ts`, and installs `jalco-drop`.
+The CLI writes `functions/jalcodrop/index.ts`, declares the function in `neon.ts`, and installs `jalco-drop`. That file is yours: it configures the app, adds a `/health` route, and teaches it a new file format. See [Make it yours](#make-it-yours).
 
 Add the bucket and the hourly trigger that deletes expired drops to the `neon.ts` that `neon functions new` created:
 
@@ -79,6 +79,7 @@ Add `?format=json` to any drop link to read it as JSON.
 
 | Route | Auth | Purpose |
 | --- | --- | --- |
+| `GET /health` | None | Storage check and uptime, defined in your `index.ts`. `503` when the bucket can't be reached. |
 | `GET /<slug>` | Password, if the drop has one | Opens a drop in the browser. Add `?format=json` for its files and raw URLs. |
 | `GET /admin` | Admin token | Drops, named tokens and site settings (name, accent colour, code theme). |
 | `POST /api/items` | Bearer token with upload | Uploads the request body. Query: `name`, `slug`, `expires`; header `X-Drop-Password`. |
@@ -88,6 +89,14 @@ Add `?format=json` to any drop link to read it as JSON.
 | `POST /__scheduled` | Neon trigger only | Deletes expired drops. Requests without Neon's `X-Neon-Trigger-Invocation-Id` header get `401`. |
 
 `/` redirects away, nothing is listed without a token, and each IP gets 60 requests a minute.
+
+## Make it yours
+
+`functions/jalcodrop/index.ts` is plain code you own. `createDrop()` from `jalco-drop/neon` takes the settings, and returns `fetch` (the whole app) and `health()` (a storage check). Everything else in the file is an example to change:
+
+- **Settings**: `site`, `bucket` and `rateLimit` are read from the environment here. Hard-code them, or read them from anywhere else.
+- **Routes**: the `fetch` export runs before jalco-drop. `/health` is one route; add your own the same way, or wrap `drop.fetch` to add auth or logging.
+- **File formats**: `logs` makes `.log` files open with errors and warnings tinted. A format has an `id`, a `test` on the file name, and a `render` that returns HTML through `rawHtml()`. Escape anything from the file before you put it in the markup, as `escape()` does. Formats you add win over the built-in ones, and every format keeps a Source view at `?view=source`.
 
 ## Deploy
 
