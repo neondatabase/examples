@@ -17,7 +17,8 @@
 	"environment": [
 		{
 			"name": "MCP_API_KEY",
-			"description": "Random token of at least 32 characters (for example, from openssl rand -hex 32) that clients send as Authorization: Bearer <token>; required because the function URL is public."
+			"description": "Random token of at least 32 characters (for example, from openssl rand -hex 32) that clients send as Authorization: Bearer <token>; required because the function URL is public.",
+			"required": true
 		}
 	]
 }
