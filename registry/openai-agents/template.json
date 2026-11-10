@@ -4,7 +4,7 @@
 	"provider": "Neon",
 	"title": "OpenAI Agents SDK starter",
 	"description": "Streaming agent with tools, agent handoffs, and structured output on Neon AI Gateway.",
-	"categories": ["first-party", "ai", "agents"],
+	"categories": ["ai", "agents"],
 	"layout": "router",
 	"dependencies": ["@openai/agents@0.21.0", "zod@4.6.7"],
 	"operations": [

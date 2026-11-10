@@ -78,11 +78,11 @@ a sibling from the template folder.
 | --- | --- | --- |
 | `id` | yes | Lowercase letters, digits and hyphens, starting with a letter or digit. Must match the index entry's `id`; use it as the folder name too. |
 | `title`, `description` | yes | Non-empty. |
-| `categories` | no | Array of listing labels (`lowercase-with-hyphens`). Should match the index entry. Display-only; the CLI does not use it to scaffold. |
-| `provider` | no | Who built and maintains the template, shown in listings. Defaults to `Neon`. Use `Neon` and add the `first-party` category for templates Neon writes, even when they wrap a third-party SDK. Name another company only when that company wrote the template. |
+| `categories` | no | Topical listing labels (`lowercase-with-hyphens`), such as `ai` or `email`. The schema allows leaving it out, but every template in this registry has at least one; reuse an existing label where it fits. The source label (`first-party`, `partner`, `community`) goes in the index entry, not here. Display-only; the CLI does not use it to scaffold. See [Categories](README.md#categories). |
+| `provider` | no | Who built and maintains the template, shown in listings. Defaults to `Neon`. Use `Neon` for templates Neon writes, even when they wrap a third-party SDK, and give the index entry the `first-party` category. Name another company only when that company wrote the template, and give the index entry `partner` if Neon works with that company closely, otherwise `community`. |
 | `layout` | yes | `router` or `separate`; see below. |
 | `dependencies` | no | Exact `name@version` pins, scoped packages included. No ranges, no `latest`. The version a reviewer approved is the version that gets installed. |
-| `environment` | no | `UPPER_SNAKE` names, each with a description. The CLI declares each one on every scaffolded function in `neon.ts` and adds it, with the description as a comment, to the project's `.env.example`. Write the description for someone filling that file in. |
+| `environment` | no | `UPPER_SNAKE` names, each with a description and an optional `required`. The CLI declares each one on every scaffolded function in `neon.ts` as `{ value: process.env.<NAME>, required }` and adds it, with the description as a comment, to the project's `.env.example`. Write the description for someone filling that file in. |
 | `operations` | no | 1-40 entries. Omit them for a single-module template. |
 
 Each operation needs:
@@ -108,6 +108,18 @@ A `separate` template scaffolds one Neon function per selected operation, each u
 If you omit `operations`, the template ships exactly one module at `functions/index.ts`, which the
 CLI scaffolds as `index.ts`. Set `layout` to `router`.
 
+### `required`
+
+Set `required` on each `environment` entry to say when the variable must be set. The CLI copies it into the declaration in `neon.ts`:
+
+| `required` | Unset on `neon deploy` | Unset in `neon dev` |
+| --- | --- | --- |
+| `true` (the default) | fails before any change | fails before any function starts |
+| `"default-branch"` | fails on the project's default branch; left out of the deployment elsewhere | runs without it |
+| `false` | left out of the deployment | runs without it |
+
+Use `false` only when the module handles the variable being unset, for example an SDK that stays disabled without its key. `neon` 9.3.0 and later write `required`; older versions ignore it and write `process.env.<NAME>!`.
+
 ### 3. Add the index entry
 
 Append to `templates` in `registry.json`:
@@ -119,21 +131,61 @@ Append to `templates` in `registry.json`:
 	"title": "Send email with SendGrid",
 	"description": "Send transactional email through the SendGrid v3 API.",
 	"path": "sendgrid/template.json",
-	"categories": ["email"],
+	"categories": ["community"],
 	"logo": "https://example.com/sendgrid.svg",
 	"website": "https://example.com/"
 }
 ```
 
-`id`, `title`, `description`, and `categories` should match `template.json`. `categories` is a
-required array of lowercase hyphenated strings you can change without a schema edit (`first-party`,
-`ai`, `bots`, `ai-infrastructure`, and so on). A template can belong to several; listings can gate
-on a value such as `first-party`. `logo`, `logoDark`, and `website` are optional display metadata:
-absolute `https://` URLs that the CLI never fetches or writes. The templates page uses them for the
-Built by block; omit them on first-party templates so listings default to Neon, even when the
-template wraps a third-party SDK. Set them only when another company wrote the template. Set
-`logoDark` when `logo` is dark on a transparent background; listings show it in dark mode and fall
-back to `logo` without it.
+`id`, `title`, `description`, and `provider` should match `template.json`. `categories` is required
+here and holds exactly one source label: `first-party` when Neon wrote the template, `partner` when
+a company Neon works with closely wrote it, and `community` otherwise. Topical labels go in
+`template.json` and are not repeated here; listings combine the two. The labels are defined in
+[README.md](README.md#categories). `logo`, `logoDark`, and `website` are optional
+display metadata: absolute `https://` URLs that the CLI never fetches or writes. The templates page
+uses them for the Built by block; omit them on first-party templates so listings default to Neon,
+even when the template wraps a third-party SDK. Set them only when another company wrote the
+template. Set `logoDark` when `logo` is dark on a transparent background; listings show it in dark
+mode and fall back to `logo` without it.
+
+#### Templates hosted in another repo
+
+A partner can keep the template in its own public GitHub repo while Neon keeps the index entry.
+Such entries go in the index of
+[neondatabase/registry](https://github.com/neondatabase/registry), not in this one. `neon` 9.4.0
+and later ignore an entry here that sets `source`, and older versions would list it and then fail
+to load it, because they read `path` from this folder. Older versions never read
+`neondatabase/registry`, so an entry there is safe for every user.
+
+```json
+{
+	"id": "acme-sync",
+	"provider": "Acme",
+	"title": "Sync Acme users",
+	"description": "Sync Acme users and organizations into Postgres.",
+	"path": "template.json",
+	"categories": ["partner"],
+	"source": {
+		"github": {
+			"owner": "acme",
+			"repo": "neon-templates",
+			"ref": "v1.2.3",
+			"dir": "packages/neon"
+		}
+	}
+}
+```
+
+| `source.github` field | Required | Meaning |
+| --- | --- | --- |
+| `owner` | yes | GitHub user or organization. |
+| `repo` | yes | Repository name. The repo must be public; the CLI sends no token. |
+| `ref` | no | Branch, tag, or commit SHA. Defaults to `HEAD`, the repo's default branch. Pin a tag or full commit SHA so a push mid-download cannot mix files from two commits. |
+| `dir` | no | Directory in the repo that `path` and the template's module paths are relative to. Defaults to the repo root. |
+
+The CLI reads `template.json` and each module it names from
+`raw.githubusercontent.com/<owner>/<repo>/<ref>/<dir>/`, file by file. The same path rules apply:
+every path is relative and must stay inside `dir`.
 
 An entry that fails validation is dropped from the listing without an error, so check that your
 template shows up (see below). Do not add generated archives. The CLI builds what it needs from
@@ -215,6 +267,8 @@ A template that passes the schema but fails the commands above is not ready.
       `environment`, and no secret or default key is hard-coded.
 - [ ] No network calls at import time, and no telemetry the user didn't ask for.
 - [ ] Recommended operations are the ones most users want on day one.
+- [ ] The index entry has one source label, and `template.json` has at least one topical label
+      from the [categories table](README.md#categories).
 
 ## Changing the schema
 

@@ -17,7 +17,7 @@
 			"title": "Context.dev web data",
 			"description": "Search the web and news, read pages, answer questions, and retrieve brand data with Context.dev.",
 			"path": "context-dev/template.json",
-			"categories": ["ai-infrastructure"],
+			"categories": ["partner"],
 			"logo": "https://www.context.dev/logo.svg",
 			"website": "https://www.context.dev/"
 		},
@@ -27,7 +27,15 @@
 			"title": "Image analysis with AI Gateway",
 			"description": "Describe an uploaded image with structured details using a vision model on Neon AI Gateway.",
 			"path": "image-analysis/template.json",
-			"categories": ["first-party", "ai"]
+			"categories": ["first-party"]
+		},
+		{
+			"id": "jev-triage",
+			"provider": "Neon",
+			"title": "Support triage with Jev",
+			"description": "Route support messages by topic, urgency, churn risk, and spam with calibrated probabilities from the Jev decision model on Neon AI Gateway.",
+			"path": "jev-triage/template.json",
+			"categories": ["first-party"]
 		},
 		{
 			"id": "mcp-postgres",
@@ -35,7 +43,7 @@
 			"title": "MCP server backed by Postgres",
 			"description": "A Hono MCP server exposing create, list, update, and delete tools backed by a Postgres database.",
 			"path": "mcp-postgres/template.json",
-			"categories": ["first-party", "mcp"]
+			"categories": ["first-party"]
 		},
 		{
 			"id": "telegram-bot",
@@ -43,7 +51,7 @@
 			"title": "Telegram AI chat bot",
 			"description": "Telegram bot with Neon Functions, AI Gateway, and Postgres for message storage.",
 			"path": "telegram-bot/template.json",
-			"categories": ["first-party", "bots"]
+			"categories": ["first-party"]
 		},
 		{
 			"id": "rest-api-postgres",
@@ -51,7 +59,7 @@
 			"title": "REST API with Hono and Postgres",
 			"description": "A CRUD REST API on Neon Functions with Hono, backed by Lakebase Postgres.",
 			"path": "rest-api-postgres/template.json",
-			"categories": ["first-party", "api"]
+			"categories": ["first-party"]
 		},
 		{
 			"id": "image-generation",
@@ -59,7 +67,7 @@
 			"title": "AI image generation API",
 			"description": "Generate an image with AI Gateway, store it in Object Storage, and return a presigned URL.",
 			"path": "image-generation/template.json",
-			"categories": ["first-party", "ai"]
+			"categories": ["first-party"]
 		},
 		{
 			"id": "authenticated-api",
@@ -67,7 +75,7 @@
 			"title": "Authenticated API with Hono and Managed Better Auth",
 			"description": "A protected Hono API that validates the caller's identity and gates access.",
 			"path": "authenticated-api/template.json",
-			"categories": ["first-party", "auth"]
+			"categories": ["first-party"]
 		},
 		{
 			"id": "tanstack-ai",
@@ -75,7 +83,7 @@
 			"title": "TanStack AI on AI Gateway",
 			"description": "Streaming chat with tool calling, structured extraction, and summaries with TanStack AI on Neon AI Gateway.",
 			"path": "tanstack-ai/template.json",
-			"categories": ["ai"],
+			"categories": ["partner"],
 			"logo": "https://cdn.jsdelivr.net/gh/TanStack/tanstack.com@f24f323ba7ef981c7e1914e8aef1f161999da908/public/images/logos/logo-color-100.png",
 			"website": "https://tanstack.com/ai"
 		},
@@ -85,7 +93,7 @@
 			"title": "Live poll over WebSockets",
 			"description": "Vote over HTTP and watch results update live over a WebSocket, backed by Lakebase Postgres.",
 			"path": "websocket-live-poll/template.json",
-			"categories": ["first-party", "websocket"]
+			"categories": ["first-party"]
 		},
 		{
 			"id": "inngest-workflow",
@@ -93,7 +101,7 @@
 			"title": "Durable workflow with Inngest",
 			"description": "A minimal multi-step workflow with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
 			"path": "inngest-workflow/template.json",
-			"categories": ["first-party", "workflow"]
+			"categories": ["first-party"]
 		},
 		{
 			"id": "upstash-workflow",
@@ -101,7 +109,7 @@
 			"title": "Durable workflow with Upstash Workflow",
 			"description": "A minimal multi-step job with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
 			"path": "upstash-workflow/template.json",
-			"categories": ["first-party", "workflow"]
+			"categories": ["first-party"]
 		},
 		{
 			"id": "resend-email",
@@ -109,7 +117,7 @@
 			"title": "Send email with Resend",
 			"description": "Send transactional email through the Resend API with a caller token.",
 			"path": "resend-email/template.json",
-			"categories": ["first-party", "email"]
+			"categories": ["first-party"]
 		},
 		{
 			"id": "mastra",
@@ -117,7 +125,7 @@
 			"title": "Mastra agent with Postgres memory",
 			"description": "A Mastra agent that remembers users in Neon Postgres, streams chat for useChat on AI Gateway, and runs a resumable human-in-the-loop review workflow.",
 			"path": "mastra/template.json",
-			"categories": ["ai", "agents"],
+			"categories": ["partner"],
 			"logo": "https://svgl.app/library/mastra-icon-light.svg",
 			"logoDark": "https://svgl.app/library/mastra-icon-dark.svg",
 			"website": "https://mastra.ai/"
@@ -128,7 +136,7 @@
 			"title": "Presigned uploads with Object Storage",
 			"description": "Create presigned PUT and GET URLs for a Neon Object Storage bucket.",
 			"path": "presigned-uploads/template.json",
-			"categories": ["first-party", "storage"]
+			"categories": ["first-party"]
 		},
 		{
 			"id": "chat-sdk",
@@ -136,7 +144,7 @@
 			"title": "Chat SDK bot for Slack, Telegram, and the web",
 			"description": "A Vercel Chat SDK bot that answers on Slack, Telegram, and useChat, streams replies from AI Gateway, and keeps conversations, subscriptions, and locks in Neon Postgres.",
 			"path": "chat-sdk/template.json",
-			"categories": ["first-party", "bots", "ai"]
+			"categories": ["first-party"]
 		},
 		{
 			"id": "rate-limit-postgres",
@@ -144,7 +152,7 @@
 			"title": "Rate limit with Postgres",
 			"description": "Fixed-window rate limiting with an atomic Postgres upsert.",
 			"path": "rate-limit-postgres/template.json",
-			"categories": ["first-party", "api"]
+			"categories": ["first-party"]
 		},
 		{
 			"id": "openai-agents",
@@ -152,7 +160,7 @@
 			"title": "OpenAI Agents SDK starter",
 			"description": "Streaming agent with tools, agent handoffs, and structured output on Neon AI Gateway.",
 			"path": "openai-agents/template.json",
-			"categories": ["first-party", "ai", "agents"]
+			"categories": ["first-party"]
 		},
 		{
 			"id": "aiinbx",
@@ -160,10 +168,18 @@
 			"title": "Send emails with AI Inbx",
 			"description": "Send email from your domains or connected Gmail and Outlook mailboxes, and follow up in the same thread, schedule it, or draft it for review.",
 			"path": "aiinbx/template.json",
-			"categories": ["email"],
+			"categories": ["community"],
 			"logo": "https://aiinbx.com/logo-dark.svg",
 			"logoDark": "https://aiinbx.com/logo-light.svg",
 			"website": "https://aiinbx.com/"
+		},
+		{
+			"id": "sentry",
+			"provider": "Neon",
+			"title": "Sentry-instrumented API",
+			"description": "Errors, structured logs, and request traces for a Hono API on Neon Functions.",
+			"path": "sentry/template.json",
+			"categories": ["first-party"]
 		},
 		{
 			"id": "workos-sync",
@@ -171,9 +187,35 @@
 			"title": "Mirror WorkOS data into Postgres",
 			"description": "Backfill, tail the Events API, and reconcile drift on a cron, with a WorkOS webhook nudge. Join users, organizations, and memberships in SQL.",
 			"path": "workos-sync/template.json",
-			"categories": ["sync"],
+			"categories": ["partner"],
 			"logo": "https://avatars.githubusercontent.com/u/47638084?v=4",
 			"website": "https://workos.com/"
+		},
+		{
+			"id": "x402-paid-api",
+			"provider": "Neon",
+			"title": "Paid API with x402 and Hono",
+			"description": "Charge per request in testnet USDC on Base Sepolia with x402, and keep a payment ledger in Lakebase Postgres.",
+			"path": "x402-paid-api/template.json",
+			"categories": ["first-party"]
+		},
+		{
+			"id": "openapi-postgres",
+			"provider": "Neon",
+			"title": "CRUD API with OpenAPI and Postgres",
+			"description": "A typed CRUD API whose Zod schemas validate requests and generate OpenAPI 3.1 docs with Swagger UI, backed by Lakebase Postgres.",
+			"path": "openapi-postgres/template.json",
+			"categories": ["first-party"]
+		},
+		{
+			"id": "jalco-drop",
+			"provider": "jalco-drop",
+			"title": "Self-hosted file transfer with jalco-drop",
+			"description": "Share files, folders, pastes and screen recordings as links that open properly, stored in Neon Object Storage. Agents can upload and read them too.",
+			"path": "jalco-drop/template.json",
+			"categories": ["community"],
+			"logo": "https://drop.justinlevine.me/logo.svg",
+			"website": "https://drop.justinlevine.me"
 		},
 		{
 			"id": "mcp-use",
@@ -181,7 +223,7 @@
 			"title": "MCP server with mcp-use",
 			"description": "Build an MCP server with mcp-use, using Postgres event tools as an example.",
 			"path": "mcp-use/template.json",
-			"categories": ["mcp"],
+			"categories": ["community"],
 			"logo": "https://raw.githubusercontent.com/neondatabase/examples/main/registry/mcp-use/assets/symbol.svg",
 			"logoDark": "https://raw.githubusercontent.com/neondatabase/examples/main/registry/mcp-use/assets/symbol-light.svg",
 			"website": "https://manufact.com/"

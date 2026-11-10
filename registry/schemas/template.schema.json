@@ -22,7 +22,7 @@
 				"maxLength": 64,
 				"pattern": "^[a-z0-9][a-z0-9-]*$"
 			},
-			"description": "Display-only listing labels. Should match the index entry. A template can belong to several, e.g. first-party and bots."
+			"description": "Display-only topical labels, e.g. ai and bots. The source label (first-party, partner, or community) goes in the index entry, not here."
 		},
 		"layout": {
 			"enum": ["router", "separate"],
@@ -44,7 +44,11 @@
 				"additionalProperties": false,
 				"properties": {
 					"name": { "type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$" },
-					"description": { "type": "string" }
+					"description": { "type": "string" },
+					"required": {
+						"description": "Written as the variable's required in neon.ts. true (the default) fails neon deploy and neon dev while it is unset; false lets both run without it; \"default-branch\" requires it only when deploying the project's default branch.",
+						"oneOf": [{ "type": "boolean" }, { "const": "default-branch" }]
+					}
 				}
 			}
 		},

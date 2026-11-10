@@ -11,7 +11,7 @@ Keeps a copy of your WorkOS users, organizations, memberships, directories, and 
 | `POST /reconcile`       | schedule trigger, hourly          | Continue the reconcile pass in progress and repair drift; a no-op once complete |
 | `POST /reconcile/fresh` | schedule trigger, weekly          | Start a new reconcile pass                                                      |
 | `POST /webhook`         | WorkOS                            | Verify the delivery's signature, then poll now                                  |
-| `GET /status`           | you, with a bearer token          | Per-stream counts, poll age, and lag                                            |
+| `GET /status`           | you, with a bearer token          | Per-stream counts, poll age, lag, and oversized streams                         |
 | `GET /`                 | you                               | Route index                                                                     |
 
 Every invocation is bounded, idempotent, and resumable, so short triggers keep the mirror current instead of one long-lived process. Trigger routes accept only Neon trigger deliveries. The webhook route accepts only deliveries signed with your endpoint's secret, and the status route needs a token you choose. The mirror is a read model: read from it for joins, dashboards, and analytics, and keep writes on the WorkOS API.
@@ -51,9 +51,9 @@ export default defineConfig({
       name: "Mirror WorkOS data into Postgres",
       source: "./functions/workossync/index.ts",
       env: {
-        WORKOS_API_KEY: process.env.WORKOS_API_KEY!,
-        WORKOS_WEBHOOK_SECRET: process.env.WORKOS_WEBHOOK_SECRET!,
-        WORKOS_SYNC_STATUS_TOKEN: process.env.WORKOS_SYNC_STATUS_TOKEN!,
+        WORKOS_API_KEY: { value: process.env.WORKOS_API_KEY, required: true },
+        WORKOS_WEBHOOK_SECRET: { value: process.env.WORKOS_WEBHOOK_SECRET, required: true },
+        WORKOS_SYNC_STATUS_TOKEN: { value: process.env.WORKOS_SYNC_STATUS_TOKEN, required: true },
       },
     },
   },
@@ -144,7 +144,7 @@ curl -H "Authorization: Bearer $WORKOS_SYNC_STATUS_TOKEN" http://localhost:8787/
 
 - `GET /status` reports row counts and timestamps, not row contents.
 - `MAX_PAGES` and `MAX_EVENTS_PER_TICK` at the top of the module bound each invocation. Each response reports `pages`. Raise the budget until a slice uses most of the 15-minute limit but still finishes before the next trigger fires.
-- A reconcile cannot pause inside a stream, so a stream whose listing alone outlasts the budget runs to its last page. Reconcile that stream once from the CLI with `npx workos-sync-postgres reconcile --repair --streams <name>` against the same `DATABASE_URL`, and let the scheduled slices cover the rest.
+- A reconcile cannot pause inside a stream, so a stream whose listing alone needs more than `MAX_PAGES` pages is abandoned on the page after the budget, rolled back, and reported `oversized`, in that response and in `GET /status`. The hourly slices skip it and the weekly fresh pass tries it again. Add its name to `RECONCILE_EXCLUDE` at the top of the module, and reconcile it on its own schedule from a host without a time limit with `npx workos-sync-postgres reconcile --repair --streams <name>` against the same `DATABASE_URL`.
 - Every row carries an `_env` column, set from `ENVIRONMENT` at the top of the module. Rename it to match the WorkOS environment, or add entries to `environments` to mirror several.
 - The injected pooled `DATABASE_URL` is fine; the engine works in short transactions and holds at most one connection per phase.
 - The [sync-engine docs](https://github.com/workos/sync-engine/tree/main/docs) cover the schema, the consistency model, and operations.

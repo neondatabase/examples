@@ -9,21 +9,24 @@
 	"dependencies": [
 		"@neon/functions@0.11.0",
 		"@types/pg@8.23.1",
-		"@workos/sync-postgres@0.1.0",
+		"@workos/sync-postgres@0.2.0",
 		"pg@8.23.1"
 	],
 	"environment": [
 		{
 			"name": "WORKOS_API_KEY",
-			"description": "Secret API key (sk_...) for the WorkOS environment to mirror, from API Keys in the WorkOS Dashboard."
+			"description": "Secret API key (sk_...) for the WorkOS environment to mirror, from API Keys in the WorkOS Dashboard.",
+			"required": true
 		},
 		{
 			"name": "WORKOS_WEBHOOK_SECRET",
-			"description": "Signing secret of the WorkOS webhook endpoint that points at this function's /webhook route. Any placeholder works until the endpoint exists."
+			"description": "Signing secret of the WorkOS webhook endpoint that points at this function's /webhook route. Any placeholder works until the endpoint exists.",
+			"required": true
 		},
 		{
 			"name": "WORKOS_SYNC_STATUS_TOKEN",
-			"description": "Bearer token that GET /status requires, since function URLs are public. Any long random string, for example from `openssl rand -hex 32`."
+			"description": "Bearer token that GET /status requires, since function URLs are public. Any long random string, for example from `openssl rand -hex 32`.",
+			"required": true
 		}
 	]
 }

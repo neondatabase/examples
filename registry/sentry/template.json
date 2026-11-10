@@ -1,0 +1,17 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "sentry",
+	"provider": "Neon",
+	"title": "Sentry-instrumented API",
+	"description": "Errors, structured logs, and request traces for a Hono API on Neon Functions.",
+	"categories": ["observability"],
+	"layout": "router",
+	"dependencies": ["@sentry/node@11.10.0", "hono@4.13.16"],
+	"environment": [
+		{
+			"name": "SENTRY_DSN",
+			"description": "DSN from the Sentry project settings. Leave it empty (SENTRY_DSN=) to keep the SDK disabled; the function still runs.",
+			"required": false
+		}
+	]
+}

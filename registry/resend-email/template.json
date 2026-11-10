@@ -4,21 +4,24 @@
 	"provider": "Neon",
 	"title": "Send email with Resend",
 	"description": "Send transactional email through the Resend API with a caller token.",
-	"categories": ["first-party", "email"],
+	"categories": ["email"],
 	"layout": "router",
 	"dependencies": ["resend@6.35.0"],
 	"environment": [
 		{
 			"name": "RESEND_API_KEY",
-			"description": "API key from resend.com/api-keys with permission to send email."
+			"description": "API key from resend.com/api-keys with permission to send email.",
+			"required": true
 		},
 		{
 			"name": "RESEND_FROM",
-			"description": "Verified sender address, for example Acme <hello@example.com>."
+			"description": "Verified sender address, for example Acme <hello@example.com>.",
+			"required": true
 		},
 		{
 			"name": "RESEND_FUNCTION_TOKEN",
-			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public."
+			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public.",
+			"required": true
 		}
 	]
 }

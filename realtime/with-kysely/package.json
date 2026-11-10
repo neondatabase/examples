@@ -14,8 +14,8 @@
   "dependencies": {
     "@neon/config": "^1.9.1",
     "@neon/env": "^1.5.3",
-    "@neon/realtime": "^0.1.0",
-    "@neon/realtime-kysely": "^0.1.0",
+    "@neon/realtime": "^0.2.1",
+    "@neon/realtime-kysely": "^0.2.0",
     "dotenv": "^17.2.3",
     "kysely": "^0.29.6",
     "pg": "^8.16.3",
