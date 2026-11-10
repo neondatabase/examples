@@ -64,11 +64,6 @@
     "typescript": "^5.9.3",
     "vite": "^7.1.12"
   },
-  "overrides": {
-    "@neon/realtime-tanstack": {
-      "@tanstack/db": "$@tanstack/db"
-    }
-  },
   "engines": {
     "node": ">=22"
   }
