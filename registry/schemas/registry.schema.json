@@ -36,7 +36,43 @@
 					"path": {
 						"type": "string",
 						"maxLength": 255,
-						"description": "Path to the template's template.json, relative to this index."
+						"description": "Path to the template's template.json, relative to this index, or to source.github.dir when source is set."
+					},
+					"source": {
+						"type": "object",
+						"required": ["github"],
+						"additionalProperties": false,
+						"description": "Read template.json and its modules from another public GitHub repo instead of next to this index. Only entries in neondatabase/registry may set it: neon 9.4.0 and later ignore entries in neondatabase/examples that set it, and older versions never read neondatabase/registry.",
+						"properties": {
+							"github": {
+								"type": "object",
+								"required": ["owner", "repo"],
+								"additionalProperties": false,
+								"properties": {
+									"owner": {
+										"type": "string",
+										"pattern": "^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$",
+										"description": "GitHub user or organization."
+									},
+									"repo": {
+										"type": "string",
+										"pattern": "^(?!\\.\\.?$)[A-Za-z0-9._-]{1,100}$",
+										"description": "Repository name. It must be public; the CLI sends no token."
+									},
+									"ref": {
+										"type": "string",
+										"pattern": "^[A-Za-z0-9._/+-]{1,255}$",
+										"description": "Branch, tag, or commit SHA. Defaults to HEAD, the repo's default branch. Pin a tag or full commit SHA so a push mid-download cannot mix files from two commits."
+									},
+									"dir": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 255,
+										"description": "Directory in the repo that path is relative to. Defaults to the repo root."
+									}
+								}
+							}
+						}
 					},
 					"logo": {
 						"type": "string",
