@@ -27,7 +27,6 @@ attachDatabasePool(pool);
 const db = drizzle(pool);
 let schemaReady: Promise<void> | undefined;
 
-// No database work at import time. Retry initialization after a transient failure.
 function ensureSchema(): Promise<void> {
 	schemaReady ??= pool
 		.query(
@@ -52,11 +51,9 @@ function ensureSchema(): Promise<void> {
 	return schemaReady;
 }
 
-// A fresh schema per field keeps descriptions distinct in the tool schema.
 const optionalText = (description: string) =>
 	z.string().trim().min(1).optional().describe(description);
 
-// Require an explicit UTC offset so event times never depend on the host timezone.
 const dateTime = (description: string) =>
 	z.iso.datetime({ offset: true }).describe(description);
 
@@ -69,7 +66,6 @@ function asTextResult(payload: unknown, isError = false) {
 	};
 }
 
-// Disable SDK telemetry.
 process.env.MCP_USE_ANONYMIZED_TELEMETRY = "false";
 
 const server = new MCPServer({
@@ -220,7 +216,6 @@ server.tool(
 			),
 	},
 	async ({ query, from, to, limit }) => {
-		// Escape LIKE wildcards so "%" and "_" match literally.
 		const pattern = query ? `%${query.replace(/[\\%_]/g, "\\$&")}%` : undefined;
 		const where = pattern
 			? or(
@@ -253,7 +248,6 @@ server.get("/", (c) =>
 const MIN_API_KEY_LENGTH = 32;
 const apiKey = process.env.MCP_API_KEY;
 
-/** Constant-time bearer token check; unequal lengths fail before comparing. */
 function isAuthorized(request: Request, expected: string): boolean {
 	const header = request.headers.get("authorization");
 	if (!header?.startsWith("Bearer ")) return false;
@@ -263,17 +257,14 @@ function isAuthorized(request: Request, expected: string): boolean {
 	return provided.length === secret.length && timingSafeEqual(provided, secret);
 }
 
-/** Neon invokes this authenticated fetch handler directly. */
 export default {
 	async fetch(request: Request): Promise<Response> {
-		// A missing or weak key rejects every request, so it can't be used by accident.
 		if (!apiKey || apiKey.length < MIN_API_KEY_LENGTH) {
 			return Response.json(
 				{ error: "MCP server is not configured" },
 				{ status: 503 },
 			);
 		}
-		// Gate the whole server, including transport and inspector routes.
 		if (!isAuthorized(request, apiKey)) {
 			return Response.json({ error: "Unauthorized" }, { status: 401 });
 		}
