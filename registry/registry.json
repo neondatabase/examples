@@ -216,6 +216,17 @@
 			"categories": ["community"],
 			"logo": "https://drop.justinlevine.me/logo.svg",
 			"website": "https://drop.justinlevine.me"
+		},
+		{
+			"id": "mcp-use",
+			"provider": "Manufact",
+			"title": "MCP server with mcp-use",
+			"description": "Build an MCP server with mcp-use, using Postgres event tools as an example.",
+			"path": "mcp-use/template.json",
+			"categories": ["partner"],
+			"logo": "https://manufact.com/branding/symbol.svg",
+			"logoDark": "https://manufact.com/branding/symbol-light.svg",
+			"website": "https://manufact.com/"
 		}
 	]
 }
