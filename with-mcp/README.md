@@ -6,7 +6,7 @@
 
 # Getting started with Neon and MCP
 
-A minimal [Model Context Protocol](https://modelcontextprotocol.io) server that gives an AI agent CRUD access to a contact-management database. Built with the [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk), [Hono](https://hono.dev) (via [`@hono/mcp`](https://github.com/honojs/middleware/tree/main/packages/mcp)), [Neon](https://neon.com) Postgres, and [Drizzle ORM](https://orm.drizzle.team) — deployed as a Neon Function.
+A minimal [Model Context Protocol](https://modelcontextprotocol.io) server that gives an AI agent CRUD access to a contact-management database. Built with the [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk), [Hono](https://hono.dev), [Neon](https://neon.com) Postgres, and [Drizzle ORM](https://orm.drizzle.team) — deployed as a Neon Function.
 
 The server exposes four tools over the streamable HTTP transport:
 
