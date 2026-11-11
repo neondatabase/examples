@@ -17,7 +17,8 @@
 	"environment": [
 		{
 			"name": "GEO_SCAN_TOKEN",
-			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public."
+			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public.",
+			"required": true
 		}
 	]
 }
