@@ -1,0 +1,16 @@
+{
+  "name": "realtime-example-smoke-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "fmt": "prettier --write ."
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0-alpha-2026-10-05",
+    "prettier": "^3.6.2"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  }
+}

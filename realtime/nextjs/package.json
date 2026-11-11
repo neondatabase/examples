@@ -1,0 +1,40 @@
+{
+  "name": "with-realtime-todos-nextjs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "db:setup": "node --env-file-if-exists=.env.local --import tsx scripts/setup.ts",
+    "dev": "next dev",
+    "typecheck": "tsc --noEmit",
+    "sdk:local": "node scripts/local-sdk.mjs",
+    "realtime:env": "neon env pull --service postgres --service realtime --file .env.local && node scripts/realtime-env.mjs",
+    "fmt": "prettier --write .",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@neon/realtime": "0.0.1",
+    "@neon/realtime-drizzle": "0.0.1",
+    "@neon/realtime-react": "0.0.1",
+    "drizzle-orm": "0.45.2",
+    "next": "16.3.8",
+    "pg": "^8.16.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "@types/pg": "^8.15.5",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "prettier": "^3.6.2",
+    "tsx": "^4.23.12",
+    "typescript": "^5.9.2",
+    "@neon/config": "file:.sdk/neon-config.tgz",
+    "@neon/sdk": "file:.sdk/neon-sdk.tgz"
+  },
+  "description": "Neon Realtime todo example with Next.js SSR.",
+  "engines": {
+    "node": ">=22.18.0"
+  }
+}
