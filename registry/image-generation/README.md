@@ -41,7 +41,7 @@ export default defineConfig({
 });
 ```
 
-AI Gateway and Object Storage require a project in a supported region. AI Gateway also requires a paid Neon plan with prepaid credits. See [AI Gateway get started](https://neon.com/docs/ai-gateway/get-started) and [Object Storage get started](https://neon.com/docs/storage/get-started).
+AI Gateway and Object Storage require a project in a supported region. AI Gateway also requires prepaid credits. See [AI Gateway get started](https://neon.com/docs/ai-gateway/get-started), [prepaid credits](https://neon.com/docs/ai-gateway/prepaid-credits), and [Object Storage get started](https://neon.com/docs/storage/get-started).
 
 Deploy once so Neon creates the bucket and injects the `AWS_*` and `NEON_AI_GATEWAY_*` variables into `.env.local`:
 

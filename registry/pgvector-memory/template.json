@@ -1,0 +1,15 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "pgvector-memory",
+	"provider": "Neon",
+	"title": "Semantic memory with pgvector",
+	"description": "Chunk and embed text with Neon AI Gateway, then recall it with a cosine HNSW search in Lakebase Postgres.",
+	"categories": ["ai"],
+	"layout": "router",
+	"dependencies": [
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"openai@7.55.0",
+		"pg@8.23.1"
+	]
+}
