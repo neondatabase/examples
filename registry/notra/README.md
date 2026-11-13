@@ -136,12 +136,21 @@ To scan on a schedule, add a [Function Trigger](https://neon.com/docs/compute/fu
 | --- | --- |
 | `400` | The body is not JSON or fails validation. |
 | `401` | The bearer token is missing or wrong. |
-| `402` | The Notra plan or AI credits do not cover a scan. |
+| `402` | Your Notra plan does not include GEO, or its AI credits do not cover a scan. |
 | `404` | The project or scan does not exist, or the project has no agent readiness report yet. |
 | `405` | The method is not `POST`. |
 | `409` | A scan for this project is still running. |
 | `429` | Notra rate limit reached. |
-| `502` | Notra rejected `NOTRA_API_KEY`, the key lacks the route's scope, or the request failed. |
+| `502` | Notra rejected `NOTRA_API_KEY`, the key may not make the request (for example it lacks the route's scope), or the request failed. |
 | `503` | `NOTRA_API_KEY` is unset, or `NOTRA_FUNCTION_TOKEN` is unset or shorter than 32 characters. |
 
-Errors from Notra include its `code` and `requestId`.
+Errors from Notra also return Notra's own message as `detail`, with its `code` and `requestId`:
+
+```json
+{
+  "error": "Notra rejected NOTRA_API_KEY",
+  "detail": "Invalid API key",
+  "code": "INVALID_API_KEY",
+  "requestId": "1a03403a-0a93-499f-a0f1-4a98f46337d2"
+}
+```

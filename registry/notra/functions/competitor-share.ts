@@ -37,11 +37,7 @@ export default {
 		const body =
 			input && typeof input === "object" && !Array.isArray(input) ? input : {};
 		const { projectId, days = 30 } = body as Record<string, unknown>;
-		const isValidDays =
-			Number.isInteger(days) &&
-			(days as number) >= 1 &&
-			(days as number) <= 365;
-		if (!isId(projectId) || !isValidDays) {
+		if (!isId(projectId) || !isDays(days)) {
 			return Response.json(
 				{ error: "Provide a projectId and days (1-365)" },
 				{ status: 400 },
@@ -53,7 +49,7 @@ export default {
 			const { configured, points } =
 				await notra.geo.getGeoVisibilityCompetitorShare({
 					projectId,
-					days: days as number,
+					days,
 				});
 			return Response.json({
 				configured,
@@ -69,27 +65,40 @@ function isId(value: unknown): value is string {
 	return typeof value === "string" && /^[\w-]{1,100}$/.test(value);
 }
 
+function isDays(value: unknown): value is number {
+	return (
+		typeof value === "number" &&
+		Number.isInteger(value) &&
+		value >= 1 &&
+		value <= 365
+	);
+}
+
+const ERROR_MESSAGES: Record<number, string> = {
+	401: "Notra rejected NOTRA_API_KEY",
+	402: "Your Notra plan does not cover this request",
+	403: "NOTRA_API_KEY is not allowed to make this request",
+	404: "Not found in Notra",
+	429: "Notra rate limit reached",
+};
+
 function getErrorResponse(error: unknown): Response {
 	if (!(error instanceof NotraAPIError)) {
 		return Response.json({ error: "Notra request failed" }, { status: 502 });
 	}
 
-	const message =
-		error.status === 401
-			? "Notra API key was rejected"
-			: error.status === 403
-				? "Notra API key lacks the visibility.read scope"
-				: error.status === 404
-					? "Project not found"
-					: error.status === 429
-						? "Notra rate limit reached"
-						: "Notra request failed";
+	// A rejected key or Notra outage is this function's problem, not the caller's.
 	const status =
 		error.status === 401 || error.status === 403 || error.status >= 500
 			? 502
 			: error.status;
 	return Response.json(
-		{ error: message, code: error.code, requestId: error.requestId },
+		{
+			error: ERROR_MESSAGES[error.status] ?? "Notra request failed",
+			detail: error.message,
+			code: error.code,
+			requestId: error.requestId,
+		},
 		{ status },
 	);
 }
