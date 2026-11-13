@@ -1,0 +1,80 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "notra",
+	"provider": "Notra",
+	"title": "AI search visibility with Notra",
+	"description": "Run AI visibility scans on ChatGPT, Perplexity, and Gemini, and read mention rates, competitor share, content gaps, and agent readiness with Notra.",
+	"categories": ["ai-infrastructure"],
+	"layout": "router",
+	"dependencies": ["@usenotra/sdk@2.0.0"],
+	"environment": [
+		{
+			"name": "NOTRA_API_KEY",
+			"description": "Notra API key (ntra_...) from the API Keys page at app.usenotra.com, with the read and write scopes of the routes you scaffold. Keep this server-side.",
+			"required": true
+		},
+		{
+			"name": "NOTRA_FUNCTION_TOKEN",
+			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public.",
+			"required": true
+		}
+	],
+	"operations": [
+		{
+			"id": "projects",
+			"title": "List projects",
+			"description": "POST to list your Notra projects and their ids, which every other route takes.",
+			"source": "functions/projects.ts",
+			"route": "/projects",
+			"recommended": true
+		},
+		{
+			"id": "scan",
+			"title": "Start a visibility scan",
+			"description": "POST a projectId to ask ChatGPT, Perplexity, Gemini and the other tracked engines every prompt of the project; returns a scanId.",
+			"source": "functions/scan.ts",
+			"route": "/scan",
+			"recommended": true
+		},
+		{
+			"id": "scan-status",
+			"title": "Check a scan",
+			"description": "POST a projectId and scanId to get the scan's status and mentions per engine.",
+			"source": "functions/scan-status.ts",
+			"route": "/scan-status",
+			"recommended": true
+		},
+		{
+			"id": "visibility",
+			"title": "Read visibility per engine",
+			"description": "POST a projectId and optional days (1-365) to get mention rate, citations, and average position per AI engine.",
+			"source": "functions/visibility.ts",
+			"route": "/visibility",
+			"recommended": true
+		},
+		{
+			"id": "competitor-share",
+			"title": "Read competitor share",
+			"description": "POST a projectId and optional days (1-365) to get how often each brand is mentioned in the answers.",
+			"source": "functions/competitor-share.ts",
+			"route": "/competitor-share",
+			"recommended": false
+		},
+		{
+			"id": "content-gaps",
+			"title": "List content gaps",
+			"description": "POST a projectId to list prompts where competitors are mentioned and you are not, ranked by opportunity.",
+			"source": "functions/content-gaps.ts",
+			"route": "/content-gaps",
+			"recommended": false
+		},
+		{
+			"id": "agent-readiness",
+			"title": "Check agent readiness",
+			"description": "POST a projectId to get how well AI agents can read and use your site, or set rescan to start a new check.",
+			"source": "functions/agent-readiness.ts",
+			"route": "/agent-readiness",
+			"recommended": false
+		}
+	]
+}
