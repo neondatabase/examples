@@ -237,6 +237,16 @@
 			"categories": ["community"],
 			"logo": "https://tinysend.com/favicon.svg",
 			"website": "https://tinysend.com/?ref=neon"
+		},
+		{
+			"id": "notra",
+			"provider": "Notra",
+			"title": "AI search visibility with Notra",
+			"description": "Run AI visibility scans on ChatGPT, Perplexity, and Gemini, and read mention rates, competitor share, content gaps, and agent readiness with Notra.",
+			"path": "notra/template.json",
+			"categories": ["community"],
+			"logo": "https://www.usenotra.com/logo-dark.svg",
+			"website": "https://www.usenotra.com/?ref=neon"
 		}
 	]
 }
