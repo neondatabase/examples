@@ -46,15 +46,9 @@ export default {
 
 		try {
 			const notra = new Notra({ apiKey, timeoutMs: 30_000, maxRetries: 0 });
-			const { configured, points } =
-				await notra.geo.getGeoVisibilityCompetitorShare({
-					projectId,
-					days,
-				});
-			return Response.json({
-				configured,
-				brands: points.map(({ brand, mentions }) => ({ brand, mentions })),
-			});
+			const { organization: _organization, ...share } =
+				await notra.geo.getGeoVisibilityCompetitorShare({ projectId, days });
+			return Response.json(share);
 		} catch (error) {
 			return getErrorResponse(error);
 		}

@@ -10,7 +10,7 @@ This Neon Function runs AI visibility scans and reads their results through [Not
 | `POST /scan` | yes | `{ projectId }` starts a scan of every tracked prompt on every engine of the project and returns a `scanId`. |
 | `POST /scan-status` | yes | `{ projectId, scanId }` returns the scan's `status` (`running`, `completed` or `failed`) and mentions per engine. |
 | `POST /visibility` | yes | `{ projectId, days? }` returns mention rate, citations and average position per engine over the last `days` (1-365, default 30). |
-| `POST /competitor-share` | no | `{ projectId, days? }` returns how often each brand is mentioned in the answers. |
+| `POST /competitor-share` | no | `{ projectId, days? }` returns `points`, how often each brand is mentioned in the answers, and a daily `timeseries`. |
 | `POST /content-gaps` | no | `{ projectId }` returns `promptGaps`, prompts where competitors are mentioned and you are not, plus `searchGaps` from Google Search Console and `aiSearchGaps`, queries AI engines searched without finding you. |
 | `POST /agent-readiness` | no | `{ projectId }` returns how well AI agents can read and use your site. Add `"rescan": true` to start a new check. |
 

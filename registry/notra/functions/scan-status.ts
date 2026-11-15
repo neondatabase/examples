@@ -46,8 +46,12 @@ export default {
 
 		try {
 			const notra = new Notra({ apiKey, timeoutMs: 30_000, maxRetries: 0 });
-			const { scan } = await notra.geo.getGeoScan({ projectId, scanId });
-			return Response.json({ scan });
+			const { organization: _organization, ...scan } =
+				await notra.geo.getGeoScan({
+					projectId,
+					scanId,
+				});
+			return Response.json(scan);
 		} catch (error) {
 			return getErrorResponse(error);
 		}

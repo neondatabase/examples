@@ -47,9 +47,9 @@ export default {
 		try {
 			const notra = new Notra({ apiKey, timeoutMs: 30_000, maxRetries: 0 });
 			if (rescan) {
-				const { reportId, alreadyRunning } =
+				const { organization: _organization, ...started } =
 					await notra.geo.startGeoAgentReadinessScan({ projectId });
-				return Response.json({ reportId, alreadyRunning }, { status: 202 });
+				return Response.json(started, { status: 202 });
 			}
 			const { organization: _organization, ...readiness } =
 				await notra.geo.getGeoAgentReadiness({ projectId });

@@ -29,8 +29,9 @@ export default {
 
 		try {
 			const notra = new Notra({ apiKey, timeoutMs: 30_000, maxRetries: 0 });
-			const { projects } = await notra.geo.listProjects();
-			return Response.json({ projects });
+			const { organization: _organization, ...projects } =
+				await notra.geo.listProjects();
+			return Response.json(projects);
 		} catch (error) {
 			return getErrorResponse(error);
 		}

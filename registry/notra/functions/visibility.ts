@@ -46,11 +46,9 @@ export default {
 
 		try {
 			const notra = new Notra({ apiKey, timeoutMs: 30_000, maxRetries: 0 });
-			const { configured, engines } = await notra.geo.getGeoVisibilityOverview({
-				projectId,
-				days,
-			});
-			return Response.json({ configured, engines });
+			const { organization: _organization, ...visibility } =
+				await notra.geo.getGeoVisibilityOverview({ projectId, days });
+			return Response.json(visibility);
 		} catch (error) {
 			return getErrorResponse(error);
 		}
