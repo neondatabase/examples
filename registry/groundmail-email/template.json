@@ -1,0 +1,37 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "groundmail-email",
+	"provider": "Groundmail",
+	"title": "Send email with Groundmail",
+	"description": "Send transactional email through Groundmail with HTML, text or a saved template, and an idempotency key so a retry sends once.",
+	"categories": ["email"],
+	"layout": "router",
+	"dependencies": ["groundmail@0.53.0"],
+	"environment": [
+		{
+			"name": "GROUNDMAIL_API_KEY",
+			"description": "API key (gm_...) from app.groundmail.dev/api-keys. A gm_test_ key runs sends without delivering them. Keep it server-side.",
+			"required": true
+		},
+		{
+			"name": "GROUNDMAIL_FROM",
+			"description": "Default sender on a verified domain, for example Acme <hello@yourdomain.com>. A request can set another in from.",
+			"required": false
+		},
+		{
+			"name": "GROUNDMAIL_FUNCTION_TOKEN",
+			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public.",
+			"required": true
+		}
+	],
+	"operations": [
+		{
+			"id": "send-email",
+			"title": "Send an email",
+			"description": "POST to and subject with html or text, or a saved template with variables; optionally from, reply_to and tags. An Idempotency-Key header makes a retry return the first send.",
+			"source": "functions/send-email.ts",
+			"route": "/send-email",
+			"recommended": true
+		}
+	]
+}
