@@ -63,7 +63,7 @@
 		{
 			"id": "content-gaps",
 			"title": "List content gaps",
-			"description": "POST a projectId to list prompts where competitors are mentioned and you are not, ranked by opportunity.",
+			"description": "POST a projectId to list prompts where competitors are mentioned and you are not, plus Search Console and AI search queries you are missing from.",
 			"source": "functions/content-gaps.ts",
 			"route": "/content-gaps",
 			"recommended": false

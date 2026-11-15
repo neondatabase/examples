@@ -11,7 +11,7 @@ This Neon Function runs AI visibility scans and reads their results through [Not
 | `POST /scan-status` | yes | `{ projectId, scanId }` returns the scan's `status` (`running`, `completed` or `failed`) and mentions per engine. |
 | `POST /visibility` | yes | `{ projectId, days? }` returns mention rate, citations and average position per engine over the last `days` (1-365, default 30). |
 | `POST /competitor-share` | no | `{ projectId, days? }` returns how often each brand is mentioned in the answers. |
-| `POST /content-gaps` | no | `{ projectId }` lists prompts where competitors are mentioned and you are not, ranked by opportunity. |
+| `POST /content-gaps` | no | `{ projectId }` returns `promptGaps`, prompts where competitors are mentioned and you are not, plus `searchGaps` from Google Search Console and `aiSearchGaps`, queries AI engines searched without finding you. |
 | `POST /agent-readiness` | no | `{ projectId }` returns how well AI agents can read and use your site. Add `"rescan": true` to start a new check. |
 
 </Operations>
@@ -99,15 +99,15 @@ The response looks like this, with one entry per engine:
   "configured": true,
   "engines": [
     {
-      "engine": "chatgpt",
-      "checks": 40,
-      "mentions": 26,
-      "mentionRate": 0.65,
-      "citations": 11,
-      "visibility": 29,
-      "visibilityRate": 0.725,
-      "avgPosition": 2.1,
-      "lastCheckedAt": "2026-11-13T07:00:12.000Z"
+      "engine": "perplexity/sonar-grounded",
+      "checks": 600,
+      "mentions": 38,
+      "mentionRate": 0.063,
+      "citations": 94,
+      "visibility": 94,
+      "visibilityRate": 0.157,
+      "avgPosition": 1.7,
+      "lastCheckedAt": "2026-11-11T19:46:14.214Z"
     }
   ]
 }
