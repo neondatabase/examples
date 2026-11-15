@@ -28,7 +28,9 @@ When neon.com is unreachable, the CLI falls back to
 
 Installing a template does not fetch modules from neon.com. The CLI downloads the
 `neondatabase/examples` tarball from GitHub (`codeload.github.com`) and extracts only
-`registry/<id>/`, the same way `neon bootstrap` extracts a template subdirectory.
+`registry/<id>/`, the same way `neon bootstrap` extracts a template subdirectory. An index entry
+with `source.github` is read from that repository instead (see
+[CONTRIBUTING.md](CONTRIBUTING.md#3-add-the-index-entry)).
 
 A merge to `main` updates the cached catalog within about an hour, without a CLI release or a
 website deploy. The next `functions new` then sees the new files in the tarball.

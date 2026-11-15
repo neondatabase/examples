@@ -36,7 +36,7 @@
 					"path": {
 						"type": "string",
 						"maxLength": 255,
-						"description": "Path to the template's template.json, relative to this index."
+						"description": "Path to the template's template.json, relative to this index, or to source.github.dir when source is set."
 					},
 					"logo": {
 						"type": "string",
@@ -58,6 +58,39 @@
 						"pattern": "^https://",
 						"maxLength": 2048,
 						"description": "Display-only partner site. The CLI never fetches it."
+					},
+					"source": {
+						"type": "object",
+						"minProperties": 1,
+						"description": "Where the template's files live when they are not in this registry. Without it, path is read from this registry. A source with any key other than github is listed, but installing it asks for a newer CLI.",
+						"properties": {
+							"github": {
+								"type": "object",
+								"required": ["owner", "repo"],
+								"description": "A public GitHub repository. path and the modules template.json names are read from <owner>/<repo> at ref, under dir.",
+								"properties": {
+									"owner": {
+										"type": "string",
+										"pattern": "^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$"
+									},
+									"repo": {
+										"type": "string",
+										"pattern": "^(?!\\.\\.?$)[A-Za-z0-9._-]{1,100}$"
+									},
+									"ref": {
+										"type": "string",
+										"pattern": "^[A-Za-z0-9._/+-]{1,255}$",
+										"description": "Branch, tag, or commit. Defaults to HEAD, the repository's default branch."
+									},
+									"dir": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 255,
+										"description": "Folder inside the repository that path is relative to. Relative, with no . or .. segments."
+									}
+								}
+							}
+						}
 					}
 				}
 			}

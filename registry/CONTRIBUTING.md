@@ -136,6 +136,27 @@ even when the template wraps a third-party SDK. Set them only when another compa
 template. Set `logoDark` when `logo` is dark on a transparent background; listings show it in dark
 mode and fall back to `logo` without it.
 
+To keep the template in your own public GitHub repository instead of a folder here, add `source`
+to the index entry. `path` and the modules `template.json` names are then read from that repository
+at `ref` (default `HEAD`), under `dir` (default the repository root):
+
+```json
+{
+	"id": "workos-sync",
+	"provider": "WorkOS",
+	"title": "Mirror WorkOS data into Postgres",
+	"description": "Backfill, tail the Events API, and reconcile drift on a cron, with a WorkOS webhook nudge. Join users, organizations, and memberships in SQL.",
+	"path": "template.json",
+	"categories": ["partner"],
+	"source": {
+		"github": { "owner": "workos", "repo": "neon-sync", "ref": "main", "dir": "packages/fn" }
+	}
+}
+```
+
+The same path rules apply inside that repository. Neon reviews the entry, not later commits to
+`ref`, so pin a tag or commit if you want each install to get reviewed code.
+
 An entry that fails validation is dropped from the listing without an error, so check that your
 template shows up (see below). Do not add generated archives. The CLI builds what it needs from
 this folder's source files.
