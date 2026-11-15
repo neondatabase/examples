@@ -247,6 +247,16 @@
 			"categories": ["community"],
 			"logo": "https://www.usenotra.com/logo-dark.svg",
 			"website": "https://www.usenotra.com/?ref=neon"
+		},
+		{
+			"id": "groundmail-email",
+			"provider": "Groundmail",
+			"title": "Send email with Groundmail",
+			"description": "Send transactional email through Groundmail with HTML, text or a saved template, and an idempotency key so a retry sends once.",
+			"path": "groundmail-email/template.json",
+			"categories": ["community"],
+			"logo": "https://groundmail.dev/icon.svg",
+			"website": "https://groundmail.dev/?utm_source=neon&utm_medium=template&utm_campaign=neon-functions"
 		}
 	]
 }
