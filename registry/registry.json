@@ -229,6 +229,16 @@
 			"website": "https://manufact.com/"
 		},
 		{
+			"id": "tinysend-email",
+			"provider": "Tinysend",
+			"title": "Send email with Tinysend",
+			"description": "Send transactional email from a Tinysend mailbox on tinysend.com or your own domain, with an idempotency key so a retry sends once.",
+			"path": "tinysend-email/template.json",
+			"categories": ["community"],
+			"logo": "https://tinysend.com/favicon.svg",
+			"website": "https://tinysend.com/?ref=neon"
+		},
+		{
 			"id": "notra",
 			"provider": "Notra",
 			"title": "AI search visibility with Notra",
