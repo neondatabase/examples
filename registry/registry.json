@@ -235,8 +235,8 @@
 			"description": "Run AI visibility scans on ChatGPT, Perplexity, and Gemini, and read mention rates, competitor share, content gaps, and agent readiness with Notra.",
 			"path": "notra/template.json",
 			"categories": ["community"],
-			"logo": "https://avatars.githubusercontent.com/u/250950776?v=4",
-			"website": "https://www.usenotra.com/"
+			"logo": "https://www.usenotra.com/favicon.svg",
+			"website": "https://www.usenotra.com/?ref=neon"
 		}
 	]
 }

@@ -31,7 +31,7 @@ The CLI asks which routes to include, and `--all-operations` includes every rout
 
 ## Configure Notra
 
-[Sign up for Notra](https://app.usenotra.com), add your brand as a project, and create an API key on the **API Keys** page. Give the key the scopes of the routes you scaffold:
+[Sign up for Notra](https://app.usenotra.com), add your brand as a project, and create an API key on the **API Keys** page. GEO, which every route uses, is included in the Starter, Growth and Scale plans. Give the key the scopes of the routes you scaffold:
 
 | Route | Scope |
 | --- | --- |
@@ -128,7 +128,7 @@ neon functions get notra
 
 `neon functions get` prints the function's public URL. Call it the same way as locally, with the bearer token.
 
-To scan on a schedule, add a [Function Trigger](https://neon.com/docs/compute/functions/triggers/overview) that calls `/scan`, or let Notra run its own scheduled scans and read them with `/visibility`.
+Notra already scans each project on the schedule set in its GEO settings, so `/visibility` and the other read routes stay current without calling `/scan`. Use `/scan` for an extra run, for example right after you publish new content.
 
 ## Errors
 
