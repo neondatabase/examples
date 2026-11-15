@@ -6,6 +6,7 @@
 	"description": "Send transactional email from a Tinysend mailbox on tinysend.com or your own domain, with an idempotency key so a retry sends once.",
 	"categories": ["email"],
 	"layout": "router",
+	"dependencies": ["zod@4.6.7"],
 	"environment": [
 		{
 			"name": "TINYSEND_API_KEY",

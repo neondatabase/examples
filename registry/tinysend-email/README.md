@@ -2,28 +2,30 @@
 
 This Neon Function sends transactional email through [Tinysend](https://tinysend.com/?ref=neon) from one of your Tinysend mailboxes, on tinysend.com or on your own domain.
 
-<Operations>
-
-| Route | What it does |
-| --- | --- |
-| `POST /send-email` | Sends one email with `to`, `subject`, and `text`, `html` or both. Add `from` to send from another of your mailboxes, plus `reply_to`, `tag` or `metadata`. An `Idempotency-Key` header makes a retry return the first send. |
-
-</Operations>
-
-## Setup
+## Scaffold it
 
 ```bash
+npm install -g neon@latest
+neon login
+neon link
 neon functions new tinysend-email
 ```
 
+The CLI writes `functions/tinysendemail/`, declares the function in `neon.ts`, and adds the three environment variables to `.env.example`.
+
+## Configure Tinysend
+
 Create an API key at [app.tinysend.com/account/tokens](https://app.tinysend.com/account/tokens). Every account has a mailbox on tinysend.com to send from; to send from your own domain, add it in Tinysend first.
 
+Add the values to `.env.local` without replacing the Neon values already there:
+
 ```bash
-echo "TINYSEND_API_KEY=sk_..." >> .env.local
-echo "TINYSEND_FROM=you@tinysend.com" >> .env.local
+cat >> .env.local <<'EOF'
+TINYSEND_API_KEY=sk_...
+TINYSEND_FROM=you@tinysend.com
+EOF
 export TINYSEND_FUNCTION_TOKEN=$(openssl rand -hex 32)
 echo "TINYSEND_FUNCTION_TOKEN=$TINYSEND_FUNCTION_TOKEN" >> .env.local
-neon dev
 ```
 
 <EnvironmentVariables>
@@ -34,7 +36,13 @@ neon dev
 
 </EnvironmentVariables>
 
-## Send
+## Run locally
+
+```bash
+neon dev
+```
+
+Call the URL that `neon dev` prints (the default is `http://localhost:8787/`). Send an email:
 
 ```bash
 curl -s http://localhost:8787/send-email \
@@ -61,12 +69,46 @@ curl -s http://localhost:8787/send-email \
 
 Sending the same `idempotency-key` again returns this answer and sends nothing.
 
+## Routes
+
+<Operations>
+
+| Method | Path | Auth | Body | Result |
+| --- | --- | --- | --- | --- |
+| `POST` | `/send-email` | Bearer `TINYSEND_FUNCTION_TOKEN` | `{ to, subject, text?, html?, from?, reply_to?, tag?, metadata? }` | `200` with the Tinysend send, or an error |
+
+</Operations>
+
+`to`, `from` and `reply_to` are email addresses, and `from` must be one of your Tinysend mailboxes. Send `text`, `html` or both. `subject` can be up to 998 characters and `tag` up to 120. `metadata` is an object of string values. An `Idempotency-Key` header makes a retry return the first send.
+
+## Deploy
+
+```bash
+neon deploy --env .env.local
+neon functions get tinysendemail
+```
+
+`neon functions get` prints the function's public URL, which you can test with `curl`:
+
+```bash
+curl -s https://<function-url>/send-email \
+  -H "authorization: Bearer $TINYSEND_FUNCTION_TOKEN" \
+  -H 'content-type: application/json' \
+  -d '{
+    "to": "grace@example.com",
+    "subject": "Your receipt",
+    "text": "Thanks for your order."
+  }'
+```
+
+> Replace `<function-url>` with the URL from `neon functions get tinysendemail`.
+
 ## Errors
 
-- `400`: a missing `to` or `subject`, or neither `text` nor `html`
+- `400`: a body that is not a JSON object, a missing or invalid field, or neither `text` nor `html`
 - `401`: a missing or wrong function token
 - `402`: the Tinysend plan's monthly limit is reached
+- `413`: a body over 512 KB
 - `422`: Tinysend refused the sender or the recipient, with its reason
-- `502`: Tinysend rejected the API key or could not be reached
-
-To receive email and reply in the same thread, see the `tinysend-inbound` template. For sign-ups with a confirmation email, see `tinysend-signups`.
+- `502`: Tinysend rejected the API key, could not be reached, or failed to send
+- `503`: `TINYSEND_API_KEY` is unset, or `TINYSEND_FUNCTION_TOKEN` is unset or shorter than 32 characters

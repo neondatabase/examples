@@ -1,18 +1,36 @@
 import { timingSafeEqual } from "node:crypto";
+import { z } from "zod";
 
 const TINYSEND_API = "https://api.tinysend.com/v1";
 const MAX_BODY_BYTES = 512 * 1024;
 
-type SendRequest = {
-	from?: string;
-	to: string;
-	subject: string;
-	text?: string;
-	html?: string;
-	reply_to?: string;
-	tag?: string;
-	metadata?: Record<string, string>;
-};
+const SendRequest = z
+	.object({
+		from: z.email().optional(),
+		to: z.email(),
+		subject: z.string().trim().min(1).max(998),
+		text: z.string().optional(),
+		html: z.string().optional(),
+		reply_to: z.email().optional(),
+		tag: z.string().max(120).optional(),
+		metadata: z.record(z.string(), z.string()).optional(),
+	})
+	.refine((send) => send.text !== undefined || send.html !== undefined, {
+		error: "text or html is required",
+	});
+
+const TinysendEmail = z.object({
+	id: z.string(),
+	status: z.string(),
+	from: z.string(),
+	to: z.string(),
+	subject: z.string().nullable(),
+	created_at: z.string().nullable(),
+});
+
+const TinysendError = z.object({
+	error: z.object({ message: z.string() }),
+});
 
 export default {
 	async fetch(request: Request): Promise<Response> {
@@ -29,84 +47,60 @@ export default {
 			return jsonError("Unauthorized", 401);
 		}
 
-		const body = await readJson(request);
-		if (!body) return jsonError("Expected a JSON object", 400);
+		const text = await request.text();
+		if (text.length > MAX_BODY_BYTES) {
+			return jsonError(`Body must be at most ${MAX_BODY_BYTES} bytes`, 413);
+		}
 
-		const send = parseSend(body, process.env.TINYSEND_FROM);
-		if (typeof send === "string") return jsonError(send, 400);
+		let body: unknown;
+		try {
+			body = JSON.parse(text);
+		} catch {
+			return jsonError("Expected a JSON object", 400);
+		}
 
-		// A retry with the same key returns the first send instead of sending twice.
+		const parsed = SendRequest.safeParse(body);
+		if (!parsed.success) return jsonError(formatIssues(parsed.error), 400);
+
+		const send = { ...parsed.data, from: parsed.data.from ?? (process.env.TINYSEND_FROM || undefined) };
 		const idempotencyKey = request.headers.get("idempotency-key");
-		const headers = {
-			Authorization: `Bearer ${apiKey}`,
-			"Content-Type": "application/json",
-			...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
-		};
 
 		let response: Response;
 		try {
 			response = await fetch(`${TINYSEND_API}/emails`, {
 				method: "POST",
-				headers,
+				headers: {
+					Authorization: `Bearer ${apiKey}`,
+					"Content-Type": "application/json",
+					...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+				},
 				body: JSON.stringify(send),
 			});
 		} catch {
 			return jsonError("Tinysend could not be reached", 502);
 		}
 
-		const answer = await response.json().catch(() => null);
+		const answer: unknown = await response.json().catch(() => null);
 		if (!response.ok) return tinysendError(response.status, answer);
 
-		const sent = answer as Record<string, unknown>;
-		return Response.json({
-			id: sent.id,
-			status: sent.status,
-			from: sent.from,
-			to: sent.to,
-			subject: sent.subject,
-			created_at: sent.created_at,
-		});
+		const sent = TinysendEmail.safeParse(answer);
+		if (!sent.success) return jsonError("Tinysend returned an unexpected response", 502);
+		return Response.json(sent.data);
 	},
 };
 
-function parseSend(body: Record<string, unknown>, defaultFrom: string | undefined): SendRequest | string {
-	const { to, subject, text, html, reply_to, tag, metadata } = body;
-	const from = body.from ?? defaultFrom;
-	if (typeof to !== "string" || to.trim() === "") return "to is required";
-	if (typeof subject !== "string" || subject.trim() === "") return "subject is required";
-	if (typeof text !== "string" && typeof html !== "string") return "text or html is required";
-	if (from !== undefined && typeof from !== "string") return "from must be a string";
-	if (reply_to !== undefined && typeof reply_to !== "string") return "reply_to must be a string";
-	if (tag !== undefined && typeof tag !== "string") return "tag must be a string";
-	if (metadata !== undefined && !isRecord(metadata)) return "metadata must be an object";
-
-	const send: SendRequest = { to, subject };
-	if (from) send.from = from;
-	if (typeof text === "string") send.text = text;
-	if (typeof html === "string") send.html = html;
-	if (reply_to) send.reply_to = reply_to;
-	if (tag) send.tag = tag;
-	if (metadata) send.metadata = metadata as Record<string, string>;
-	return send;
-}
-
 function tinysendError(status: number, answer: unknown): Response {
-	const message = errorMessage(answer) ?? "Tinysend request failed";
-	// A rejected API key is the function's problem, not the caller's.
 	if (status === 401 || status === 403) {
 		return jsonError("Tinysend rejected the API key", 502);
 	}
-	// 402 is a plan limit, 422 a sender or recipient Tinysend refused: the caller can act on both.
-	if (status >= 400 && status < 500) return jsonError(message, status);
-	return jsonError(message, 502);
+	const message = TinysendError.safeParse(answer).data?.error.message ?? "Tinysend request failed";
+	return jsonError(message, status >= 400 && status < 500 ? status : 502);
 }
 
-function errorMessage(answer: unknown): string | null {
-	if (!isRecord(answer)) return null;
-	const error = answer.error;
-	if (typeof error === "string") return error;
-	if (isRecord(error) && typeof error.message === "string") return error.message;
-	return null;
+function formatIssues(error: z.ZodError): string {
+	return error.issues
+		.map((issue) => (issue.path.length > 0 ? `${issue.path.join(".")}: ${issue.message}` : issue.message))
+		.join("; ");
 }
 
 function isAuthorized(request: Request, expectedToken: string): boolean {
@@ -114,21 +108,6 @@ function isAuthorized(request: Request, expectedToken: string): boolean {
 	const expectedBytes = Buffer.from(expectedToken);
 	const providedBytes = Buffer.from(providedToken);
 	return providedBytes.length === expectedBytes.length && timingSafeEqual(providedBytes, expectedBytes);
-}
-
-async function readJson(request: Request): Promise<Record<string, unknown> | null> {
-	const text = await request.text();
-	if (text.length > MAX_BODY_BYTES) return null;
-	try {
-		const body: unknown = JSON.parse(text);
-		return isRecord(body) ? body : null;
-	} catch {
-		return null;
-	}
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function jsonError(message: string, status: number): Response {
