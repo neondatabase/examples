@@ -1,5 +1,11 @@
 import { timingSafeEqual } from "node:crypto";
 import { Notra, NotraAPIError } from "@usenotra/sdk";
+import { z } from "zod";
+
+const Config = z.object({
+	apiKey: z.string().min(1),
+	expectedToken: z.string().min(32),
+});
 
 export default {
 	async fetch(request: Request): Promise<Response> {
@@ -7,14 +13,17 @@ export default {
 			return new Response(null, { status: 405, headers: { Allow: "POST" } });
 		}
 
-		const apiKey = process.env.NOTRA_API_KEY;
-		const expectedToken = process.env.NOTRA_FUNCTION_TOKEN;
-		if (!apiKey || !expectedToken || expectedToken.length < 32) {
+		const config = Config.safeParse({
+			apiKey: process.env.NOTRA_API_KEY,
+			expectedToken: process.env.NOTRA_FUNCTION_TOKEN,
+		});
+		if (!config.success) {
 			return Response.json(
 				{ error: "Notra function is not configured" },
 				{ status: 503 },
 			);
 		}
+		const { apiKey, expectedToken } = config.data;
 
 		const providedToken =
 			request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1] ?? "";
@@ -51,7 +60,6 @@ function getErrorResponse(error: unknown): Response {
 		return Response.json({ error: "Notra request failed" }, { status: 502 });
 	}
 
-	// A rejected key or Notra outage is this function's problem, not the caller's.
 	const status =
 		error.status === 401 || error.status === 403 || error.status >= 500
 			? 502

@@ -6,7 +6,7 @@
 	"description": "Run AI visibility scans on ChatGPT, Perplexity, and Gemini, and read mention rates, competitor share, content gaps, and agent readiness with Notra.",
 	"categories": ["ai-infrastructure"],
 	"layout": "router",
-	"dependencies": ["@usenotra/sdk@2.0.0"],
+	"dependencies": ["@usenotra/sdk@2.0.0", "zod@4.6.7"],
 	"environment": [
 		{
 			"name": "NOTRA_API_KEY",

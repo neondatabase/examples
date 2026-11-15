@@ -1,5 +1,16 @@
 import { timingSafeEqual } from "node:crypto";
 import { Notra, NotraAPIError } from "@usenotra/sdk";
+import { z } from "zod";
+
+const Config = z.object({
+	apiKey: z.string().min(1),
+	expectedToken: z.string().min(32),
+});
+
+const VisibilityRequest = z.object({
+	projectId: z.string().regex(/^[\w-]{1,100}$/),
+	days: z.number().int().min(1).max(365).default(30),
+});
 
 export default {
 	async fetch(request: Request): Promise<Response> {
@@ -7,14 +18,17 @@ export default {
 			return new Response(null, { status: 405, headers: { Allow: "POST" } });
 		}
 
-		const apiKey = process.env.NOTRA_API_KEY;
-		const expectedToken = process.env.NOTRA_FUNCTION_TOKEN;
-		if (!apiKey || !expectedToken || expectedToken.length < 32) {
+		const config = Config.safeParse({
+			apiKey: process.env.NOTRA_API_KEY,
+			expectedToken: process.env.NOTRA_FUNCTION_TOKEN,
+		});
+		if (!config.success) {
 			return Response.json(
 				{ error: "Notra function is not configured" },
 				{ status: 503 },
 			);
 		}
+		const { apiKey, expectedToken } = config.data;
 
 		const providedToken =
 			request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1] ?? "";
@@ -34,15 +48,14 @@ export default {
 			return Response.json({ error: "Expected a JSON body" }, { status: 400 });
 		}
 
-		const body =
-			input && typeof input === "object" && !Array.isArray(input) ? input : {};
-		const { projectId, days = 30 } = body as Record<string, unknown>;
-		if (!isId(projectId) || !isDays(days)) {
+		const parsed = VisibilityRequest.safeParse(input);
+		if (!parsed.success) {
 			return Response.json(
 				{ error: "Provide a projectId and days (1-365)" },
 				{ status: 400 },
 			);
 		}
+		const { projectId, days } = parsed.data;
 
 		try {
 			const notra = new Notra({ apiKey, timeoutMs: 30_000, maxRetries: 0 });
@@ -54,19 +67,6 @@ export default {
 		}
 	},
 };
-
-function isId(value: unknown): value is string {
-	return typeof value === "string" && /^[\w-]{1,100}$/.test(value);
-}
-
-function isDays(value: unknown): value is number {
-	return (
-		typeof value === "number" &&
-		Number.isInteger(value) &&
-		value >= 1 &&
-		value <= 365
-	);
-}
 
 const ERROR_MESSAGES: Record<number, string> = {
 	401: "Notra rejected NOTRA_API_KEY",
@@ -81,7 +81,6 @@ function getErrorResponse(error: unknown): Response {
 		return Response.json({ error: "Notra request failed" }, { status: 502 });
 	}
 
-	// A rejected key or Notra outage is this function's problem, not the caller's.
 	const status =
 		error.status === 401 || error.status === 403 || error.status >= 500
 			? 502
