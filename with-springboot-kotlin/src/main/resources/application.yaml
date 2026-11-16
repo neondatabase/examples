@@ -1,0 +1,10 @@
+spring:
+  config:
+    import: "optional:file:.env[.properties]"
+
+  datasource:
+    url: ${NEON_JDBC_URL}
+    username: ${NEON_USER}
+    password: ${NEON_PASSWORD}
+server:
+  port: 8080
