@@ -1,0 +1,10 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "google-adk",
+	"provider": "Neon",
+	"title": "Fact-checking agent with Google ADK",
+	"description": "Send a claim to a Google ADK agent that verifies it with Google Search on Gemini and returns a verdict and its sources through Neon AI Gateway.",
+	"categories": ["ai", "agents"],
+	"layout": "router",
+	"dependencies": ["@google/adk@2.5.0"]
+}
