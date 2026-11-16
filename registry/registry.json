@@ -247,6 +247,14 @@
 			"categories": ["community"],
 			"logo": "https://www.usenotra.com/logo-dark.svg",
 			"website": "https://www.usenotra.com/?ref=neon"
+		},
+		{
+			"id": "sql-alerts",
+			"provider": "Neon",
+			"title": "Alert on SQL thresholds",
+			"description": "Post to Slack on a cron when a SQL check is past its threshold.",
+			"path": "sql-alerts/template.json",
+			"categories": ["first-party"]
 		}
 	]
 }
