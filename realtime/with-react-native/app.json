@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Neon Realtime Todos",
+    "slug": "neon-realtime-todos",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.neon.realtime.todos",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.neon.realtime.todos"
+    }
+  }
+}
