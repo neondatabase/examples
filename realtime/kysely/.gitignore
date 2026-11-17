@@ -1,0 +1,13 @@
+.env
+.env.local
+.env.*.local
+.neon
+.sdk/
+node_modules/
+dist/
+.next/
+.output/
+.nitro/
+*.tsbuildinfo
+dist-server/
+.neon-create.json
