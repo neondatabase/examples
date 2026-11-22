@@ -24,6 +24,5 @@
 			"description": "A random secret of letters, digits, _ and - that the function uses to verify that incoming requests come from Telegram.",
 			"required": true
 		}
-	],
-	"features": ["ai-gateway", "postgres"]
+	]
 }

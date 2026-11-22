@@ -52,9 +52,5 @@
 			"description": "Set it to off to disable the per-IP limit of 60 requests a minute, for example in tests.",
 			"required": false
 		}
-	],
-	"features": [
-		"object-storage",
-		{ "id": "function-triggers", "types": ["schedule"] }
 	]
 }

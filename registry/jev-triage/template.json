@@ -16,6 +16,5 @@
 			"name": "JEV_TRIAGE_TOKEN",
 			"description": "A random token of at least 32 characters, for example from openssl rand -hex 32, that callers send as Authorization: Bearer <token>. The function requires it because Neon Function URLs are public."
 		}
-	],
-	"features": ["ai-gateway"]
+	]
 }

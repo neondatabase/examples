@@ -28,9 +28,5 @@
 			"description": "GET /status requires this bearer token because function URLs are public. Use any long random string, for example from `openssl rand -hex 32`.",
 			"required": true
 		}
-	],
-	"features": [
-		"postgres",
-		{ "id": "function-triggers", "types": ["schedule"] }
 	]
 }

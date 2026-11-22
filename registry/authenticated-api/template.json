@@ -7,6 +7,5 @@
 	"categories": ["auth"],
 	"layout": "router",
 	"dependencies": ["hono@4.13.13", "jose@6.2.12"],
-	"environment": [],
-	"features": ["auth"]
+	"environment": []
 }

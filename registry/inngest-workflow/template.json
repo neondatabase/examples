@@ -24,6 +24,5 @@
 			"description": "The function sends app/job.created events to Inngest with this key. Find it in Inngest Cloud on the Keys page under Manage.",
 			"required": true
 		}
-	],
-	"features": ["postgres"]
+	]
 }

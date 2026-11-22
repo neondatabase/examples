@@ -20,6 +20,5 @@
 			"description": "Clients send this random token of at least 32 characters as Authorization: Bearer <token>, and you can generate it with openssl rand -hex 32. The function requires it because its URL is public.",
 			"required": true
 		}
-	],
-	"features": ["postgres"]
+	]
 }

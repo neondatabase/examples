@@ -22,6 +22,5 @@
 			"description": "Set this to the public URL of this function's /mcp endpoint, which has the form https://<NEON_BRANCH_ID>-<slug><NEON_FUNCTION_HOST_SUFFIX>/mcp. The neon link command writes NEON_BRANCH_ID and NEON_FUNCTION_HOST_SUFFIX to .env.local. The URL must match the MCP server URL on the branch's OAuth provider.",
 			"required": false
 		}
-	],
-	"features": ["auth", "postgres"]
+	]
 }

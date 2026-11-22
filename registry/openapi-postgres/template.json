@@ -21,6 +21,5 @@
 			"description": "A random token of at least 32 characters, for example from openssl rand -hex 32, that callers send as Authorization: Bearer <token> on POST, PATCH, and DELETE. It is required because Neon Function URLs are public.",
 			"required": true
 		}
-	],
-	"features": ["postgres"]
+	]
 }
