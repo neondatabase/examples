@@ -147,6 +147,14 @@
 			"categories": ["first-party"]
 		},
 		{
+			"id": "upload-alt-text",
+			"provider": "Neon",
+			"title": "Alt text for uploaded images",
+			"description": "A storage trigger runs the function for every image uploaded to an Object Storage bucket. A vision model on AI Gateway writes alt text and tags, and the function saves them in Postgres.",
+			"path": "upload-alt-text/template.json",
+			"categories": ["first-party"]
+		},
+		{
 			"id": "chat-sdk",
 			"provider": "Neon",
 			"title": "Chat SDK bot for Slack, Telegram, and the web",

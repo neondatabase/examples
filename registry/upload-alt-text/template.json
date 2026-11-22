@@ -1,0 +1,19 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "upload-alt-text",
+	"provider": "Neon",
+	"title": "Alt text for uploaded images",
+	"description": "A storage trigger runs the function for every image uploaded to an Object Storage bucket. A vision model on AI Gateway writes alt text and tags, and the function saves them in Postgres.",
+	"categories": ["storage", "ai"],
+	"layout": "router",
+	"dependencies": [
+		"@aws-sdk/client-s3@3.1156.0",
+		"@neon/ai-sdk-provider@1.1.0",
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"ai@7.0.150",
+		"drizzle-orm@0.45.4",
+		"pg@8.23.1",
+		"zod@4.6.7"
+	]
+}
