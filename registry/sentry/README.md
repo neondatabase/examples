@@ -17,13 +17,13 @@ neon link
 neon functions new sentry
 ```
 
-The CLI writes `functions/sentry/index.ts`, declares `sentry` in `neon.ts`, and installs `@sentry/node` and `hono`. The template has no `operations`, so the CLI copies its single module as `index.ts`; Sentry is initialized once, at module load.
+The CLI writes `functions/sentry/index.ts`, declares `sentry` in `neon.ts`, and installs `@sentry/node` and `hono`. The template has no `operations`, so the CLI copies its single module as `index.ts`. The module initializes Sentry once, when it loads.
 
 ## Configure Sentry
 
 <EnvironmentVariables>
 
-- `SENTRY_DSN`: The DSN from your Sentry project settings. Leave it empty (`SENTRY_DSN=`) to keep the SDK disabled; the function still runs.
+- `SENTRY_DSN`: The DSN from your Sentry project settings. Leave it empty (`SENTRY_DSN=`) to keep the SDK disabled. The function still runs without it.
 
 </EnvironmentVariables>
 
@@ -41,7 +41,7 @@ echo "SENTRY_DSN=https://examplePublicKey@o0.ingest.us.sentry.io/0" >> .env.loca
 neon dev
 ```
 
-`neon dev` loads `.env.local`, so the local function reports to the same Sentry project. Call the URL it prints; the examples below use `$URL`.
+`neon dev` loads `.env.local`, so the local function reports to the same Sentry project. Call the URL it prints. The examples below use `$URL` for it.
 
 ### Health check
 
@@ -49,7 +49,7 @@ neon dev
 curl "$URL/health"
 ```
 
-### Recovered failure: a log, not an issue
+### Log a recovered failure
 
 ```bash
 curl -X POST "$URL/todos" \
@@ -57,9 +57,9 @@ curl -X POST "$URL/todos" \
   -d '{"title":"Buy milk","simulate_retry":true}'
 ```
 
-The response is `201` with the new todo. The first save attempt fails and is logged with `Sentry.logger.warn`, then the retry succeeds. Check **Explore > Logs** in Sentry for `first save attempt failed, retrying`.
+The response is `201` with the new todo. The first save attempt fails, the function logs it with `Sentry.logger.warn`, and the retry succeeds. Sentry records the failure as a log, not an issue. Check **Explore > Logs** in Sentry for `first save attempt failed, retrying`.
 
-### Trace: the request and its save span
+### Trace a request and its save span
 
 ```bash
 curl -X POST "$URL/todos" \
@@ -69,7 +69,7 @@ curl -X POST "$URL/todos" \
 
 Check **Explore > Traces** for the `POST /todos` root span with the `todo.save` child span.
 
-### Issue: an unhandled error
+### Report an unhandled error as an issue
 
 ```bash
 curl -i "$URL/debug-sentry"
@@ -83,9 +83,9 @@ This returns `500` with `{"error":"internal_error"}`. Check **Issues** for the g
 | --- | --- | --- |
 | `GET` | `/` | The template name and route list |
 | `GET` | `/health` | `{ "status": "ok" }` |
-| `GET` | `/todos/:id` | A todo saved earlier in this instance; `404` if unknown |
-| `POST` | `/todos` | Saves a todo in memory; `simulate_retry: true` logs a recovered failure |
-| `GET` | `/debug-sentry` | Throws on purpose and returns `500`, producing an issue in Sentry |
+| `GET` | `/todos/:id` | A todo saved earlier in this instance, or `404` if the id is unknown |
+| `POST` | `/todos` | Saves a todo in memory. With `simulate_retry: true`, it also logs a recovered failure |
+| `GET` | `/debug-sentry` | Throws on purpose, returns `500`, and creates an issue in Sentry |
 
 ## Deploy
 
@@ -100,11 +100,11 @@ neon functions get sentry
 
 - `Sentry.init()` runs once at module load with `enabled: Boolean(SENTRY_DSN)` and `tracesSampleRate: 1`.
 - `SIGTERM` and `SIGINT` handlers flush buffered telemetry when the runtime shuts the process down.
-- `httpIntegration({ disableIncomingRequestSpans: true })` is required because Neon Functions are not served by `node:http`. The middleware creates the request root span.
+- `httpIntegration({ disableIncomingRequestSpans: true })` is required because `node:http` does not serve Neon Functions. The middleware creates the request root span.
 - The middleware wraps every request in `Sentry.withIsolationScope()` and `Sentry.startSpan()`, then calls `Sentry.flush(2000)` in `finally` because an idle function can be suspended at any time.
-- `environment` comes from the injected `NEON_BRANCH`: `main` is tagged `production`, and preview branches use their branch name.
+- `environment` comes from the injected `NEON_BRANCH`. Events from `main` report as `production`, and preview branches report their branch name.
 - `SENTRY_DSN` is the only declared variable. `NEON_BRANCH` and the other Neon variables are injected and must not be declared.
-- The todo store is a plain `Map`: a saved todo is visible to later requests on the same function instance, and nothing persists when that instance is recycled.
+- The todo store is a plain `Map`. A saved todo is visible to later requests on the same function instance, and nothing persists when the runtime recycles that instance.
 
 ## Notes
 

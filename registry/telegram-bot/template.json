@@ -3,7 +3,7 @@
 	"id": "telegram-bot",
 	"provider": "Neon",
 	"title": "Telegram AI chat bot",
-	"description": "Telegram bot with Neon Functions, AI Gateway, and Postgres for message storage.",
+	"description": "A Telegram bot that runs on Neon Functions, answers messages through AI Gateway, and stores the conversation in Postgres.",
 	"categories": ["bots"],
 	"layout": "router",
 	"dependencies": [
@@ -16,12 +16,12 @@
 	"environment": [
 		{
 			"name": "TELEGRAM_BOT_TOKEN",
-			"description": "Bot token from @BotFather; used to reply to messages.",
+			"description": "The bot token from @BotFather, which the function uses to reply to messages.",
 			"required": true
 		},
 		{
 			"name": "TELEGRAM_WEBHOOK_SECRET",
-			"description": "Random secret (letters, digits, _ and -) used to verify that incoming requests are from Telegram.",
+			"description": "A random secret of letters, digits, _ and - that the function uses to verify that incoming requests come from Telegram.",
 			"required": true
 		}
 	]

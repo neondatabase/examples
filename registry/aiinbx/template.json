@@ -10,12 +10,12 @@
 	"environment": [
 		{
 			"name": "AI_INBX_API_KEY",
-			"description": "API key from aiinbx.com/app with the sending scope. Keep this server-side.",
+			"description": "An API key from aiinbx.com/app with the sending scope. Keep it server-side.",
 			"required": true
 		},
 		{
 			"name": "AI_INBX_FUNCTION_TOKEN",
-			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public.",
+			"description": "A random token of at least 32 characters, for example from openssl rand -hex 32, that callers send as Authorization: Bearer <token>. Neon Function URLs are public, so the function requires it.",
 			"required": true
 		}
 	],
@@ -23,7 +23,7 @@
 		{
 			"id": "send-email",
 			"title": "Send an email",
-			"description": "POST an AI Inbx send request: from, to, subject, and html or text; optionally thread_id to follow up, scheduled_at to send later, or draft to hold it for review.",
+			"description": "Sends an AI Inbx send request with from, to, subject, and html or text. Add thread_id to follow up, scheduled_at to send later, or draft to hold the email for review.",
 			"source": "functions/send-email.ts",
 			"route": "/send-email",
 			"recommended": true

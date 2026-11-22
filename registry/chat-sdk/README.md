@@ -211,9 +211,9 @@ SELECT thread_id FROM chat_state_subscriptions;
 | `400` | `/web`: the body isn't a `useChat` request ending in a user message, or `X-User-Id` is missing, longer than 200 characters, or contains `:`. |
 | `401` | `/slack`: the Slack signature is wrong. `/telegram`: the secret token is wrong. `/web`: the bearer token is wrong. |
 | `404` | The route doesn't exist. The response body lists the valid routes. |
-| `405` | The method is not `POST` (or `OPTIONS` on `/web`). |
+| `405` | The method is not `POST`. `/web` also accepts `OPTIONS`. |
 | `502` | Postgres could not be reached to set up the tables. The function logs the cause. |
-| `503` | The route's credentials are unset (`CHAT_WEB_TOKEN` also needs at least 32 characters), or `DATABASE_URL` or AI Gateway is missing. |
+| `503` | The route's credentials are unset, or `DATABASE_URL` or AI Gateway is missing. `/web` also returns `503` when `CHAT_WEB_TOKEN` is shorter than 32 characters. |
 
 Slack and Telegram get `200` as soon as the function accepts an event. If generating the reply fails after that, the function logs the error and the bot posts nothing. On `/web`, a model error arrives as an `error` chunk in the stream, which `useChat` exposes as `error`.
 

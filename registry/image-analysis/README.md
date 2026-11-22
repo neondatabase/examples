@@ -39,14 +39,14 @@ neon deploy
 neon dev
 ```
 
-Call the URL that `neon dev` prints (the default is `http://localhost:8787/`). Upload an image:
+Upload an image to the URL that `neon dev` prints, which defaults to `http://localhost:8787/`:
 
 ```bash
 curl -X POST http://localhost:8787/ \
   -F "image=@./photo.jpg"
 ```
 
-Example response:
+The response looks like this:
 
 ```json
 {

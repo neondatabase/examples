@@ -20,7 +20,7 @@ The CLI writes `functions/authapi/index.ts`, declares `authapi` in `neon.ts`, an
 
 ## Enable Managed Better Auth
 
-The scaffolded `neon.ts` sets `auth: false` by default, so change it to `true` and then apply the policy:
+The scaffolded `neon.ts` sets `auth: false` by default, so change it to `true` and then deploy:
 
 ```ts
 import { defineConfig } from "@neon/config/v1";
@@ -40,7 +40,7 @@ export default defineConfig({
 neon deploy
 ```
 
-`neon deploy` enables Managed Better Auth on the linked branch, deploys the function, and pulls `NEON_AUTH_BASE_URL` and `NEON_AUTH_JWKS_URL` into your local env file (`.env.local` when there is no `.env`).
+`neon deploy` enables Managed Better Auth on the linked branch, deploys the function, and pulls `NEON_AUTH_BASE_URL` and `NEON_AUTH_JWKS_URL` into your local env file. That file is `.env.local` unless a `.env` file exists.
 
 ## Run locally
 

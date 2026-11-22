@@ -10,17 +10,17 @@
 	"environment": [
 		{
 			"name": "TINYSEND_API_KEY",
-			"description": "API key (sk_...) from app.tinysend.com/account/tokens. Keep it server-side.",
+			"description": "The Tinysend API key, which looks like sk_..., comes from app.tinysend.com/account/tokens. Keep it server-side.",
 			"required": true
 		},
 		{
 			"name": "TINYSEND_FROM",
-			"description": "Default sender: one of your Tinysend mailboxes, for example hello@yourdomain.com. A request can name another mailbox in from.",
+			"description": "The default sender is one of your Tinysend mailboxes, for example hello@yourdomain.com. A request can name another mailbox in its from field.",
 			"required": false
 		},
 		{
 			"name": "TINYSEND_FUNCTION_TOKEN",
-			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public.",
+			"description": "Callers send this random token as Authorization: Bearer <token>. It must be at least 32 characters long, and openssl rand -hex 32 generates one. The function requires it because Neon Function URLs are public.",
 			"required": true
 		}
 	],
@@ -28,7 +28,7 @@
 		{
 			"id": "send-email",
 			"title": "Send an email",
-			"description": "POST to, subject, and text or html; optionally from, reply_to, tag and metadata. An Idempotency-Key header makes a retry return the first send.",
+			"description": "POST a JSON body with to, subject, and text or html. The body can also set from, reply_to, tag and metadata. With an Idempotency-Key header, a retry returns the first send instead of sending again.",
 			"source": "functions/send-email.ts",
 			"route": "/send-email",
 			"recommended": true

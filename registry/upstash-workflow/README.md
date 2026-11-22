@@ -63,7 +63,7 @@ Local development uses the QStash CLI, which you start in one terminal:
 npx @upstash/qstash-cli dev
 ```
 
-It prints a local `QSTASH_URL` (typically `http://127.0.0.1:8080`), token, and signing keys. Put those values in `.env.local` in place of the production ones, then load the file and start the function:
+It prints a local `QSTASH_URL`, token, and signing keys. The local URL is usually `http://127.0.0.1:8080`. Put those values in `.env.local` in place of the production ones, then load the file and start the function:
 
 ```bash
 set -a && . ./.env.local && set +a
@@ -93,7 +93,7 @@ neon deploy --env .env.local
 neon functions get upstashworkflow
 ```
 
-Then trigger the deployed workflow with the same `curl` and the function URL as the host.
+Then start a job on the deployed function with the same `curl` commands, using the function URL as the host.
 
 ## Notes
 

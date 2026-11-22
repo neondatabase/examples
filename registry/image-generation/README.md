@@ -63,7 +63,7 @@ curl -X POST http://localhost:8787/ \
   -d '{"prompt":"An astronaut drinking coffee in a neon-lit cafe, cinematic lighting"}'
 ```
 
-Example response:
+The response looks like this:
 
 ```json
 {
@@ -85,7 +85,7 @@ The presigned URL is valid for one hour. The bucket is private, so the object ha
 
 | Field | Rule |
 | --- | --- |
-| `prompt` | Required. A non-empty string up to 2,000 characters. |
+| `prompt` | A required string of 1 to 2,000 characters after trimming whitespace. |
 
 The function only accepts `POST /`.
 

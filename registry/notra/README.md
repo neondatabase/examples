@@ -8,10 +8,10 @@ This Neon Function runs AI visibility scans and reads their results through [Not
 | --- | --- | --- |
 | `POST /projects` | yes | Lists your Notra projects and their ids. Every other route takes a `projectId`. |
 | `POST /scan` | yes | `{ projectId }` starts a scan of every tracked prompt on every engine of the project and returns a `scanId`. |
-| `POST /scan-status` | yes | `{ projectId, scanId }` returns the scan's `status` (`running`, `completed` or `failed`) and mentions per engine. |
-| `POST /visibility` | yes | `{ projectId, days? }` returns mention rate, citations and average position per engine over the last `days` (1-365, default 30). |
-| `POST /competitor-share` | no | `{ projectId, days? }` returns `points`, how often each brand is mentioned in the answers, and a daily `timeseries`. |
-| `POST /content-gaps` | no | `{ projectId }` returns `promptGaps`, prompts where competitors are mentioned and you are not, plus `searchGaps` from Google Search Console and `aiSearchGaps`, queries AI engines searched without finding you. |
+| `POST /scan-status` | yes | `{ projectId, scanId }` returns mentions per engine and the scan's `status`, which is `running`, `completed` or `failed`. |
+| `POST /visibility` | yes | `{ projectId, days? }` returns mention rate, citations and average position per engine over the last `days`. `days` is 1 to 365 and defaults to 30. |
+| `POST /competitor-share` | no | `{ projectId, days? }` returns a daily `timeseries` and `points`, which counts how often each brand is mentioned in the answers. |
+| `POST /content-gaps` | no | `{ projectId }` returns `promptGaps`, the prompts whose answers mention competitors but not you. It also returns `searchGaps` from Google Search Console and `aiSearchGaps`, the queries that AI engines searched without finding you. |
 | `POST /agent-readiness` | no | `{ projectId }` returns how well AI agents can read and use your site. Add `"rescan": true` to start a new check. |
 
 </Operations>
@@ -62,7 +62,7 @@ echo "NOTRA_FUNCTION_TOKEN=$NOTRA_FUNCTION_TOKEN" >> .env.local
 neon dev
 ```
 
-Call the URL that `neon dev` prints (the default is `http://localhost:8787/`). Find your project id:
+Call the URL that `neon dev` prints, which defaults to `http://localhost:8787/`. Find your project id:
 
 ```bash
 curl -s http://localhost:8787/projects \
@@ -113,9 +113,9 @@ The response looks like this, with one entry per engine:
 }
 ```
 
-- `mentions` counts answers that name your brand, and `citations` answers that cite your site.
+- `mentions` counts answers that name your brand, and `citations` counts answers that cite your site.
 - `visibility` counts answers that do either, so it is at least `mentions`.
-- `avgPosition` is where your brand lands among the products an answer lists, where 1 is first.
+- `avgPosition` is your brand's position among the products an answer lists, where 1 is first.
 
 The routes return Notra's response without its `organization` field. `/scan` returns only `{ scanId }`.
 
@@ -140,8 +140,8 @@ Notra already scans each project on the schedule set in its GEO settings, so `/v
 | `404` | The project or scan does not exist, or the project has no agent readiness report yet. |
 | `405` | The method is not `POST`. |
 | `409` | A scan for this project is still running. |
-| `429` | Notra rate limit reached. |
-| `502` | Notra rejected `NOTRA_API_KEY`, the key may not make the request (for example it lacks the route's scope), or the request failed. |
+| `429` | You reached Notra's rate limit. |
+| `502` | Notra rejected `NOTRA_API_KEY`, or the key is not allowed to make the request, for example because it lacks the route's scope. A failed request to Notra also returns `502`. |
 | `503` | `NOTRA_API_KEY` is unset, or `NOTRA_FUNCTION_TOKEN` is unset or shorter than 32 characters. |
 
 Errors from Notra also return Notra's own message as `detail`, with its `code` and `requestId`:

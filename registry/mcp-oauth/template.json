@@ -3,7 +3,7 @@
 	"id": "mcp-oauth",
 	"provider": "Neon",
 	"title": "MCP server with OAuth sign-in",
-	"description": "An MCP server that ChatGPT, Claude, and Cursor connect to with OAuth. Managed Better Auth signs users in on pages the function serves, and each tool call runs as that user against Postgres.",
+	"description": "Run an MCP server that ChatGPT, Claude, and Cursor connect to with OAuth. Managed Better Auth signs users in on pages the function serves, and each tool call runs as that user against Postgres.",
 	"categories": ["mcp", "auth"],
 	"layout": "router",
 	"dependencies": [
@@ -19,7 +19,7 @@
 	"environment": [
 		{
 			"name": "MCP_RESOURCE",
-			"description": "Public URL of this function's /mcp endpoint: https://<NEON_BRANCH_ID>-<slug><NEON_FUNCTION_HOST_SUFFIX>/mcp, from the values neon link writes to .env.local. It must match the MCP server URL on the branch's OAuth provider.",
+			"description": "Set this to the public URL of this function's /mcp endpoint, which has the form https://<NEON_BRANCH_ID>-<slug><NEON_FUNCTION_HOST_SUFFIX>/mcp. The neon link command writes NEON_BRANCH_ID and NEON_FUNCTION_HOST_SUFFIX to .env.local. The URL must match the MCP server URL on the branch's OAuth provider.",
 			"required": false
 		}
 	]
