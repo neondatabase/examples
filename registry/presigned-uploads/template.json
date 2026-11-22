@@ -13,7 +13,7 @@
 	"environment": [
 		{
 			"name": "UPLOADS_FUNCTION_TOKEN",
-			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public.",
+			"description": "A random token of at least 32 characters, for example from openssl rand -hex 32, that callers send as Authorization: Bearer <token>. Neon Function URLs are public, so the function requires it.",
 			"required": true
 		}
 	]

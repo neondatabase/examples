@@ -1,6 +1,6 @@
 # Presigned uploads with Neon Object Storage
 
-This Neon Function hands out short-lived S3 URLs, so a browser or another service can upload and download files without your storage credentials. The files go to a Neon Object Storage bucket, which branches with your database.
+This Neon Function creates short-lived presigned S3 URLs, so a browser or another service can upload and download files without your storage credentials. The files go to a Neon Object Storage bucket, which branches with your database.
 
 ## Scaffold it
 
@@ -65,7 +65,7 @@ curl -s http://localhost:8787/uploads \
   -d '{"filename":"hello.txt","contentType":"text/plain"}'
 ```
 
-Example response (`201`):
+The response is a `201` like this:
 
 ```json
 {
@@ -100,14 +100,14 @@ curl -s "http://localhost:8787/files/download?key=<key>" \
 
 | Route | Auth | Purpose |
 | --- | --- | --- |
-| `GET /` | None | Route list, bucket name, setup steps, and whether the token is set. |
-| `POST /uploads` | Bearer `UPLOADS_FUNCTION_TOKEN` | `{ filename, contentType }` returns `201` with a presigned PUT URL that expires in 5 minutes. |
+| `GET /` | None | Returns the route list, the bucket name, the setup steps, and whether the token is set. |
+| `POST /uploads` | Bearer `UPLOADS_FUNCTION_TOKEN` | Takes `{ filename, contentType }` and returns `201` with a presigned PUT URL that expires in 5 minutes. |
 | `GET /files` | Bearer `UPLOADS_FUNCTION_TOKEN` | Lists up to 100 objects in the bucket. |
-| `GET /files/download?key=...` | Bearer `UPLOADS_FUNCTION_TOKEN` | Returns a presigned GET URL with an attachment filename that expires in 1 hour, or `404` if the key doesn't exist. |
+| `GET /files/download?key=...` | Bearer `UPLOADS_FUNCTION_TOKEN` | Returns a presigned GET URL that expires in 1 hour and downloads the object as an attachment named after its key. Returns `404` if the key doesn't exist. |
 
 </Operations>
 
-A missing or shorter-than-32-character `UPLOADS_FUNCTION_TOKEN` returns `503` with setup instructions, a missing or wrong bearer token returns `401`, a malformed body returns `400`, and any other path or method returns `404` or `405`.
+If `UPLOADS_FUNCTION_TOKEN` is unset or shorter than 32 characters, the function returns `503` with setup instructions. A missing or wrong bearer token returns `401`, a malformed body returns `400`, and any other path or method returns `404` or `405`.
 
 ## Deploy
 

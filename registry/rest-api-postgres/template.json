@@ -3,7 +3,7 @@
 	"id": "rest-api-postgres",
 	"provider": "Neon",
 	"title": "REST API with Hono and Postgres",
-	"description": "A CRUD REST API on Neon Functions with Hono, backed by Lakebase Postgres.",
+	"description": "Run a CRUD REST API on Neon Functions with Hono and Lakebase Postgres.",
 	"categories": ["api"],
 	"layout": "router",
 	"dependencies": [

@@ -21,7 +21,7 @@
 	"environment": [
 		{
 			"name": "MASTRA_FUNCTION_TOKEN",
-			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public.",
+			"description": "A random token of at least 32 characters, for example from openssl rand -hex 32, that callers send as Authorization: Bearer <token>. The function requires it because Neon Function URLs are public.",
 			"required": true
 		}
 	],
@@ -29,7 +29,7 @@
 		{
 			"id": "chat",
 			"title": "Chat with memory",
-			"description": "POST the useChat body plus a resourceId to stream a reply; Mastra Memory keeps the thread and a per-user profile in Postgres.",
+			"description": "Send a POST request with the useChat body and a resourceId to stream a reply. Mastra Memory keeps the thread and a per-user profile in Postgres.",
 			"source": "functions/chat.ts",
 			"route": "/chat",
 			"recommended": true
@@ -37,7 +37,7 @@
 		{
 			"id": "history",
 			"title": "Load a thread",
-			"description": "POST a threadId and resourceId to get the thread's messages in the UIMessage format useChat takes.",
+			"description": "Send a POST request with a threadId and a resourceId to get the thread's messages in the UIMessage format that useChat reads.",
 			"source": "functions/history.ts",
 			"route": "/history",
 			"recommended": true
@@ -45,7 +45,7 @@
 		{
 			"id": "review",
 			"title": "Review a draft",
-			"description": "POST a brief to start a workflow that drafts text and suspends for approval; POST the runId with approved and optional feedback to resume it.",
+			"description": "Send a POST request with a brief to start a workflow that drafts text and suspends until someone reviews it. To resume the run, send its runId with approved and, if you want a revision, feedback.",
 			"source": "functions/review.ts",
 			"route": "/review",
 			"recommended": false

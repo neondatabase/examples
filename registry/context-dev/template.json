@@ -10,12 +10,12 @@
 	"environment": [
 		{
 			"name": "CONTEXT_DEV_API_KEY",
-			"description": "Context.dev API key with data:execute access. Keep this server-side.",
+			"description": "The function calls Context.dev with this API key, which needs data:execute access. Keep it on the server.",
 			"required": true
 		},
 		{
 			"name": "CONTEXT_FUNCTION_TOKEN",
-			"description": "Random token (at least 32 characters) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public.",
+			"description": "Callers send this random token of at least 32 characters as Authorization: Bearer <token>. The function requires it because Neon Function URLs are public.",
 			"required": true
 		}
 	],
@@ -23,7 +23,7 @@
 		{
 			"id": "web-search",
 			"title": "Search the web",
-			"description": "POST a query and optional numResults (1-10) to find current source URLs.",
+			"description": "POST a query to find current source URLs. You can set numResults to a number from 1 to 10.",
 			"source": "functions/web-search.ts",
 			"route": "/web-search",
 			"recommended": true
@@ -31,7 +31,7 @@
 		{
 			"id": "web-scrape",
 			"title": "Read a web page",
-			"description": "POST an HTTP(S) URL to return up to 50,000 characters of Markdown and source metadata.",
+			"description": "POST an HTTP or HTTPS URL to get up to 50,000 characters of Markdown and source metadata for the page.",
 			"source": "functions/web-scrape.ts",
 			"route": "/web-scrape",
 			"recommended": true
@@ -39,7 +39,7 @@
 		{
 			"id": "web-answers",
 			"title": "Answer a web question",
-			"description": "POST a task for a sourced answer; fast mode by default, ultra mode optional.",
+			"description": "POST a task to get a sourced answer. It uses fast mode unless you set mode to ultra.",
 			"source": "functions/web-answers.ts",
 			"route": "/web-answers",
 			"recommended": false
@@ -47,7 +47,7 @@
 		{
 			"id": "brand-retrieve",
 			"title": "Retrieve a brand",
-			"description": "POST a domain to get company identity, logo, colors, and social links.",
+			"description": "POST a domain to get the company's identity, logo, colors, and social links.",
 			"source": "functions/brand-retrieve.ts",
 			"route": "/brand-retrieve",
 			"recommended": false
@@ -55,7 +55,7 @@
 		{
 			"id": "news-search",
 			"title": "Search news",
-			"description": "POST a query or company domain to find articles, with an optional cursor for the next page.",
+			"description": "POST a query or a company domain to find news articles. Pass the returned cursor to get the next page.",
 			"source": "functions/news-search.ts",
 			"route": "/news-search",
 			"recommended": false

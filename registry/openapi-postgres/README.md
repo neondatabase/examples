@@ -1,12 +1,12 @@
 # CRUD API with OpenAPI and Postgres
 
-A CRUD API for a `bookmarks` table, running as a [Neon Function](https://neon.com/docs/compute/functions/overview) on long-lived Node.js compute next to your database.
+This template is a CRUD API for a `bookmarks` table. It runs as a [Neon Function](https://neon.com/docs/compute/functions/overview) on long-lived Node.js compute next to your database.
 
 - [Hono](https://hono.dev) handles routing and JSON responses.
 - [`@hono/zod-openapi`](https://github.com/honojs/middleware/tree/main/packages/zod-openapi) defines each route with Zod, validates the request, and generates the OpenAPI document.
 - Swagger UI serves that document at `/docs`.
 - [`pg`](https://node-postgres.com) queries Lakebase Postgres through a connection pool.
-- `DATABASE_URL` is injected from the linked branch. Writes need a bearer token; reads are open.
+- Neon injects `DATABASE_URL` from the linked branch. Writes need a bearer token, and reads are open.
 
 ## Scaffold it
 
@@ -97,18 +97,16 @@ curl "$URL/openapi.json"
 
 | Method | Path | Body | Result |
 | --- | --- | --- | --- |
-| `GET` | `/` | — | `302` to `/docs` |
-| `GET` | `/bookmarks` | — | Up to `limit` bookmarks, newest first |
+| `GET` | `/` | None | `302` to `/docs` |
+| `GET` | `/bookmarks` | None | Up to `limit` bookmarks, newest first |
 | `POST` | `/bookmarks` | `{ "url": string, "title": string, "tags"?: string[] }` | `201` with the created bookmark |
-| `GET` | `/bookmarks/{id}` | — | The bookmark, or `404` |
+| `GET` | `/bookmarks/{id}` | None | The bookmark, or `404` |
 | `PATCH` | `/bookmarks/{id}` | `{ "title"?: string, "tags"?: string[] }` | The updated bookmark, or `404` |
-| `DELETE` | `/bookmarks/{id}` | — | `204`, or `404` |
-| `GET` | `/openapi.json` | — | The generated OpenAPI 3.1 document |
-| `GET` | `/docs` | — | Swagger UI |
+| `DELETE` | `/bookmarks/{id}` | None | `204`, or `404` |
+| `GET` | `/openapi.json` | None | The generated OpenAPI 3.1 document |
+| `GET` | `/docs` | None | Swagger UI |
 
-`GET /bookmarks` accepts `tag` (one tag to match) and `limit` (1-100, default 50).
-`PATCH` requires at least one of `title` or `tags`. Routes use `{id}` in the OpenAPI
-document; call them with a numeric id.
+`GET /bookmarks` accepts `tag`, a single tag to match, and `limit`, a number from 1 to 100 that defaults to 50. `PATCH` requires at least one of `title` or `tags`. The OpenAPI document writes the id routes with `{id}`, and you call them with a numeric id.
 
 ## Deploy
 
@@ -121,7 +119,7 @@ neon functions get bookmarks
 
 ## How it works
 
-Each route is a `createRoute({...})` definition plus an `app.openapi(route, handler)` call. The Zod schema validates the request and becomes the OpenAPI parameter, body, or response schema, so the code and the document cannot drift apart. `app.doc31` serves the generated document.
+Each route is a `createRoute({...})` definition plus an `app.openapi(route, handler)` call. The Zod schema validates the request and becomes the OpenAPI parameter, body, or response schema, so the document always matches the validation in the code. `app.doc31` serves the generated document.
 
 The module creates `bookmarks` and a GIN index on `tags` on the first valid request. For production schema changes, use a migration tool like [Drizzle ORM](https://neon.com/docs/guides/drizzle) or [Prisma](https://neon.com/docs/guides/prisma) instead of `ensureSchema`.
 
@@ -138,7 +136,6 @@ The module creates `bookmarks` and a GIN index on `tags` on the first valid requ
 
 ## Notes
 
-- Writes use one shared bearer token. For per-user access, use
-  [Neon Auth](https://neon.com/docs/auth/overview) instead. In Swagger UI, select **Authorize** and paste the token to try the write routes.
-- It also adds no CORS middleware. Add Hono's [`cors`](https://hono.dev/docs/middleware/builtin/cors) if a browser on another origin calls the API.
+- Writes use one shared bearer token. For per-user access, use [Neon Auth](https://neon.com/docs/auth/overview) instead. In Swagger UI, select **Authorize** and paste the token to try the write routes.
+- The template adds no CORS middleware. Add Hono's [`cors`](https://hono.dev/docs/middleware/builtin/cors) if a browser on another origin calls the API.
 - Swagger UI loads version 5.34.1 of its assets from a CDN. `/openapi.json` works even when the CDN is unavailable.

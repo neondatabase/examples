@@ -3,7 +3,7 @@
 	"id": "inngest-workflow",
 	"provider": "Neon",
 	"title": "Durable workflow with Inngest",
-	"description": "A minimal multi-step workflow with retries and a durable sleep on Neon Functions, with job state in Lakebase Postgres.",
+	"description": "Run a minimal multi-step workflow with retries and a durable sleep on Neon Functions, and store job state in Lakebase Postgres.",
 	"categories": ["workflow"],
 	"layout": "router",
 	"dependencies": [
@@ -16,12 +16,12 @@
 	"environment": [
 		{
 			"name": "INNGEST_SIGNING_KEY",
-			"description": "Signing key from Inngest Cloud. Inngest uses it to sign requests to /api/inngest; find it under Apps > Sync new app.",
+			"description": "Inngest signs its requests to /api/inngest with this key. Find it in Inngest Cloud by opening Apps and choosing Sync new app.",
 			"required": true
 		},
 		{
 			"name": "INNGEST_EVENT_KEY",
-			"description": "Event key from Inngest Cloud. The function uses it to send app/job.created events; find it under Manage > Keys.",
+			"description": "The function sends app/job.created events to Inngest with this key. Find it in Inngest Cloud on the Keys page under Manage.",
 			"required": true
 		}
 	]

@@ -3,7 +3,7 @@
 	"id": "authenticated-api",
 	"provider": "Neon",
 	"title": "Authenticated API with Hono and Managed Better Auth",
-	"description": "A protected Hono API that validates the caller's identity and gates access.",
+	"description": "A protected Hono API that verifies a Managed Better Auth JWT and returns the caller's identity.",
 	"categories": ["auth"],
 	"layout": "router",
 	"dependencies": ["hono@4.13.13", "jose@6.2.12"],

@@ -8,7 +8,7 @@ The server exposes four tools:
 
 | Tool | Description |
 | --- | --- |
-| `create_todo` | Insert a todo. `title` is required; `notes` is optional. |
+| `create_todo` | Insert a todo. `title` is required and `notes` is optional. |
 | `list_todos` | List todos, optionally filtered by completion or by a search of the title or notes. `limit` defaults to 20, with a maximum of 50. |
 | `update_todo` | Update the fields you pass for a todo `id`, including `completed`. You can't clear the title or notes. |
 | `delete_todo` | Delete a todo by `id` and return the deleted row. |
@@ -71,7 +71,7 @@ printf 'MCP_API_KEY=%s\n' "$MCP_API_KEY" >> .env.local
 neon dev
 ```
 
-`neon dev` serves every function declared in `neon.ts` and prints its URL (the default is `http://localhost:8787`). The MCP endpoint is `/mcp`:
+`neon dev` serves every function declared in `neon.ts` and prints its URL, which defaults to `http://localhost:8787`. The MCP endpoint is `/mcp`:
 
 ```bash
 curl http://localhost:8787/
@@ -112,7 +112,7 @@ npx add-mcp http://localhost:8787/mcp \
 neon deploy --env .env.local
 ```
 
-`--env .env.local` lets `neon.ts` resolve `MCP_API_KEY` during deployment, and `neon functions get` prints the deployed function's URL:
+`--env .env.local` lets `neon.ts` resolve `MCP_API_KEY` during deployment. `neon functions get` prints the deployed function's URL:
 
 ```bash
 neon functions get mcppostgres

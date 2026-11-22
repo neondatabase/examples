@@ -63,7 +63,7 @@ curl -X POST "$URL/triage" \
   -d '{"message":"I was charged twice for my subscription."}'
 ```
 
-Example response:
+The response looks like this:
 
 ```json
 {
@@ -80,7 +80,7 @@ curl -X POST "$URL/extract" \
   -d '{"text":"Ada Lovelace has user ID 12345, and signed up with ada@example.com. She has been a member since 2026-01-04."}'
 ```
 
-Example response:
+The response looks like this:
 
 ```json
 {

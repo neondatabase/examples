@@ -3,14 +3,14 @@
 	"id": "sentry",
 	"provider": "Neon",
 	"title": "Sentry-instrumented API",
-	"description": "Errors, structured logs, and request traces for a Hono API on Neon Functions.",
+	"description": "Send errors, structured logs, and request traces from a Hono API on Neon Functions to Sentry.",
 	"categories": ["observability"],
 	"layout": "router",
 	"dependencies": ["@sentry/node@11.10.0", "hono@4.13.16"],
 	"environment": [
 		{
 			"name": "SENTRY_DSN",
-			"description": "DSN from the Sentry project settings. Leave it empty (SENTRY_DSN=) to keep the SDK disabled; the function still runs.",
+			"description": "The DSN from your Sentry project settings. Leave it empty (SENTRY_DSN=) to keep the SDK disabled. The function still runs without it.",
 			"required": false
 		}
 	]

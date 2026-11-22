@@ -21,7 +21,7 @@ The CLI writes `functions/basic/index.ts` and declares the function in `neon.ts`
 neon dev
 ```
 
-Call the URL that `neon dev` prints (the default is `http://localhost:8787/`):
+Call the URL that `neon dev` prints, which defaults to `http://localhost:8787/`:
 
 ```bash
 curl http://localhost:8787/
