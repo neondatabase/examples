@@ -34,5 +34,6 @@
 			"description": "The next signing key is in the Quickstart section of the Upstash Console and must come from the same region as QSTASH_URL. The workflow endpoint uses it to verify requests during key rotation.",
 			"required": true
 		}
-	]
+	],
+	"features": ["postgres"]
 }

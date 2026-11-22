@@ -12,5 +12,6 @@
 		"hono@4.13.13",
 		"pg@8.23.1"
 	],
-	"environment": []
+	"environment": [],
+	"features": ["postgres"]
 }

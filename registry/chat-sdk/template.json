@@ -70,5 +70,6 @@
 			"route": "/telegram",
 			"recommended": false
 		}
-	]
+	],
+	"features": ["ai-gateway", "postgres"]
 }

@@ -50,5 +50,6 @@
 			"route": "/review",
 			"recommended": false
 		}
-	]
+	],
+	"features": ["postgres", "ai-gateway"]
 }
