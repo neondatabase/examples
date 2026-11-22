@@ -84,6 +84,7 @@ a sibling from the template folder.
 | `dependencies` | no | Exact `name@version` pins, scoped packages included. No ranges, no `latest`. The version a reviewer approved is the version that gets installed. |
 | `environment` | no | `UPPER_SNAKE` names, each with a description and an optional `required`. The CLI declares each one on every scaffolded function in `neon.ts` as `{ value: process.env.<NAME>, required }` and adds it, with the description as a comment, to the project's `.env.example`. Write the description for someone filling that file in. |
 | `operations` | no | 1-40 entries. Omit them for a single-module template. |
+| `features` | no | The Neon products the template uses, shown as Built with on its neon.com page. Display-only; the CLI does not use it to scaffold. See [`features`](#features). |
 
 Each operation needs:
 
@@ -119,6 +120,37 @@ Set `required` on each `environment` entry to say when the variable must be set.
 | `false` | left out of the deployment | runs without it |
 
 Use `false` only when the module handles the variable being unset, for example an SDK that stays disabled without its key. `neon` 9.3.0 and later write `required`; older versions ignore it and write `process.env.<NAME>!`.
+
+### `features`
+
+List the Neon products the template's code uses. The template page on neon.com shows them under
+Built with in the order you write them, so put the product the template is mainly about first.
+Leave out Functions, because every template is one, and leave `features` out entirely when the
+template uses nothing else.
+
+| Feature | Product | List it when the template |
+| --- | --- | --- |
+| `postgres` | Lakebase Postgres | Connects to the database, for example with `pg` or `drizzle-orm` and `DATABASE_URL`. |
+| `lakebase-search` | Lakebase Search | Runs vector, full-text, or hybrid search queries. |
+| `auth` | Managed Better Auth | Verifies Managed Better Auth sessions or tokens, for example with `@neon/oauth` or the `NEON_AUTH_*` variables. |
+| `data-api` | Data API | Calls the branch's Data API. |
+| `realtime` | Realtime | Uses Neon Realtime. A WebSocket from `upgradeWebSocket` alone is Functions, not Realtime. |
+| `object-storage` | Object Storage | Reads or writes a bucket. |
+| `ai-gateway` | AI Gateway | Calls models through AI Gateway. |
+| `function-triggers` | Function Triggers | Sets up a trigger, which its README adds to `triggers` in `neon.ts`. |
+
+Write each feature as its id. For `function-triggers`, prefer the object form, which names the
+trigger types the template sets up: `schedule` for a cron schedule and `storage_object_created`
+for an upload to a bucket. These match the trigger `type` in `neon.ts` and the Neon API. List each
+feature once.
+
+```json
+"features": [
+	"ai-gateway",
+	"object-storage",
+	{ "id": "function-triggers", "types": ["storage_object_created"] }
+]
+```
 
 ### 3. Add the index entry
 
@@ -269,6 +301,8 @@ A template that passes the schema but fails the commands above is not ready.
 - [ ] Recommended operations are the ones most users want on day one.
 - [ ] The index entry has one source label, and `template.json` has at least one topical label
       from the [categories table](README.md#categories).
+- [ ] `features` lists the Neon products the code uses, most important first, or is left out when
+      it uses none besides Functions.
 
 ## Changing the schema
 
@@ -280,5 +314,8 @@ in agreement.
 
 Change the CLI first for fields the parser uses. A field the published CLI does not know about is
 either ignored or makes the template invalid for every user on that version, so do not use a new
-field in a template until a CLI release that understands it is out. Display-only index fields
+field in a template until a CLI release that understands it is out. `neon` 8.11.2 and later
+validate each `template.json` against the schema served from neon.com, also with
+`NEON_FUNCTION_REGISTRY_DIR`, and that schema has `additionalProperties: false`. Merge a new
+template field into `schemas/` and wait for neon.com to serve it before a template uses the field. Display-only index fields
 (`logo`, `logoDark`, `website`, `categories`) may land here; the CLI never fetches them.

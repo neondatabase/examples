@@ -32,5 +32,6 @@
 			"route": "/extract",
 			"recommended": false
 		}
-	]
+	],
+	"features": ["ai-gateway"]
 }

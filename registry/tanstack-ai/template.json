@@ -43,5 +43,6 @@
 			"route": "/summarize",
 			"recommended": false
 		}
-	]
+	],
+	"features": ["ai-gateway"]
 }

@@ -16,5 +16,6 @@
 			"description": "A random token of at least 32 characters, for example from openssl rand -hex 32, that callers send as Authorization: Bearer <token>. Neon Function URLs are public, so the function requires it.",
 			"required": true
 		}
-	]
+	],
+	"features": ["object-storage"]
 }
