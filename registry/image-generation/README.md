@@ -91,4 +91,4 @@ The function only accepts `POST /`.
 
 This template doesn't authenticate requests, so anyone with the function URL can call it and spend AI Gateway credits. Add authentication before you expose it.
 
-The template uses `gpt-5-mini` to call the `gpt-image-2` image-generation tool, which makes a 1024x1024 low-quality JPEG. Change `MODEL`, `IMAGE_MODEL`, or the tool options in `functions/index.ts` to tune cost and output.
+The template uses `gpt-5-mini` to call the `gpt-image-2` image-generation tool, which makes a 1024x1024 low-quality JPEG. Change `MODEL`, `IMAGE_MODEL`, or the tool options in `functions/imagegeneration/index.ts` to tune cost and output.

@@ -69,4 +69,4 @@ A missing image returns `400`, an image over 10 MB returns `413`, a non-image fi
 
 This template doesn't authenticate requests, so anyone with the function URL can call it and spend AI Gateway credits. Add authentication before you expose it.
 
-The template uses `gpt-5-mini`, which accepts image input. Change `MODEL` in `functions/index.ts` to use another vision model from the [AI Gateway catalog](https://neon.com/docs/ai-gateway/overview#available-models).
+The template uses `gpt-5-mini`, which accepts image input. Change `MODEL` in `functions/imageanalysis/index.ts` to use another vision model from the [AI Gateway catalog](https://neon.com/docs/ai-gateway/overview#available-models).
