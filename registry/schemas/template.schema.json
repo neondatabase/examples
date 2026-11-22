@@ -82,6 +82,51 @@
 					"recommended": { "type": "boolean" }
 				}
 			}
+		},
+		"features": {
+			"type": "array",
+			"minItems": 1,
+			"maxItems": 16,
+			"description": "Neon products the template uses, shown as \"Built with\" on its neon.com page in this order, so list the most important first. Leave out Functions: every template is one. Write each feature as its id; function-triggers can instead be an object that lists the trigger types the template sets up. List each feature once.",
+			"items": {
+				"oneOf": [
+					{ "$ref": "#/$defs/featureId" },
+					{
+						"type": "object",
+						"required": ["id", "types"],
+						"additionalProperties": false,
+						"properties": {
+							"id": { "const": "function-triggers" },
+							"types": {
+								"type": "array",
+								"minItems": 1,
+								"uniqueItems": true,
+								"items": { "$ref": "#/$defs/triggerType" },
+								"description": "Trigger types the template sets up. Values match the Neon API's trigger `type`."
+							}
+						}
+					}
+				]
+			}
+		}
+	},
+	"$defs": {
+		"featureId": {
+			"enum": [
+				"postgres",
+				"lakebase-search",
+				"auth",
+				"data-api",
+				"realtime",
+				"object-storage",
+				"ai-gateway",
+				"function-triggers"
+			],
+			"description": "postgres: Lakebase Postgres. lakebase-search: Lakebase Search. auth: Managed Better Auth. data-api: Data API. realtime: Realtime. object-storage: Object Storage. ai-gateway: AI Gateway. function-triggers: Function Triggers."
+		},
+		"triggerType": {
+			"enum": ["schedule", "storage_object_created"],
+			"description": "schedule: a cron schedule. storage_object_created: an object upload to an Object Storage bucket."
 		}
 	},
 	"allOf": [
