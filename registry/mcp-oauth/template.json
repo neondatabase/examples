@@ -1,0 +1,26 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "mcp-oauth",
+	"provider": "Neon",
+	"title": "MCP server with OAuth sign-in",
+	"description": "An MCP server that ChatGPT, Claude, and Cursor connect to with OAuth. Managed Better Auth signs users in on pages the function serves, and each tool call runs as that user against Postgres.",
+	"categories": ["mcp", "auth"],
+	"layout": "router",
+	"dependencies": [
+		"@modelcontextprotocol/sdk@1.32.2",
+		"@neon/functions@0.11.0",
+		"@neon/oauth@0.3.0",
+		"@types/pg@8.23.1",
+		"drizzle-orm@0.45.4",
+		"hono@4.13.18",
+		"pg@8.23.1",
+		"zod@4.6.7"
+	],
+	"environment": [
+		{
+			"name": "MCP_RESOURCE",
+			"description": "Public URL of this function's /mcp endpoint: https://<NEON_BRANCH_ID>-<slug><NEON_FUNCTION_HOST_SUFFIX>/mcp, from the values neon link writes to .env.local. It must match the MCP server URL on the branch's OAuth provider.",
+			"required": false
+		}
+	]
+}
