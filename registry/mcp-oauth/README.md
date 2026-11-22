@@ -36,7 +36,7 @@ neon link
 neon functions new mcp-oauth --slug mcpoauth
 ```
 
-The CLI writes `functions/mcpoauth/index.ts`, declares the function in `neon.ts`, installs its dependencies, and adds `MCP_RESOURCE` to `.env.example`.
+The CLI writes `functions/mcpoauth/index.ts`, declares the function in `neon.ts`, and adds `MCP_RESOURCE` to `.env.example`. It asks before it installs the dependencies, and it prints the `npm install` commands to run when you skip that step or run it outside a terminal.
 
 ## Enable Managed Better Auth
 
@@ -112,7 +112,7 @@ neon deploy --env .env.local
 
 ## Turn on the OAuth provider
 
-Add the function's origin as a trusted domain, then point the OAuth provider at the function's pages and its `/mcp` endpoint:
+Add the function's origin as a trusted domain, then point the OAuth provider at the function's pages and its `/mcp` endpoint. These commands read `FUNCTION_URL`, so in a new terminal run the first three lines from [Set the MCP server URL](#set-the-mcp-server-url) again first:
 
 ```bash
 neon neon-auth domain add "$FUNCTION_URL"
