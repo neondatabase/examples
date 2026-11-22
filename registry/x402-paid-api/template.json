@@ -21,5 +21,6 @@
 			"description": "An EVM wallet address (0x...) on Base Sepolia that receives payments. The buyer needs Base Sepolia USDC.",
 			"required": true
 		}
-	]
+	],
+	"features": ["postgres"]
 }

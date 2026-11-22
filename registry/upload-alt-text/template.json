@@ -15,5 +15,11 @@
 		"drizzle-orm@0.45.4",
 		"pg@8.23.1",
 		"zod@4.6.7"
+	],
+	"features": [
+		"ai-gateway",
+		"object-storage",
+		"postgres",
+		{ "id": "function-triggers", "types": ["storage_object_created"] }
 	]
 }
