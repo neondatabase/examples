@@ -7,9 +7,9 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-// The single schema source: the app and `drizzle-kit push` both read it. Columns are declared snake_case
-// on purpose. Realtime builds live rows from PostgreSQL's result names, so a camelCase JS property that
-// mapped to a different column would give live rows different keys from server rows.
+// `src/setup.mts` creates this table, so keep the two in sync. Columns are declared snake_case on purpose.
+// Realtime builds live rows from PostgreSQL's result names, so a camelCase JS property that mapped to a
+// different column would give live rows different keys from server rows.
 export const todos = pgTable(
   "realtime_next_todos",
   {

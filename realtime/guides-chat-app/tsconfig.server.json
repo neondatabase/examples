@@ -9,10 +9,5 @@
     "target": "ES2023",
     "types": ["node"]
   },
-  "include": [
-    "backend/**/*.ts",
-    "neon.ts",
-    "drizzle.config.ts",
-    "vite.config.ts"
-  ]
+  "include": ["backend/**/*.ts", "neon.ts", "vite.config.ts"]
 }

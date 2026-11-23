@@ -18,11 +18,11 @@ A per-user todo app built with [TanStack Start](https://tanstack.com/start), [Ta
 ```
 my-app/
 ├── neon.ts                    # Neon policy: Managed Better Auth + Realtime allowedOrigins
-├── drizzle.config.ts          # drizzle-kit, reads .env.local
 ├── .env.example               # Every variable, and where it comes from
 └── src/
     ├── router.tsx             # Realtime client + DbClient per router, routerWithDbClient
     ├── schema.ts              # realtime_todos table
+    ├── setup.ts               # `npm run db:setup`: creates realtime_todos if it doesn't exist
     ├── env.server.ts          # Server env, validated at startup
     ├── env.d.ts               # Type for import.meta.env.VITE_NEON_REALTIME_URL
     ├── db.server.ts           # node-postgres pool + Drizzle
@@ -93,10 +93,10 @@ printf '\nNEON_AUTH_COOKIE_SECRET=%s\n' "$(openssl rand -base64 32)" >> .env.loc
 Create the table:
 
 ```bash
-npm run db:push
+npm run db:setup
 ```
 
-If this project ran an earlier version of this example, drop its table first: `neon psql -- -c 'drop table if exists realtime_todos'`.
+`db:setup` creates `realtime_todos` and its index if they don't exist, and leaves an existing table as it is. Other Realtime examples use the same table name with different columns, so if the branch already has a `realtime_todos` table, link a new Neon project instead. Drop the existing table only if an earlier version of this example created it: `neon psql -- -c 'drop table realtime_todos'`.
 
 ## Run the app
 

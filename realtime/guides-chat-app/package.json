@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "npm run typecheck && vite build",
-    "db:push": "drizzle-kit push",
-    "db:setup": "npm run db:push && tsx backend/setup.ts",
+    "db:setup": "tsx backend/setup.ts",
     "dev": "tsx watch --clear-screen=false --include .env.local backend/dev.ts",
     "fmt": "prettier --write .",
     "start": "tsx backend/server.ts",
@@ -55,7 +54,6 @@
     "@types/react-dom": "^19.2.2",
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^5.1.0",
-    "drizzle-kit": "^0.31.6",
     "prettier": "^3.6.2",
     "shadcn": "^4.22.1",
     "tailwindcss": "^4.3.3",
