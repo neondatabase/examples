@@ -23,7 +23,7 @@ neon config add ai-gateway
 
 You can also set `aiGateway: true` in `neon.ts`.
 
-AI Gateway requires prepaid credits (available on any Neon plan, including Free) and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started).
+AI Gateway requires prepaid credits (available on any Neon plan, including the Free plan) and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started).
 
 ## Set the function token
 
