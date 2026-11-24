@@ -29,7 +29,9 @@ app.post('/webhooks/stripe', async (c) => {
   try {
     event = Stripe.webhooks.constructEvent(await c.req.text(), signature, STRIPE_WEBHOOK_SECRET);
   } catch (error) {
-    console.error('Webhook signature verification failed:', error);
+    // The error carries the payload, so log only its message to keep customer data out of logs.
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Webhook signature verification failed:', message);
     return c.json({ error: 'invalid signature' }, 400);
   }
 
