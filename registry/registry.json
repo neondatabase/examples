@@ -179,6 +179,14 @@
 			"categories": ["first-party"]
 		},
 		{
+			"id": "google-adk",
+			"provider": "Neon",
+			"title": "Fact-checking agent with Google ADK",
+			"description": "Send a claim to a Google ADK agent that verifies it with Google Search on Gemini and returns a verdict and its sources through Neon AI Gateway.",
+			"path": "google-adk/template.json",
+			"categories": ["first-party"]
+		},
+		{
 			"id": "aiinbx",
 			"provider": "AI Inbx",
 			"title": "Send emails with AI Inbx",
