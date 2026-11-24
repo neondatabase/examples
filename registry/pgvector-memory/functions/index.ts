@@ -271,6 +271,11 @@ export default {
 				if (content.length === 0) {
 					return jsonError("content must not be empty", 400);
 				}
+				// Postgres text columns reject NUL bytes. Reject them here so the caller
+				// gets a 400 instead of a 503 after the embedding call.
+				if (content.includes("\u0000")) {
+					return jsonError("content must not contain NUL characters", 400);
+				}
 				if (content.length > MAX_CONTENT_CHARS) {
 					return jsonError(
 						`content must be at most ${MAX_CONTENT_CHARS} characters`,
