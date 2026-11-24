@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import {
 	Gemini,
 	GOOGLE_SEARCH,
@@ -35,7 +36,7 @@ Search Google before answering, then reply in two parts:
 - A first line holding only one verdict: TRUE, FALSE, MISLEADING, or UNVERIFIABLE.
 - Two or three sentences explaining what the sources say, including any important date or figure.
 
-Base the verdict only on the search results, and don't number or bullet the parts. If the results don't settle the claim, answer UNVERIFIABLE and say what is missing.`;
+Base the verdict only on the search results, and don't number or bullet the parts. Answer FALSE or MISLEADING only when a source says the claim is wrong. Finding no record of something doesn't make it false, so answer UNVERIFIABLE when no source confirms or contradicts the claim, and say what is missing.`;
 
 function createRunner(): InMemoryRunner | undefined {
 	const token = process.env.NEON_AI_GATEWAY_TOKEN;
@@ -98,7 +99,10 @@ async function factCheck(
 
 	for await (const event of events) {
 		if (event.errorCode) {
-			throw new Error(event.errorMessage ?? event.errorCode);
+			// ADK reports upstream HTTP failures as events. errorCode is the HTTP status.
+			throw Object.assign(new Error(event.errorMessage ?? event.errorCode), {
+				status: Number(event.errorCode),
+			});
 		}
 
 		const text = (event.content?.parts ?? [])
@@ -140,7 +144,7 @@ function failureResponse(error: unknown): Response {
 
 	if (status === 429) {
 		return Response.json(
-			{ error: "AI Gateway rate limit reached" },
+			{ error: "AI Gateway rate limit or credit limit reached" },
 			{ status: 429 },
 		);
 	}
@@ -155,10 +159,36 @@ function failureResponse(error: unknown): Response {
 	return Response.json({ error: "Fact check failed" }, { status: 502 });
 }
 
+function isAuthorized(request: Request, expectedToken: string): boolean {
+	const providedToken =
+		request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1] ?? "";
+	const expectedBytes = Buffer.from(expectedToken);
+	const providedBytes = Buffer.from(providedToken);
+	return (
+		providedBytes.length === expectedBytes.length &&
+		timingSafeEqual(providedBytes, expectedBytes)
+	);
+}
+
 export default {
 	async fetch(request: Request): Promise<Response> {
 		if (request.method !== "POST") {
 			return new Response(null, { status: 405, headers: { Allow: "POST" } });
+		}
+
+		// Function URLs are public, and every request spends AI Gateway credits.
+		const expectedToken = process.env.FACT_CHECK_FUNCTION_TOKEN;
+		if (!expectedToken || expectedToken.length < 32) {
+			return Response.json(
+				{
+					error:
+						"FACT_CHECK_FUNCTION_TOKEN is unset or shorter than 32 characters",
+				},
+				{ status: 503 },
+			);
+		}
+		if (!isAuthorized(request, expectedToken)) {
+			return Response.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
 		let body: unknown;
