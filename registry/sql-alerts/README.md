@@ -63,7 +63,7 @@ echo "SLACK_WEBHOOK_URL=https://hooks.slack.com/services/T000/B000/XXXX" >> .env
 | `POST` | `/run` | Neon trigger delivery only | Run every check and post a message when one is over its threshold |
 | `GET`  | `/`    | None                       | The function name, checks, and route list                         |
 
-`POST /run` only accepts a trigger delivery. `parseTriggerDelivery` checks that the `x-neon-trigger-invocation-id` header is present and matches `invocation_id` in the body, so nobody else can run the checks or send a message.
+`POST /run` only accepts a trigger delivery. `parseTriggerDelivery` checks that the `x-neon-trigger-invocation-id` header is present and matches `invocation_id` in the body. That match is a consistency check, not a signature. Neon strips `X-Neon-*` headers from requests that callers send, so a request that carries the header came from Neon's trigger system.
 
 ## Run locally
 
@@ -111,7 +111,7 @@ neon functions get sqlalerts
 neon triggers list
 ```
 
-The deploy creates the schedule trigger from `neon.ts`, and the first run checks everything. Read the logs to confirm each check ran.
+The deploy creates the schedule trigger from `neon.ts`. The first run happens at the next top of the hour, which `neon triggers list` shows as `Next Run At`. Each run appears in the logs as an `invoke begin` and `invoke end` pair, and a check that is past its threshold also posts to Slack.
 
 Until Function Triggers is enabled for the project, `neon deploy` returns `404` with `function triggers not available for this project`. Deploy the function alone with `neon functions deploy sqlalerts --src functions/sqlalerts/index.ts`, then create the trigger with `neon triggers create` or the `neon.ts` block once Function Triggers is enabled.
 
@@ -137,5 +137,6 @@ The template has two checks: one for long-running queries and one for idle trans
 
 ## Notes
 
-- Each run sends one message for every check whose value exceeds its threshold. No state is persisted between runs. Messages stop once the value falls below the threshold. However, trigger retries may result in duplicate messages. Ensure the receiving system handles duplicates gracefully, or maintain a database table to track which checks have already triggered a message.
+- Each run sends one message for every check that is past its threshold. No state is persisted between runs, so a check that stays past its threshold sends a message on every run. Messages stop once the value is back inside the threshold. Trigger deliveries can also repeat, which can produce duplicate messages. Make the receiving side tolerant of duplicates, or keep a table that records which alerts already went out.
+- A check that fails makes `/run` return `502`. Neon treats any response other than `2xx` as a failed delivery and retries it, so the retry runs every check again. Fix a failing query as soon as the logs show it, or disable the trigger until you do.
 - Cron jobs run at most once per minute.
