@@ -1,15 +1,21 @@
 import { Hono } from 'hono';
-import { and, eq, ilike, or } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { eq, ilike, or } from 'drizzle-orm';
+import { Pool } from 'pg';
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
-import { getDb } from './db/client';
+import { parseEnv } from '@neon/env';
+import { attachDatabasePool } from '@neon/functions';
+import config from '../neon';
 import { contacts } from './db/schema';
 
-const db = getDb();
+const { postgres } = parseEnv(config, ['DATABASE_URL']);
+const pool = new Pool({ connectionString: postgres.databaseUrl, max: 5 });
+attachDatabasePool(pool);
+const db = drizzle(pool);
 
-// Optional free-text field — a fresh schema per field so each carries its own
-// description in the generated tool schema (a shared instance would collapse to a $ref).
+// A new schema per field keeps each description in the tool schema; a shared one becomes a $ref.
 const optionalText = (description: string) =>
   z.string().trim().min(1).optional().describe(description);
 
@@ -19,8 +25,7 @@ function asTextResult(payload: unknown) {
   };
 }
 
-// Stateless: build a new server and transport for every request, so concurrent
-// requests never share one. Only the database pool lives at module scope.
+// Stateless: every request gets its own server and transport.
 function createServer() {
   const mcpServer = new McpServer({
     name: 'neon-contacts',
@@ -41,11 +46,11 @@ function createServer() {
       },
     },
     async ({ name, email, phone, company, notes }) => {
-      const [row] = await db
+      const [contact] = await db
         .insert(contacts)
         .values({ name, email, phone, company, notes })
         .returning();
-      return asTextResult({ created: row });
+      return asTextResult({ created: contact });
     },
   );
 
@@ -70,15 +75,15 @@ function createServer() {
       if (Object.keys(updates).length === 0) {
         return asTextResult({ error: 'Provide at least one field to update.' });
       }
-      const [row] = await db
+      const [contact] = await db
         .update(contacts)
         .set({ ...updates, updatedAt: new Date() })
         .where(eq(contacts.id, id))
         .returning();
-      if (!row) {
+      if (!contact) {
         return asTextResult({ error: `No contact found with id ${id}.` });
       }
-      return asTextResult({ updated: row });
+      return asTextResult({ updated: contact });
     },
   );
 
@@ -92,11 +97,11 @@ function createServer() {
       },
     },
     async ({ id }) => {
-      const [row] = await db.delete(contacts).where(eq(contacts.id, id)).returning();
-      if (!row) {
+      const [contact] = await db.delete(contacts).where(eq(contacts.id, id)).returning();
+      if (!contact) {
         return asTextResult({ error: `No contact found with id ${id}.` });
       }
-      return asTextResult({ deleted: row });
+      return asTextResult({ deleted: contact });
     },
   );
 
@@ -131,13 +136,13 @@ function createServer() {
             ilike(contacts.notes, `%${query}%`),
           )
         : undefined;
-      const rows = await db
+      const matches = await db
         .select()
         .from(contacts)
-        .where(and(where))
+        .where(where)
         .orderBy(contacts.name)
         .limit(limit);
-      return asTextResult({ count: rows.length, contacts: rows });
+      return asTextResult({ count: matches.length, contacts: matches });
     },
   );
 
@@ -146,7 +151,7 @@ function createServer() {
 
 const app = new Hono();
 
-app.get('/', (c) => c.text('Neon contacts MCP server — connect an MCP client to POST /mcp'));
+app.get('/', (c) => c.text('Neon contacts MCP server. Connect an MCP client to POST /mcp'));
 
 app.on(['GET', 'DELETE'], '/mcp', (c) =>
   c.json(

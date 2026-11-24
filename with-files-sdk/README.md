@@ -26,9 +26,7 @@ with-files-sdk/
 ├── src/
 │   ├── index.ts        # Hono Function: GET /files and POST /object
 │   ├── upload.ts       # Files SDK script: upload each asset, print a URL, list the bucket
-│   ├── env.ts          # DATABASE_URL helper
 │   └── db/
-│       ├── client.ts   # pg pool + Drizzle
 │       └── schema.ts   # objects table
 └── package.json
 ```

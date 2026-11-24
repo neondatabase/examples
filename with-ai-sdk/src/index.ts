@@ -1,19 +1,25 @@
+import { randomUUID } from 'node:crypto';
 import { neon } from '@neon/ai-sdk-provider';
 import { generateText, type GeneratedFile } from 'ai';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { randomUUID } from 'node:crypto';
-import { getDb } from './db/client';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+import { parseEnv } from '@neon/env';
+import { attachDatabasePool } from '@neon/functions';
+import config from '../neon';
 import { images } from './db/schema';
 
 const MODEL = 'gemini-3-1-flash-image';
 const BUCKET = 'images';
 
-const db = getDb();
+const { postgres } = parseEnv(config, ['DATABASE_URL']);
+const pool = new Pool({ connectionString: postgres.databaseUrl, max: 5 });
+attachDatabasePool(pool);
+const db = drizzle(pool);
 
 const s3 = new S3Client({
-  forcePathStyle:
-    (process.env.NEON_STORAGE_FORCE_PATH_STYLE ?? 'true').toLowerCase() !== 'false',
+  forcePathStyle: (process.env.NEON_STORAGE_FORCE_PATH_STYLE ?? 'true').toLowerCase() !== 'false',
 });
 
 export default {
@@ -54,7 +60,7 @@ async function saveImage(prompt: string, file: GeneratedFile) {
     }),
   );
 
-  const [row] = await db
+  const [image] = await db
     .insert(images)
     .values({
       prompt,
@@ -68,5 +74,5 @@ async function saveImage(prompt: string, file: GeneratedFile) {
     expiresIn: 3600,
   });
 
-  return { id: row?.id, key, bytes: file.uint8Array.byteLength, url };
+  return { id: image?.id, key, bytes: file.uint8Array.byteLength, url };
 }
