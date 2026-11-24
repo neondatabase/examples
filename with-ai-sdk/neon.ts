@@ -10,5 +10,9 @@ export default defineConfig({
       name: 'AI SDK image agent',
       source: 'src/index.ts',
     },
+    geminiimage: {
+      name: 'Gemini image generator',
+      source: 'src/gemini-image.ts',
+    },
   },
 });
