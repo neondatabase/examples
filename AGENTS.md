@@ -50,7 +50,7 @@ Then, in the scaffolded directory:
 
 Read the full command output. A warning, a missing env file, a prompt that should not appear, a step that only works after copying `.env.example` to `.env`, or a failed command is a finding. Fix it in the template or report it.
 
-Also run `npx tsc --noEmit` in the template. A nested app such as `web/` type-checks only after its own install.
+Also type-check the template: run its `typecheck` or `check` script when `package.json` has one, otherwise `npx tsc --noEmit`. A root config with project references or `"files": []` checks nothing on its own. Check a nested app such as `web/` separately, after its own install.
 
 ### Exercise the real flow
 
