@@ -10,9 +10,14 @@ export default {
       return new Response('POST {"prompt": "..."} to this endpoint', { status: 405 });
     }
 
-    const { prompt } = (await request.json()) as { prompt?: unknown };
+    const body: unknown = await request.json().catch(() => undefined);
+    const prompt =
+      typeof body === 'object' && body !== null && 'prompt' in body ? body.prompt : undefined;
     if (typeof prompt !== 'string' || prompt.trim() === '') {
-      return Response.json({ error: 'prompt must be a non-empty string' }, { status: 400 });
+      return Response.json(
+        { error: 'Send a JSON body with a non-empty "prompt" string' },
+        { status: 400 },
+      );
     }
 
     const { files, text, usage } = await generateText({ model: neon(MODEL), prompt });
