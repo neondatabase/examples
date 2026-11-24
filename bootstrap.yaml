@@ -43,8 +43,8 @@ templates:
       ref: main
       subdir: with-graphql
   - id: ai-sdk
-    title: "Image-generation agent"
-    description: "Vercel AI SDK functions that generate images through the Neon AI Gateway, with a GPT-5 chat agent and with Gemini 3.1 Flash Image, and store them in Neon object storage, indexed in Postgres via Drizzle."
+    title: "Image generation with Gemini"
+    description: "A Vercel AI SDK function that generates images with Gemini 3.1 Flash Image through the Neon AI Gateway and stores them in Neon object storage, indexed in Postgres via Drizzle."
     tools:
       - AI SDK
       - Drizzle

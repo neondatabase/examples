@@ -1,6 +1,6 @@
 {
   "name": "with-ai-sdk",
-  "description": "AI SDK agents on Neon Functions that generate images through the Neon AI Gateway, with GPT-5 and the image_generation tool or with Gemini 3.1 Flash Image, and store them in Neon object storage.",
+  "description": "Image generation function built with the Vercel AI SDK on Neon Functions: Gemini 3.1 Flash Image through the Neon AI Gateway, with images stored in Neon object storage.",
   "private": true,
   "type": "module",
   "scripts": {

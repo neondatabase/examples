@@ -7,12 +7,8 @@ export default defineConfig({
   },
   functions: {
     imagegen: {
-      name: 'AI SDK image agent',
+      name: 'AI SDK image generator',
       source: 'src/index.ts',
-    },
-    geminiimage: {
-      name: 'Gemini image generator',
-      source: 'src/gemini-image.ts',
     },
   },
 });
