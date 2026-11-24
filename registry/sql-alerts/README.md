@@ -139,4 +139,3 @@ The template has two checks: one for long-running queries and one for idle trans
 
 - Each run sends one message for every check that is past its threshold. No state is persisted between runs, so a check that stays past its threshold sends a message on every run. Messages stop once the value is back inside the threshold. Trigger deliveries can also repeat, which can produce duplicate messages. Make the receiving side tolerant of duplicates, or keep a table that records which alerts already went out.
 - A check that fails makes `/run` return `502`. Neon treats any response other than `2xx` as a failed delivery and retries it, so the retry runs every check again. Fix a failing query as soon as the logs show it, or disable the trigger until you do.
-- Cron jobs run at most once per minute.
