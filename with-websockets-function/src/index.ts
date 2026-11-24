@@ -49,8 +49,12 @@ async function pushNewMessages() {
     lastId = latest?.id ?? 0;
     return;
   }
-  const rows = await db.select().from(messages).where(gt(messages.id, lastId)).orderBy(messages.id);
-  for (const message of rows) {
+  const newMessages = await db
+    .select()
+    .from(messages)
+    .where(gt(messages.id, lastId))
+    .orderBy(messages.id);
+  for (const message of newMessages) {
     lastId = message.id;
     for (const socket of sockets) {
       if (socket.readyState === socket.OPEN) socket.send(JSON.stringify(message));

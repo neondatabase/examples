@@ -34,24 +34,28 @@ app.post('/webhooks/stripe', async (c) => {
   }
 
   // Stripe retries deliveries, so each event is claimed once by its id before it is handled.
-  const duplicate = await db.transaction(async (tx) => {
-    const [claimed] = await tx
-      .insert(stripeEvents)
-      .values({
-        id: event.id,
-        type: event.type,
-        livemode: event.livemode,
-        payload: event,
-        createdAt: new Date(event.created * 1000),
-      })
-      .onConflictDoNothing()
-      .returning();
-    if (!claimed) return true;
-    await handleEvent(tx, event);
-    return false;
-  });
-
-  return c.json({ received: true, duplicate });
+  try {
+    const duplicate = await db.transaction(async (tx) => {
+      const [claimed] = await tx
+        .insert(stripeEvents)
+        .values({
+          id: event.id,
+          type: event.type,
+          livemode: event.livemode,
+          payload: event,
+          createdAt: new Date(event.created * 1000),
+        })
+        .onConflictDoNothing()
+        .returning();
+      if (!claimed) return true;
+      await handleEvent(tx, event);
+      return false;
+    });
+    return c.json({ received: true, duplicate });
+  } catch (error) {
+    console.error(`Failed to process ${event.type} (${event.id}):`, error);
+    return c.json({ error: 'processing failed' }, 500);
+  }
 });
 
 async function handleEvent(tx: Tx, event: Stripe.Event) {
@@ -118,6 +122,13 @@ async function ensureCustomer(tx: Tx, id: string, eventAt: Date, email: string |
     });
 }
 
+// Endpoints on Stripe API versions before 2025-03-31 send the period end on the subscription.
+function currentPeriodEnd(subscription: Stripe.Subscription) {
+  const legacy = 'current_period_end' in subscription ? subscription.current_period_end : undefined;
+  const end = subscription.items.data[0]?.current_period_end ?? legacy;
+  return typeof end === 'number' ? new Date(end * 1000) : null;
+}
+
 async function saveSubscription(tx: Tx, subscription: Stripe.Subscription, eventAt: Date) {
   const customerId =
     typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
@@ -128,7 +139,7 @@ async function saveSubscription(tx: Tx, subscription: Stripe.Subscription, event
     customerId,
     status: subscription.status,
     priceId: item?.price.id ?? null,
-    currentPeriodEnd: item ? new Date(item.current_period_end * 1000) : null,
+    currentPeriodEnd: currentPeriodEnd(subscription),
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
     lastStripeEventAt: eventAt,
     updatedAt: new Date(),

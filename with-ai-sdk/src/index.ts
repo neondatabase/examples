@@ -60,7 +60,7 @@ async function saveImage(prompt: string, file: GeneratedFile) {
     }),
   );
 
-  const [row] = await db
+  const [image] = await db
     .insert(images)
     .values({
       prompt,
@@ -74,5 +74,5 @@ async function saveImage(prompt: string, file: GeneratedFile) {
     expiresIn: 3600,
   });
 
-  return { id: row?.id, key, bytes: file.uint8Array.byteLength, url };
+  return { id: image?.id, key, bytes: file.uint8Array.byteLength, url };
 }

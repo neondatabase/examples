@@ -30,11 +30,10 @@ const db = drizzle(pool);
 
 - Don't wrap this in `getDb()` or `getDatabaseUrl()` helpers or lazy caches. When another file needs `db`, pass it in (the tRPC context) or move these four lines to `src/db.ts`.
 - Declare a Function secret in `neon.ts` with `required: true` and read it with `parseEnv(config, '<slug>').function`. `parseEnv` then returns a `string`, so don't check it again.
-- Validate only the input the template is about. When a handler takes a JSON body, parse it in one `try/catch`, check the fields it needs, and return 400 with a message that names the expected shape.
+- Validate only the input the template is about. When a handler validates a JSON body, parse it in one `try/catch`, check the fields it needs, and return 400 with a message that names the expected shape.
 - Name values after the domain (`todo`, `counter`, `image`), not `row` or `result`.
 - Comment only a constraint the code can't show, such as why state is per isolate or why an import has to come first. Don't narrate the next line or restate a name.
 - The `/` route returns one line of text that names the routes.
-- Display names in `neon.ts` are in title case (`Todo API`).
 - Use single quotes, and no `.js` extension on local imports when `tsconfig.json` uses `"moduleResolution": "bundler"`. Prettier handles quotes and line length.
 
 ## Agent skills and plugins

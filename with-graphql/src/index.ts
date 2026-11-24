@@ -38,8 +38,8 @@ const schema = createSchema({
   resolvers: {
     Query: {
       todos: async () => {
-        const rows = await db.select().from(todos);
-        return rows.map(toGraphql);
+        const all = await db.select().from(todos);
+        return all.map(toGraphql);
       },
       todo: async (_: unknown, { id }: { id: number }) => {
         const [todo] = await db.select().from(todos).where(eq(todos.id, id));

@@ -46,11 +46,11 @@ function createServer() {
       },
     },
     async ({ name, email, phone, company, notes }) => {
-      const [row] = await db
+      const [contact] = await db
         .insert(contacts)
         .values({ name, email, phone, company, notes })
         .returning();
-      return asTextResult({ created: row });
+      return asTextResult({ created: contact });
     },
   );
 
@@ -75,15 +75,15 @@ function createServer() {
       if (Object.keys(updates).length === 0) {
         return asTextResult({ error: 'Provide at least one field to update.' });
       }
-      const [row] = await db
+      const [contact] = await db
         .update(contacts)
         .set({ ...updates, updatedAt: new Date() })
         .where(eq(contacts.id, id))
         .returning();
-      if (!row) {
+      if (!contact) {
         return asTextResult({ error: `No contact found with id ${id}.` });
       }
-      return asTextResult({ updated: row });
+      return asTextResult({ updated: contact });
     },
   );
 
@@ -97,11 +97,11 @@ function createServer() {
       },
     },
     async ({ id }) => {
-      const [row] = await db.delete(contacts).where(eq(contacts.id, id)).returning();
-      if (!row) {
+      const [contact] = await db.delete(contacts).where(eq(contacts.id, id)).returning();
+      if (!contact) {
         return asTextResult({ error: `No contact found with id ${id}.` });
       }
-      return asTextResult({ deleted: row });
+      return asTextResult({ deleted: contact });
     },
   );
 
@@ -136,13 +136,13 @@ function createServer() {
             ilike(contacts.notes, `%${query}%`),
           )
         : undefined;
-      const rows = await db
+      const matches = await db
         .select()
         .from(contacts)
         .where(where)
         .orderBy(contacts.name)
         .limit(limit);
-      return asTextResult({ count: rows.length, contacts: rows });
+      return asTextResult({ count: matches.length, contacts: matches });
     },
   );
 

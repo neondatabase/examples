@@ -5,7 +5,6 @@ config({ path: '.env.local' });
 
 export default defineConfig({
   auth: false,
-  // New preview branches expire after a week.
   branch: (branch) => (branch.exists ? {} : { ttl: '7d' }),
   functions: {
     stripe: {

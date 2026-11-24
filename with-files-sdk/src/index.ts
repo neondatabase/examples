@@ -35,10 +35,11 @@ app.post('/object', async (c) => {
     return c.json({ error: 'invalid_body' }, 400);
   }
 
-  const { bucketName, objectKey } = delivery.invocation.data;
+  const { invocationId, data } = delivery.invocation;
+  const { bucketName, objectKey } = data;
   await db.insert(objects).values({ bucket: bucketName, objectKey }).onConflictDoNothing();
-  console.info(`[ingest] indexed ${bucketName}/${objectKey}`);
-  return c.json({ bucket: bucketName, objectKey });
+  console.info(`[ingest] ${invocationId} indexed ${bucketName}/${objectKey}`);
+  return c.json({ bucket: bucketName, objectKey, invocationId });
 });
 
 export default app;
