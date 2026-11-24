@@ -20,9 +20,7 @@ with-stripe-webhooks/
 ├── .env.example        # Required environment variables
 ├── src/
 │   ├── index.ts        # Hono app: webhook handler
-│   ├── env.ts          # Stripe + DATABASE_URL helpers
 │   └── db/
-│       ├── client.ts   # pg pool + Drizzle
 │       └── schema.ts   # stripe_events, customers, subscriptions
 └── package.json
 ```

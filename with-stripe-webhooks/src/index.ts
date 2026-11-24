@@ -1,242 +1,144 @@
-import { type SQL, sql } from "drizzle-orm";
-import { Hono } from "hono";
-import Stripe from "stripe";
-import { getDb } from "./db/client.js";
-import { customers, stripeEvents, subscriptions } from "./db/schema.js";
-import { getStripeWebhookSecret } from "./env.js";
+import { Hono } from 'hono';
+import Stripe from 'stripe';
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { sql } from 'drizzle-orm';
+import type { PgColumn } from 'drizzle-orm/pg-core';
+import { Pool } from 'pg';
+import { parseEnv } from '@neon/env';
+import { attachDatabasePool } from '@neon/functions';
+import config from '../neon';
+import { customers, stripeEvents, subscriptions } from './db/schema';
 
-const db = getDb();
-const webhookSecret = getStripeWebhookSecret();
+const { postgres } = parseEnv(config, ['DATABASE_URL']);
+const { STRIPE_WEBHOOK_SECRET } = parseEnv(config, 'stripe').function;
+const pool = new Pool({ connectionString: postgres.databaseUrl, max: 5 });
+attachDatabasePool(pool);
+const db = drizzle(pool);
 
-type Db = Parameters<Parameters<typeof db.transaction>[0]>[0];
+type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 
 const app = new Hono();
 
-app.get("/", (c) =>
-  c.json({
-    ok: true,
-    service: "stripe-webhooks",
-    endpoints: {
-      webhook: "POST /webhooks/stripe",
-    },
-  }),
-);
+app.get('/', (c) => c.text('Neon Stripe webhooks. POST /webhooks/stripe'));
 
-app.post("/webhooks/stripe", async (c) => {
-  const signature = c.req.header("stripe-signature");
-  if (!signature) {
-    return c.json({ error: "missing stripe-signature header" }, 400);
-  }
-
-  const rawBody = await c.req.text();
+app.post('/webhooks/stripe', async (c) => {
+  const signature = c.req.header('stripe-signature');
+  if (!signature) return c.json({ error: 'missing stripe-signature header' }, 400);
 
   let event: Stripe.Event;
   try {
-    event = Stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "invalid signature";
-    console.error("Webhook signature verification failed:", message);
-    return c.json({ error: "invalid signature" }, 400);
+    event = Stripe.webhooks.constructEvent(await c.req.text(), signature, STRIPE_WEBHOOK_SECRET);
+  } catch (error) {
+    console.error('Webhook signature verification failed:', error);
+    return c.json({ error: 'invalid signature' }, 400);
   }
 
-  // Claim the event in the database and process it in a transaction. If the event has already been claimed, we skip processing it.
-  try {
-    const result = await db.transaction(async (tx) => {
-      const [claimed] = await tx
-        .insert(stripeEvents)
-        .values({
-          id: event.id,
-          type: event.type,
-          livemode: event.livemode,
-          payload: event,
-          createdAt: new Date(event.created * 1000),
-        })
-        .onConflictDoNothing({ target: stripeEvents.id })
-        .returning({ id: stripeEvents.id });
+  // Stripe retries deliveries, so each event is claimed once by its id before it is handled.
+  const duplicate = await db.transaction(async (tx) => {
+    const [claimed] = await tx
+      .insert(stripeEvents)
+      .values({
+        id: event.id,
+        type: event.type,
+        livemode: event.livemode,
+        payload: event,
+        createdAt: new Date(event.created * 1000),
+      })
+      .onConflictDoNothing()
+      .returning();
+    if (!claimed) return true;
+    await handleEvent(tx, event);
+    return false;
+  });
 
-      if (!claimed) {
-        return { duplicate: true as const };
-      }
-
-      await handleStripeEvent(tx, event);
-      return { duplicate: false as const };
-    });
-
-    return c.json({ received: true, duplicate: result.duplicate });
-  } catch (err) {
-    console.error(`Failed to process ${event.type} (${event.id}):`, err);
-    return c.json({ error: "processing failed" }, 500);
-  }
+  return c.json({ received: true, duplicate });
 });
 
-async function handleStripeEvent(tx: Db, event: Stripe.Event): Promise<void> {
+async function handleEvent(tx: Tx, event: Stripe.Event) {
   const eventAt = new Date(event.created * 1000);
 
   switch (event.type) {
-    case "customer.created":
-    case "customer.updated":
-      await upsertCustomer(tx, event.data.object, eventAt);
-      break;
-
-    case "customer.deleted":
-      // Stripe sends the full customer snapshot (no `deleted` flag) for this event,
-      // so mark it as a deletion explicitly rather than relying on the payload shape.
-      await upsertCustomer(tx, event.data.object, eventAt, true);
-      break;
-
-    case "customer.subscription.created":
-    case "customer.subscription.updated":
-    case "customer.subscription.deleted":
-      await upsertSubscription(tx, event.data.object, eventAt);
-      break;
-
-    case "checkout.session.completed": {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const customerId = typeof session.customer === "string"
-        ? session.customer
-        : session.customer?.id ?? null;
-      if (customerId) {
-        await ensureCustomer(tx, customerId, session.customer_details?.email ?? null, eventAt);
-      }
-      break;
-    }
-
-    default:
-      break;
-  }
-}
-
-// A helper to ensure that we only update a row if the event is newer than the last event we've seen for that row. This prevents out-of-order events from overwriting newer data.
-function notOlderThan(column: SQL.Aliased | unknown, eventAt: Date): SQL {
-  return sql`${column} IS NULL OR ${column} <= ${eventAt}`;
-}
-
-async function upsertCustomer(
-  tx: Db,
-  customer: Stripe.Customer | Stripe.DeletedCustomer,
-  eventAt: Date,
-  isDeleted = false,
-): Promise<void> {
-  const deleted = isDeleted || ("deleted" in customer && customer.deleted);
-  if (deleted) {
-    // Soft delete: keep the row (subscriptions reference it via FK) but wipe the PII.
-    await tx
-      .insert(customers)
-      .values({
-        id: customer.id,
-        email: null,
-        name: null,
-        lastStripeEventAt: eventAt,
-        updatedAt: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: customers.id,
-        set: {
-          email: null,
-          name: null,
-          lastStripeEventAt: eventAt,
-          updatedAt: new Date(),
-        },
-        setWhere: notOlderThan(customers.lastStripeEventAt, eventAt),
+    case 'customer.created':
+    case 'customer.updated':
+      return saveCustomer(tx, event.data.object.id, eventAt, {
+        email: event.data.object.email,
+        name: event.data.object.name ?? null,
       });
-    return;
+
+    case 'customer.deleted':
+      // Keep the row, since subscriptions reference it, but remove the personal data.
+      return saveCustomer(tx, event.data.object.id, eventAt, { email: null, name: null });
+
+    case 'customer.subscription.created':
+    case 'customer.subscription.updated':
+    case 'customer.subscription.deleted':
+      return saveSubscription(tx, event.data.object, eventAt);
+
+    case 'checkout.session.completed': {
+      const { customer, customer_details } = event.data.object;
+      const customerId = typeof customer === 'string' ? customer : customer?.id;
+      if (customerId) {
+        await ensureCustomer(tx, customerId, eventAt, customer_details?.email ?? null);
+      }
+      return;
+    }
   }
+}
 
-  const full = customer as Stripe.Customer;
+// Stripe can deliver events out of order, so a row only changes for an event at least as new.
+const notOlderThan = (column: PgColumn, eventAt: Date) =>
+  sql`${column} IS NULL OR ${column} <= ${eventAt}`;
+
+async function saveCustomer(
+  tx: Tx,
+  id: string,
+  eventAt: Date,
+  fields: { email: string | null; name: string | null },
+) {
+  const values = { ...fields, lastStripeEventAt: eventAt, updatedAt: new Date() };
   await tx
     .insert(customers)
-    .values({
-      id: full.id,
-      email: full.email ?? null,
-      name: full.name ?? null,
-      lastStripeEventAt: eventAt,
-      updatedAt: new Date(),
-    })
+    .values({ id, ...values })
     .onConflictDoUpdate({
       target: customers.id,
-      set: {
-        email: full.email ?? null,
-        name: full.name ?? null,
-        lastStripeEventAt: eventAt,
-        updatedAt: new Date(),
-      },
+      set: values,
       setWhere: notOlderThan(customers.lastStripeEventAt, eventAt),
     });
 }
 
-// Ensure that a customer exists in the database. If the customer already exists, we update the email if provided. This is used for events that reference a customer but don't provide full customer details, like subscription events.
-async function ensureCustomer(
-  tx: Db,
-  customerId: string,
-  email: string | null,
-  eventAt: Date,
-): Promise<void> {
+// For events that reference a customer without the full customer object.
+async function ensureCustomer(tx: Tx, id: string, eventAt: Date, email: string | null = null) {
   await tx
     .insert(customers)
-    .values({
-      id: customerId,
-      email,
-      name: null,
-      lastStripeEventAt: null,
-      updatedAt: new Date(),
-    })
+    .values({ id, email })
     .onConflictDoUpdate({
       target: customers.id,
-      set: {
-        ...(email ? { email } : {}),
-        updatedAt: new Date(),
-      },
+      set: email ? { email, updatedAt: new Date() } : { updatedAt: new Date() },
       setWhere: notOlderThan(customers.lastStripeEventAt, eventAt),
     });
 }
 
-function primaryPriceId(sub: Stripe.Subscription): string | null {
-  const item = sub.items?.data?.[0];
-  if (!item) return null;
-  return typeof item.price === "string" ? item.price : (item.price?.id ?? null);
-}
+async function saveSubscription(tx: Tx, subscription: Stripe.Subscription, eventAt: Date) {
+  const customerId =
+    typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
+  await ensureCustomer(tx, customerId, eventAt);
 
-function currentPeriodEnd(sub: Stripe.Subscription): Date | null {
-  const fromSub = (sub as Stripe.Subscription & { current_period_end?: number })
-    .current_period_end;
-  const fromItem = (
-    sub.items?.data?.[0] as Stripe.SubscriptionItem & { current_period_end?: number } | undefined
-  )?.current_period_end;
-  const end = fromSub ?? fromItem;
-  return typeof end === "number" ? new Date(end * 1000) : null;
-}
-
-async function upsertSubscription(
-  tx: Db,
-  sub: Stripe.Subscription,
-  eventAt: Date,
-): Promise<void> {
-  const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
-  await ensureCustomer(tx, customerId, null, eventAt);
-
+  const item = subscription.items.data[0];
+  const values = {
+    customerId,
+    status: subscription.status,
+    priceId: item?.price.id ?? null,
+    currentPeriodEnd: item ? new Date(item.current_period_end * 1000) : null,
+    cancelAtPeriodEnd: subscription.cancel_at_period_end,
+    lastStripeEventAt: eventAt,
+    updatedAt: new Date(),
+  };
   await tx
     .insert(subscriptions)
-    .values({
-      id: sub.id,
-      customerId,
-      status: sub.status,
-      priceId: primaryPriceId(sub),
-      currentPeriodEnd: currentPeriodEnd(sub),
-      cancelAtPeriodEnd: sub.cancel_at_period_end ?? false,
-      lastStripeEventAt: eventAt,
-      updatedAt: new Date(),
-    })
+    .values({ id: subscription.id, ...values })
     .onConflictDoUpdate({
       target: subscriptions.id,
-      set: {
-        customerId,
-        status: sub.status,
-        priceId: primaryPriceId(sub),
-        currentPeriodEnd: currentPeriodEnd(sub),
-        cancelAtPeriodEnd: sub.cancel_at_period_end ?? false,
-        lastStripeEventAt: eventAt,
-        updatedAt: new Date(),
-      },
+      set: values,
       setWhere: notOlderThan(subscriptions.lastStripeEventAt, eventAt),
     });
 }

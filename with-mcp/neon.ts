@@ -1,10 +1,10 @@
-import { defineConfig } from "@neon/config/v1";
+import { defineConfig } from '@neon/config/v1';
 
 export default defineConfig({
-    functions: {
-        "contacts": {
-            name: "contacts mcp server",
-            source: "src/index.ts"
-        }
-    }
-})
+  functions: {
+    contacts: {
+      name: 'Contacts MCP server',
+      source: 'src/index.ts',
+    },
+  },
+});

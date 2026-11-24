@@ -8,6 +8,8 @@ Example applications and starter templates for Neon. Each subdirectory is a self
 
 Contributor and agent rules live in [CONTRIBUTING.md](./CONTRIBUTING.md). Read that before adding or editing an example.
 
+Templates in `bootstrap.yaml` follow [Starter code](./CONTRIBUTING.md#starter-code): one `src/index.ts` that connects to Postgres at the top, no helper layers around the connection or env, and comments only for constraints the code can't show.
+
 ## Env files
 
 Templates in `bootstrap.yaml` use `.env.local` as the env file, not `.env`.

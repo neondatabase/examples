@@ -1,57 +1,44 @@
+import { Hono } from 'hono';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+import { parseEnv } from '@neon/env';
+import { attachDatabasePool } from '@neon/functions';
 import {
   isStorageObjectCreatedTriggerInvocation,
   parseTriggerDelivery,
-} from "@neon/functions/hono";
-import { Hono } from "hono";
-import { getDb } from "./db/client.js";
-import { objects } from "./db/schema.js";
+} from '@neon/functions/hono';
+import config from '../neon';
+import { objects } from './db/schema';
 
-const db = getDb();
-
-async function listFiles() {
-  return db
-    .select({
-      bucket: objects.bucket,
-      objectKey: objects.objectKey,
-    })
-    .from(objects);
-}
-
-async function indexObject(bucket: string, objectKey: string) {
-  await db.insert(objects).values({ bucket, objectKey }).onConflictDoNothing();
-}
+const { postgres } = parseEnv(config, ['DATABASE_URL']);
+const pool = new Pool({ connectionString: postgres.databaseUrl, max: 5 });
+attachDatabasePool(pool);
+const db = drizzle(pool);
 
 const app = new Hono();
 
-app.get("/", (c) =>
-  c.text("Neon object ingest. GET /files, POST /object"),
-);
+app.get('/', (c) => c.text('Neon object ingest. GET /files, POST /object'));
 
-app.get("/files", async (c) => c.json({ files: await listFiles() }));
+app.get('/files', async (c) => {
+  const files = await db
+    .select({ bucket: objects.bucket, objectKey: objects.objectKey })
+    .from(objects);
+  return c.json({ files });
+});
 
-app.post("/object", async (c) => {
-  const parsed = await parseTriggerDelivery(c.req.raw);
-  if (!parsed.ok) {
-    const status = parsed.error === "invalid_body" ? 400 : 401;
-    return c.json({ error: parsed.error }, status);
+app.post('/object', async (c) => {
+  const delivery = await parseTriggerDelivery(c.req.raw);
+  if (!delivery.ok) {
+    return c.json({ error: delivery.error }, delivery.error === 'invalid_body' ? 400 : 401);
   }
-  if (!isStorageObjectCreatedTriggerInvocation(parsed.invocation)) {
-    return c.json({ error: "invalid_body" }, 400);
+  if (!isStorageObjectCreatedTriggerInvocation(delivery.invocation)) {
+    return c.json({ error: 'invalid_body' }, 400);
   }
 
-  const { bucketName, objectKey } = parsed.invocation.data;
-  await indexObject(bucketName, objectKey);
-  console.info("[ingest]", {
-    invocationId: parsed.invocation.invocationId,
-    triggerName: parsed.invocation.trigger.name,
-    bucketName,
-    objectKey,
-  });
-  return c.json({
-    bucket: bucketName,
-    objectKey,
-    invocationId: parsed.invocation.invocationId,
-  });
+  const { bucketName, objectKey } = delivery.invocation.data;
+  await db.insert(objects).values({ bucket: bucketName, objectKey }).onConflictDoNothing();
+  console.info(`[ingest] indexed ${bucketName}/${objectKey}`);
+  return c.json({ bucket: bucketName, objectKey });
 });
 
 export default app;

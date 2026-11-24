@@ -18,9 +18,7 @@ with-graphql/
 ├── .env.example        # Required environment variables
 ├── src/
 │   ├── index.ts        # Hono app + Yoga GraphQL server (the function entry)
-│   ├── env.ts          # DATABASE_URL helper
 │   └── db/
-│       ├── client.ts   # pg pool + Drizzle
 │       └── schema.ts   # todos table
 └── package.json
 ```

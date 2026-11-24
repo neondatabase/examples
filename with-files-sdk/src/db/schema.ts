@@ -1,11 +1,11 @@
-import { integer, pgTable, text, unique } from "drizzle-orm/pg-core";
+import { integer, pgTable, text, unique } from 'drizzle-orm/pg-core';
 
 export const objects = pgTable(
-  "objects",
+  'objects',
   {
-    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-    bucket: text("bucket").notNull(),
-    objectKey: text("object_key").notNull(),
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    bucket: text('bucket').notNull(),
+    objectKey: text('object_key').notNull(),
   },
-  (t) => [unique("objects_bucket_object_key").on(t.bucket, t.objectKey)],
+  (t) => [unique('objects_bucket_object_key').on(t.bucket, t.objectKey)],
 );
