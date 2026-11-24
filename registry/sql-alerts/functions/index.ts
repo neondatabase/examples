@@ -1,9 +1,12 @@
 import { attachDatabasePool } from "@neon/functions";
 import { parseTriggerDelivery } from "@neon/functions/triggers";
-import { Pool } from "pg";
+import { Pool, type QueryConfig } from "pg";
 
 // Every check runs in a read-only transaction with this timeout.
 const STATEMENT_TIMEOUT = "15s";
+
+// Postgres type OIDs: int8, int2, int4, float4, float8, numeric.
+const NUMERIC_TYPE_OIDS = new Set([20, 21, 23, 700, 701, 1700]);
 
 const SLACK_TIMEOUT_MS = 10_000;
 
@@ -85,7 +88,10 @@ async function evaluate(check: Check): Promise<CheckResult> {
 	try {
 		await client.query("begin read only");
 		await client.query(`set local statement_timeout = '${STATEMENT_TIMEOUT}'`);
-		const { rows, fields } = await client.query(check.sql);
+		// The extended protocol rejects multiple statements, so a check cannot
+		// end the read-only transaction with a COMMIT and then write.
+		const query: QueryConfig & { queryMode: "extended" } = { text: check.sql, queryMode: "extended" };
+		const { rows, fields } = await client.query(query);
 		await client.query("commit");
 		committed = true;
 
@@ -94,6 +100,9 @@ async function evaluate(check: Check): Promise<CheckResult> {
 		}
 		if (rows.length !== 1) {
 			throw new Error(`must return exactly one row, got ${rows.length}`);
+		}
+		if (!NUMERIC_TYPE_OIDS.has(fields[0]!.dataTypeID)) {
+			throw new Error("must select a numeric column");
 		}
 
 		const raw = rows[0]![fields[0]!.name];
@@ -122,8 +131,20 @@ function alertText(result: CheckResult): string {
 	return `${branch ? `[${branch}] ` : ""}ALERT: ${check.title} is ${value} (threshold ${check.operator} ${check.threshold})`;
 }
 
+// The webhook URL is a credential. Validate it without echoing it, because
+// fetch errors that include the URL end up in logs and in the 502 response.
+function slackWebhookUrl(): string {
+	const raw = process.env.SLACK_WEBHOOK_URL ?? "";
+	try {
+		if (new URL(raw).protocol === "https:") return raw;
+	} catch {
+		// Fall through to the generic error below.
+	}
+	throw new Error("SLACK_WEBHOOK_URL must be an https URL");
+}
+
 async function sendAlert(result: CheckResult): Promise<void> {
-	const url = process.env.SLACK_WEBHOOK_URL!;
+	const url = slackWebhookUrl();
 
 	const response = await fetch(url, {
 		method: "POST",
