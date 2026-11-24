@@ -8,7 +8,7 @@ Example applications and starter templates for Neon. Each subdirectory is a self
 
 Contributor and agent rules live in [CONTRIBUTING.md](./CONTRIBUTING.md). Read that before adding or editing an example.
 
-Templates in `bootstrap.yaml` follow [Starter code](./CONTRIBUTING.md#starter-code): one `src/index.ts` that connects to Postgres at the top, no helper layers around the connection or env, and comments only for constraints the code can't show.
+Templates in `bootstrap.yaml` follow [Starter code](./CONTRIBUTING.md#starter-code): one `src/index.ts` that connects to Postgres at the top, no helper layers around the connection or env, and comments only for constraints the code can't show. When you simplify a template, its behavior stays the same; see [Simplifying a template](./CONTRIBUTING.md#simplifying-a-template).
 
 ## Env files
 
@@ -49,6 +49,20 @@ Then, in the scaffolded directory:
 6. Exercise the same request against the deployed Function (`neon functions get <name>` prints its URL). Without Functions it hosts nothing; say so.
 
 Read the full command output. A warning, a missing env file, a prompt that should not appear, a step that only works after copying `.env.example` to `.env`, or a failed command is a finding. Fix it in the template or report it.
+
+Also run `npx tsc --noEmit` in the template. A nested app such as `web/` type-checks only after its own install.
+
+### Exercise the real flow
+
+A `GET /` proves the Function starts, not that the template works. Run what the README promises, and both the local and deployed runs are required, because they can differ: `with-graphql` worked under `neon dev` and failed deployed until `graphql-yoga` was imported before `hono`.
+
+- Triggers: cause the event. Upload a file for a storage trigger. For a schedule, wait for it to run and read the result.
+- Webhooks: sign a test event yourself. For Stripe, put a placeholder `STRIPE_WEBHOOK_SECRET` in `.env.local`, deploy with `--env .env.local`, and sign payloads with `Stripe.webhooks.generateTestHeaderString`. Send a duplicate and a bad signature too.
+- WebSockets: test the upgrade with `curl --http1.1`; over HTTP/2, curl drops the `Upgrade` header and gets a plain response. For a token, sign up a test user with `POST $NEON_AUTH_BASE_URL/sign-up/email`, then `GET $NEON_AUTH_BASE_URL/token` with the session cookie and an `Origin` header.
+- MCP: `POST /mcp` with `tools/list` and a `tools/call`, with `Accept: application/json, text/event-stream`.
+- Bad input: send what the handler rejects (no body, invalid JSON, a missing field) and check the status and message.
+
+For a refactor, send the same requests to the template from `main` and compare the responses.
 
 ### Cleanup
 

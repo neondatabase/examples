@@ -35,6 +35,13 @@ const db = drizzle(pool);
 - Comment only a constraint the code can't show, such as why state is per isolate or why an import has to come first. Don't narrate the next line or restate a name.
 - The `/` route returns one line of text that names the routes.
 - Use single quotes, and no `.js` extension on local imports when `tsconfig.json` uses `"moduleResolution": "bundler"`. Prettier handles quotes and line length.
+- Don't cast with `as`. Narrow instead, as in `error instanceof Error ? error.message : String(error)`.
+- Return a stream with `c.body(stream, 200, headers)`, not `new Response(stream)`, so middleware such as `cors()` still sets its headers.
+- When an error can carry the request body, log its message, not the error object. Stripe's signature error includes the webhook payload, customer email included.
+
+### Simplifying a template
+
+Shorter code is the goal only while behavior stays the same. Keep every route, status code, and response field, and keep compatibility paths: `with-stripe-webhooks` reads `current_period_end` from the subscription as well as the item, because endpoints on Stripe API versions before 2025-03-31 send it there. Keep an error response a caller reads, such as the JSON 500 a webhook returns. Before you delete code that looks unnecessary, find out why it's there, and if it has to stay, say why in a comment.
 
 ## Agent skills and plugins
 
