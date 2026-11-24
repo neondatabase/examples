@@ -29,7 +29,7 @@ Enable AI Gateway on the linked branch:
 neon config add ai-gateway
 ```
 
-AI Gateway requires a paid Neon plan with prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started).
+AI Gateway requires prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started) and [prepaid credits](https://neon.com/docs/ai-gateway/prepaid-credits).
 
 Deploy once so Neon provisions the gateway and pulls `NEON_AI_GATEWAY_BASE_URL` and `NEON_AI_GATEWAY_TOKEN` into `.env.local`:
 

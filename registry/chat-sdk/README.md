@@ -45,7 +45,7 @@ Enable AI Gateway on the linked branch:
 neon config add ai-gateway
 ```
 
-You can also set `aiGateway: true` in `neon.ts`. AI Gateway requires a paid Neon plan with prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started).
+You can also set `aiGateway: true` in `neon.ts`. AI Gateway requires prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started) and [prepaid credits](https://neon.com/docs/ai-gateway/prepaid-credits).
 
 Set up the platforms you scaffolded as described below, then deploy. The first deploy provisions the gateway and pulls `DATABASE_URL`, `NEON_AI_GATEWAY_BASE_URL`, `NEON_AI_GATEWAY_TOKEN`, `NEON_BRANCH_ID`, and `NEON_FUNCTION_HOST_SUFFIX` into `.env.local`. `functionBaseUrl("chatsdk")` from `@neon/env` builds the function's URL from the last two:
 

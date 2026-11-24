@@ -279,6 +279,14 @@
 			"description": "Post to Slack on a cron when a SQL check is past its threshold.",
 			"path": "sql-alerts/template.json",
 			"categories": ["first-party"]
+		},
+		{
+			"id": "pgvector-memory",
+			"provider": "Neon",
+			"title": "Semantic memory with pgvector",
+			"description": "Chunk and embed text with Neon AI Gateway, then recall it with a cosine HNSW search in Lakebase Postgres.",
+			"path": "pgvector-memory/template.json",
+			"categories": ["first-party"]
 		}
 	]
 }
