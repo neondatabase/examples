@@ -182,10 +182,10 @@ curl -s -X DELETE "$URL/memory?id=user-42"
 
 | Method | Route | Body | Result |
 | --- | --- | --- | --- |
-| `GET` | `/` | — | The model, dimensions, and route list |
+| `GET` | `/` | None | The model, dimensions, and route list |
 | `POST` | `/memory` | `{ "id"?: string, "content": string }` | The memory id and number of chunks stored |
 | `POST` | `/recall` | `{ "query": string, "limit"?: number }` | Closest chunks, best first |
-| `DELETE` | `/memory?id=...` | — | The memory id and number of chunks deleted |
+| `DELETE` | `/memory?id=...` | None | The memory id and number of chunks deleted |
 
 </Operations>
 
