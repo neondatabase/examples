@@ -21,27 +21,27 @@
 	"environment": [
 		{
 			"name": "SLACK_BOT_TOKEN",
-			"description": "For /slack: the Bot User OAuth Token (xoxb-...) from your Slack app's OAuth & Permissions page. If you didn't scaffold /slack, delete this key from neon.ts.",
+			"description": "The Bot User OAuth Token (xoxb-...) from your Slack app's OAuth & Permissions page, which /slack uses. If you didn't scaffold /slack, delete this key from neon.ts.",
 			"required": true
 		},
 		{
 			"name": "SLACK_SIGNING_SECRET",
-			"description": "For /slack: the Signing Secret from your Slack app's Basic Information page; verifies that requests come from Slack. If you didn't scaffold /slack, delete this key from neon.ts.",
+			"description": "The Signing Secret from your Slack app's Basic Information page, which /slack uses to verify that requests come from Slack. If you didn't scaffold /slack, delete this key from neon.ts.",
 			"required": true
 		},
 		{
 			"name": "TELEGRAM_BOT_TOKEN",
-			"description": "For /telegram: the bot token from @BotFather. If you didn't scaffold /telegram, delete this key from neon.ts.",
+			"description": "The bot token from @BotFather, which /telegram uses. If you didn't scaffold /telegram, delete this key from neon.ts.",
 			"required": true
 		},
 		{
 			"name": "TELEGRAM_WEBHOOK_SECRET_TOKEN",
-			"description": "For /telegram: a random secret (letters, digits, _ and -, for example from openssl rand -hex 32) you also pass to setWebhook; verifies that requests come from Telegram. If you didn't scaffold /telegram, delete this key from neon.ts.",
+			"description": "A random secret of letters, digits, _, and -, for example from openssl rand -hex 32. You also pass it to setWebhook, and /telegram uses it to verify that requests come from Telegram. If you didn't scaffold /telegram, delete this key from neon.ts.",
 			"required": true
 		},
 		{
 			"name": "CHAT_WEB_TOKEN",
-			"description": "For /web: a random token (at least 32 characters, for example from openssl rand -hex 32) your backend sends as Authorization: Bearer <token>; required because Neon Function URLs are public. If you didn't scaffold /web, delete this key from neon.ts.",
+			"description": "A random token of at least 32 characters, for example from openssl rand -hex 32, that your backend sends to /web as Authorization: Bearer <token>. Neon Function URLs are public, so /web requires it. If you didn't scaffold /web, delete this key from neon.ts.",
 			"required": true
 		}
 	],
@@ -49,7 +49,7 @@
 		{
 			"id": "slack",
 			"title": "Slack bot",
-			"description": "Slack's Events API and interactivity URL: answers @mentions and DMs, follows the threads it was mentioned in, and streams replies with Slack's native streaming.",
+			"description": "Receives Slack's Events API and interactivity requests. It answers @mentions and DMs, follows the threads it was mentioned in, and streams replies with Slack's native streaming.",
 			"source": "functions/slack.ts",
 			"route": "/slack",
 			"recommended": true
@@ -57,7 +57,7 @@
 		{
 			"id": "web",
 			"title": "Web chat for useChat",
-			"description": "POST the body useChat sends, with a bearer token and an X-User-Id header, to stream a reply in the AI SDK UI message format; earlier turns are read from Postgres.",
+			"description": "Takes the body that useChat sends and streams a reply in the AI SDK UI message format. Your backend sends a bearer token and an X-User-Id header, and the function reads earlier turns from Postgres.",
 			"source": "functions/web.ts",
 			"route": "/web",
 			"recommended": true
@@ -65,10 +65,11 @@
 		{
 			"id": "telegram",
 			"title": "Telegram bot",
-			"description": "Telegram webhook: answers private chats and group mentions, verified with the webhook secret token; chat history is kept in Postgres.",
+			"description": "Receives Telegram's webhook and checks its secret token. It answers private chats and group mentions, and it keeps chat history in Postgres.",
 			"source": "functions/telegram.ts",
 			"route": "/telegram",
 			"recommended": false
 		}
-	]
+	],
+	"features": ["ai-gateway", "postgres"]
 }

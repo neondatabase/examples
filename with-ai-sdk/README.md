@@ -6,7 +6,7 @@
 
 # Getting started with Neon and the AI SDK
 
-An AI agent built with the [Vercel AI SDK](https://ai-sdk.dev) (v6), running on Neon Functions. It streams a chat completion through the [Neon AI Gateway](https://neon.com) using the [`@neon/ai-sdk-provider`](https://www.npmjs.com/package/@neon/ai-sdk-provider) and the gateway's built-in `image_generation` tool: when the model calls it, a JPEG is generated, uploaded to a Neon-managed S3-compatible bucket, and indexed in [Neon](https://neon.com) Postgres via [Drizzle ORM](https://orm.drizzle.team).
+An image generation function built with the [Vercel AI SDK](https://ai-sdk.dev) (v6), running on Neon Functions. It sends a prompt to `gemini-3-1-flash-image` through the [Neon AI Gateway](https://neon.com) with [`@neon/ai-sdk-provider`](https://www.npmjs.com/package/@neon/ai-sdk-provider), uploads each generated image to a Neon-managed S3-compatible bucket, and indexes it in [Neon](https://neon.com) Postgres via [Drizzle ORM](https://orm.drizzle.team).
 
 Everything the app needs — the database URL, the AI Gateway endpoint, and the object-storage credential — is declared in `neon.ts` and injected by `neon dev`, so there are no secrets to copy around.
 
@@ -19,7 +19,7 @@ with-ai-sdk/
 ├── tsconfig.json
 ├── .env.example
 ├── src/
-│   ├── index.ts        # The agent: streamText + image_generation tool, S3 + Drizzle persistence
+│   ├── index.ts        # The function: generateText with gemini-3-1-flash-image, S3 + Drizzle persistence
 │   └── db/
 │       └── schema.ts   # Drizzle schema (images table)
 └── package.json
@@ -27,19 +27,23 @@ with-ai-sdk/
 
 ## What it does
 
-`POST /` with an AI-SDK-style messages payload:
+`POST /` with a prompt:
 
 ```json
-{ "messages": [{ "role": "user", "content": "Draw a watercolor of a sleepy elephant." }] }
+{ "prompt": "Generate an image of a lighthouse at dusk." }
 ```
 
-The handler:
+The handler calls `generateText` with `gemini-3-1-flash-image`, uploads every image in `result.files` to your bucket as a PNG, records the prompt, key, and size in Postgres, and returns a presigned view URL for each:
 
-1. Streams the assistant's response as a UI-message stream (consumable by the AI SDK React/Vue/Svelte hooks).
-2. Uses an OpenAI/GPT-5 model on the Neon AI Gateway (`gpt-5-mini`) via the `neon()` provider from `@neon/ai-sdk-provider`, with the gateway's built-in `neon.tools.imageGeneration()` tool.
-3. When the model generates an image, the handler uploads the returned JPEG to your bucket and records the prompt + key + size in Postgres, logging a presigned view URL.
+```json
+{
+  "images": [{ "id": 1, "key": "generated/0e39….png", "bytes": 1800765, "url": "https://…" }]
+}
+```
 
-> Notes on the gateway's image generation: it's the OpenAI Responses **`image_generation`** built-in tool (OpenAI models only — there is no separate images endpoint), and the image is returned **inline as base64**. The supported image models are `gpt-image-2` (the default), `gpt-image-1.5`, and `gpt-image-1-mini`; pass `model` to `neon.tools.imageGeneration()` to pick another one. Always stream image generation, as this example does with `streamText`: a non-streaming response whose image is over 655,360 bytes fails with 400. The example asks for a low-quality, compressed JPEG to keep generation fast.
+A body that isn't JSON or has no `prompt` string returns 400. If the model answers without an image, the function returns 502.
+
+A 1K image costs 1,120 image output tokens. See [Image output pricing](https://neon.com/docs/ai-gateway/models#image-output-pricing) for the price per image size. To use `gemini-3-pro-image` instead, change `MODEL` in `src/index.ts`.
 
 ## Clone the repository
 
@@ -92,37 +96,25 @@ neon dev
 Then in another shell (use the port `neon dev` printed):
 
 ```bash
-curl -N -X POST http://localhost:8787 \
+curl -X POST http://localhost:8787 \
   -H 'content-type: application/json' \
-  -d '{"messages":[{"role":"user","content":"Please draw a robot reading a book."}]}'
+  -d '{"prompt":"Generate an image of a robot reading a book."}'
 ```
 
-You'll see the streaming response, and once the tool runs, a new row in the `images` table plus a `.jpg` object in your bucket (the logs print a presigned view URL).
-
-To continue the conversation, send the running transcript back (this agent is stateless — the client owns the history):
-
-```bash
-curl -N -X POST http://localhost:8787 \
-  -H 'content-type: application/json' \
-  -d '{"messages":[
-    {"role":"user","content":"Please draw a robot reading a book."},
-    {"role":"assistant","content":"Here is a friendly robot reading under a warm lamp."},
-    {"role":"user","content":"Now draw the same robot, but make it red."}
-  ]}'
-```
+Each image becomes a new row in the `images` table plus a `.png` object in your bucket.
 
 ## Test your deployed function
 
-You already deployed the agent in the provisioning step. Grab its invocation URL and call it:
+You already deployed the function in the provisioning step. Grab its invocation URL and call it:
 
 ```bash
 # List the function to find its invocation URL
 neon functions get imagegen
 
 # Then call it (replace with your URL)
-curl -N -X POST https://<your-branch>-imagegen.compute.<region>.aws.neon.tech \
+curl -X POST https://<your-branch>-imagegen.compute.<region>.aws.neon.tech \
   -H 'content-type: application/json' \
-  -d '{"messages":[{"role":"user","content":"Please draw a robot reading a book."}]}'
+  -d '{"prompt":"Generate an image of a robot reading a book."}'
 ```
 
 Redeploy after changing the function with `neon deploy`.

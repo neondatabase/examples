@@ -1,6 +1,6 @@
 # Support triage with Jev
 
-A Neon Function that triages support messages with [Jev 1.14](https://neon.com/docs/ai-gateway/models/typesafeai-jev-1-14-0), TypeSafe AI's System One decision model on [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview).
+This Neon Function triages support messages with [Jev 1.14](https://neon.com/docs/ai-gateway/models/typesafeai-jev-1-14-0), TypeSafe AI's System One decision model on [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview).
 
 Jev does not generate text. It answers typed questions about an input with a choice, a score, or a probability. That makes it fast and cheap, and its answers come back as numbers you can put a threshold on. One call asks five questions about a message:
 
@@ -8,9 +8,9 @@ Jev does not generate text. It answers typed questions about an input with a cho
 | --- | --- | --- |
 | `topic` | `choice` | Which team should handle it: `billing`, `bug`, `howto`, `account`, `feature`, or `other`, with a probability for each. |
 | `urgency` | `score` | Where it falls on a four-level rubric, from "Can wait a few days" (0) to "Production outage" (3). |
-| `frustrated` | `boolean` | Probability that the customer is frustrated or angry. |
-| `churnRisk` | `boolean` | Probability that the customer is threatening to cancel or switch. |
-| `spam` | `boolean` | Probability that it is spam or a sales pitch. |
+| `frustrated` | `boolean` | The probability that the customer is frustrated or angry. |
+| `churnRisk` | `boolean` | The probability that the customer is threatening to cancel or switch. |
+| `spam` | `boolean` | The probability that the message is spam or a sales pitch. |
 
 The function turns those answers into a `route`: `drop` for likely spam, `escalate` for urgent messages or churn risk, and `queue` for everything else.
 
@@ -71,7 +71,7 @@ curl "$URL" \
   }'
 ```
 
-Example response:
+The response looks like this:
 
 ```json
 {
@@ -110,13 +110,13 @@ Send `POST /` with a JSON body:
 | `401` | The bearer token is missing or wrong. |
 | `405` | The method is not `POST`. |
 | `422` | Jev declined to answer one of the questions. |
-| `429` | AI Gateway rate limit or daily spend cap reached. |
+| `429` | The branch reached its AI Gateway rate limit or daily spend cap. |
 | `502` | The decision request failed, or AI Gateway rejected the branch credentials. |
 | `503` | `JEV_TRIAGE_TOKEN` is unset or shorter than 32 characters, or AI Gateway is not enabled. |
 
 ## Customize
 
-- **Questions:** edit `QUESTIONS` in `index.ts`. A `choice` question takes a map of labels to descriptions (`null` leaves a label undescribed), a `score` question takes an ordered rubric of at least two levels, and a `boolean` question takes instructions. All questions are answered in one call against the same state.
-- **Routing:** `SPAM_THRESHOLD`, `CHURN_THRESHOLD`, and `ESCALATE_URGENCY` decide the `route`. Tune them on your own messages instead of rewording a prompt.
-- **Model:** `MODEL` is `typesafeai-jev-1-14-0`. `GET $NEON_AI_GATEWAY_BASE_URL/v1/models` lists the decision models your branch serves as the ones with `dialects: ["systemone"]`.
-- **Auth:** the shared token suits webhooks and backend callers, such as a help desk that forwards new tickets. Don't ship it in a browser bundle.
+- **Questions.** Edit `QUESTIONS` in `index.ts`. A `choice` question takes a map of labels to descriptions, where `null` leaves a label undescribed. A `score` question takes an ordered rubric of at least two levels, and a `boolean` question takes instructions. Jev answers all the questions in one call against the same state.
+- **Routing.** `SPAM_THRESHOLD`, `CHURN_THRESHOLD`, and `ESCALATE_URGENCY` decide the `route`. Tune them on your own messages instead of rewording a prompt.
+- **Model.** `MODEL` is `typesafeai-jev-1-14-0`. `GET $NEON_AI_GATEWAY_BASE_URL/v1/models` lists the models your branch serves, and the decision models are the ones with `dialects: ["systemone"]`.
+- **Auth.** The shared token suits webhooks and backend callers, such as a help desk that forwards new tickets. Don't ship it in a browser bundle.

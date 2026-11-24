@@ -63,7 +63,7 @@ curl -X POST http://localhost:8787/ \
   -d '{"prompt":"An astronaut drinking coffee in a neon-lit cafe, cinematic lighting"}'
 ```
 
-Example response:
+The response looks like this:
 
 ```json
 {
@@ -85,10 +85,10 @@ The presigned URL is valid for one hour. The bucket is private, so the object ha
 
 | Field | Rule |
 | --- | --- |
-| `prompt` | Required. A non-empty string up to 2,000 characters. |
+| `prompt` | A required string of 1 to 2,000 characters after trimming whitespace. |
 
 The function only accepts `POST /`.
 
 This template doesn't authenticate requests, so anyone with the function URL can call it and spend AI Gateway credits. Add authentication before you expose it.
 
-The template uses `gpt-5-mini` to call the `gpt-image-2` image-generation tool, which makes a 1024x1024 low-quality JPEG. Change `MODEL`, `IMAGE_MODEL`, or the tool options in `functions/index.ts` to tune cost and output.
+The template uses `gpt-5-mini` to call the `gpt-image-2` image-generation tool, which makes a 1024x1024 low-quality JPEG. Change `MODEL`, `IMAGE_MODEL`, or the tool options in `functions/imagegeneration/index.ts` to tune cost and output.

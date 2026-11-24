@@ -3,7 +3,7 @@
 	"id": "rate-limit-postgres",
 	"provider": "Neon",
 	"title": "Rate limit with Postgres",
-	"description": "Fixed-window rate limiting with an atomic Postgres upsert.",
+	"description": "Enforce a fixed-window rate limit with one atomic Postgres upsert.",
 	"categories": ["api"],
 	"layout": "router",
 	"dependencies": [
@@ -11,5 +11,6 @@
 		"@types/pg@8.23.1",
 		"pg@8.23.1"
 	],
-	"environment": []
+	"environment": [],
+	"features": ["postgres"]
 }

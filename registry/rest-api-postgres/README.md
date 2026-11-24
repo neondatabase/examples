@@ -27,7 +27,7 @@ The CLI writes `functions/todos/index.ts`, declares `todos` in `neon.ts`, and in
 neon dev
 ```
 
-Call the URL that `neon dev` prints (the default is `http://localhost:8787/`). The first request to a `/todos` route creates the table if it does not exist.
+Call the URL that `neon dev` prints, which defaults to `http://localhost:8787/`. The first request to a `/todos` route creates the table if it does not exist.
 
 ```bash
 # Describe the API
@@ -74,7 +74,7 @@ neon deploy
 neon functions get todos
 ```
 
-`neon functions new` declares the function in `neon.ts`, and `neon deploy` (an alias for `neon config apply`) deploys everything declared there. If you scaffolded with `--no-add-to-config`, deploy the function directly instead:
+`neon functions new` declares the function in `neon.ts`. `neon deploy` is an alias for `neon config apply` and deploys everything declared there. If you scaffolded with `--no-add-to-config`, deploy the function directly instead:
 
 ```bash
 neon functions deploy todos --src functions/todos
