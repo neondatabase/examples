@@ -63,7 +63,7 @@ The bucket and trigger don't exist yet, so `neon link` reports that it can't pul
 
 ## Provision the bucket, Function, and trigger
 
-`neon deploy` applies `neon.ts`. That creates the `assets` bucket, deploys the Function, and creates the `on-upload` storage trigger when Function Triggers is available on the project. It then writes `DATABASE_URL` and the `AWS_*` object-storage credentials into `.env.local`.
+`neon deploy` applies `neon.ts`. That creates the `uploads` bucket, deploys the Function, and creates the `on-upload` storage trigger when Function Triggers is available on the project. It then writes `DATABASE_URL` and the `AWS_*` object-storage credentials into `.env.local`.
 
 ```bash
 npm run deploy
@@ -72,7 +72,7 @@ npm run deploy
 ```ts
 export default defineConfig({
   buckets: {
-    assets: { access: "public_read" },
+    uploads: { access: "public_read" },
   },
   functions: {
     ingest: {
@@ -85,7 +85,7 @@ export default defineConfig({
     "on-upload": {
       type: "storage_object_created",
       function: "ingest",
-      bucket: "assets",
+      bucket: "uploads",
       prefix: "logos/",
       functionPath: "/object",
     },
@@ -158,7 +158,7 @@ curl -X POST http://localhost:8787/object \
       "name": "on-upload"
     },
     "data": {
-      "bucket_name": "assets",
+      "bucket_name": "uploads",
       "object_key": "logos/neon-logo.png"
     }
   }'
@@ -171,6 +171,6 @@ curl http://localhost:8787/files
 ## Explore the bucket from the CLI
 
 ```bash
-neon bucket object list assets
-neon bucket object get assets logos/neon-logo.png ./neon-logo.png
+neon bucket object list uploads/logos/
+neon bucket object get uploads/logos/neon-logo.png --file ./neon-logo.png
 ```

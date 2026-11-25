@@ -8,7 +8,7 @@ import { neon } from 'files-sdk/neon';
 // The neon adapter reads the S3 credentials neon deploy / neon env pull wrote here.
 loadEnv({ path: '.env.local' });
 
-const BUCKET = 'assets';
+const BUCKET = 'uploads';
 const assetsDir = fileURLToPath(new URL('../assets', import.meta.url));
 
 const files = new Files({ adapter: neon({ bucket: BUCKET }) });
