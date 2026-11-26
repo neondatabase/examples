@@ -10,17 +10,17 @@
 	"environment": [
 		{
 			"name": "GROUNDMAIL_API_KEY",
-			"description": "API key (gm_...) from app.groundmail.dev/api-keys. A gm_test_ key runs sends without delivering them. Keep it server-side.",
+			"description": "An API key from app.groundmail.dev/api-keys that starts with gm_. A gm_test_ key runs sends without delivering them. Keep it on the server.",
 			"required": true
 		},
 		{
 			"name": "GROUNDMAIL_FROM",
-			"description": "Default sender on a verified domain, for example Acme <hello@yourdomain.com>. A request can set another in from.",
+			"description": "The default sender on a verified domain, for example Acme <hello@yourdomain.com>. A request can set another one in from.",
 			"required": false
 		},
 		{
 			"name": "GROUNDMAIL_FUNCTION_TOKEN",
-			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public.",
+			"description": "A random token of at least 32 characters, for example from openssl rand -hex 32, that callers send as Authorization: Bearer <token>. Neon Function URLs are public, so the function requires it.",
 			"required": true
 		}
 	],
@@ -28,7 +28,7 @@
 		{
 			"id": "send-email",
 			"title": "Send an email",
-			"description": "POST to and subject with html or text, or a saved template with variables; optionally from, reply_to and tags. An Idempotency-Key header makes a retry return the first send.",
+			"description": "POST to and subject with html or text, or a saved template with variables. The from, reply_to and tags fields are optional, and an Idempotency-Key header makes a retry return the first send.",
 			"source": "functions/send-email.ts",
 			"route": "/send-email",
 			"recommended": true
