@@ -49,8 +49,10 @@ export default {
 		}
 		if (!isAuthorized(request, token)) return jsonError("Unauthorized", 401);
 
+		const tooLarge = jsonError(`Body must be at most ${MAX_BODY_BYTES} bytes`, 413);
+		if (Number(request.headers.get("content-length")) > MAX_BODY_BYTES) return tooLarge;
 		const text = await request.text();
-		if (text.length > MAX_BODY_BYTES) return jsonError(`Body must be at most ${MAX_BODY_BYTES} bytes`, 413);
+		if (Buffer.byteLength(text) > MAX_BODY_BYTES) return tooLarge;
 
 		let body: unknown;
 		try {

@@ -12,7 +12,7 @@ neon functions new loops-email --all-operations
 neon config add auth
 ```
 
-The CLI writes `functions/loopsemail/`, declares the function in `neon.ts`, and adds the eight environment variables to `.env.example`. `neon config add auth` declares Managed Better Auth, which adds `NEON_AUTH_BASE_URL` to the function so it can verify each webhook. Leave out `--all-operations` if you only need the webhook.
+The CLI writes `functions/loopsemail/`, declares the function in `neon.ts`, and adds the eight environment variables to `.env.example`. `neon config add auth` declares Managed Better Auth, which adds `NEON_AUTH_JWKS_URL` to the function so it can verify each webhook. Leave out `--all-operations` if you only need the webhook.
 
 ## Configure Loops
 
@@ -30,7 +30,7 @@ export LOOPS_FUNCTION_TOKEN=$(openssl rand -hex 32)
 echo "LOOPS_FUNCTION_TOKEN=$LOOPS_FUNCTION_TOKEN" >> .env.local
 ```
 
-The CLI declares each variable in `neon.ts` as `process.env.<NAME>!`, so `neon deploy` fails while one is unset. For each transactional ID you leave out, make its declaration optional:
+The CLI declares each variable in `neon.ts` as `process.env.<NAME>!`, so `neon deploy` fails while one is unset. For each transactional ID you leave out, and for `LOOPS_FUNCTION_TOKEN` if you skip `/send-event`, make its declaration optional:
 
 ```ts
 LOOPS_VERIFY_EMAIL_TRANSACTIONAL_ID: { value: process.env.LOOPS_VERIFY_EMAIL_TRANSACTIONAL_ID, required: false },
@@ -85,7 +85,7 @@ Managed Better Auth only calls a public HTTPS URL, so test `/auth-webhook` after
 
 </Operations>
 
-`/auth-webhook` sends `send.otp` and `send.magic_link` as the matching Loops transactional email, with the code or link as its data variable. On `user.created`, it creates or updates the Loops contact with the Managed Better Auth user ID as `userId`, the first and last name, and `source` set to `Neon`. On `organization.invitation.accepted`, it sends a `joinedOrganization` event with `organizationName` and `role`. It returns `200` for any other event.
+`/auth-webhook` sends `send.otp` and `send.magic_link` as the matching Loops transactional email, with the code or link as its data variable. On `user.created`, it creates or updates the Loops contact with the Managed Better Auth user ID as `userId`, and with the first and last name when the user has one. It leaves other fields on an existing contact as they are. On `organization.invitation.accepted`, it sends a `joinedOrganization` event with `organizationName` and `role`. It returns `200` for any other event.
 
 `/send-event` needs `email`, `userId`, or both. Event and contact properties are flat objects of strings, numbers, and booleans. An `Idempotency-Key` header is passed to Loops, which rejects a key used in the last 24 hours, even when that earlier request failed.
 
@@ -96,9 +96,17 @@ neon deploy --env .env.local
 neon functions get loopsemail
 ```
 
-`neon functions get` prints the function's public URL. In the [Neon Console](https://console.neon.tech), go to **Settings** > **Better Auth**. In the **Webhooks** section, turn on **Enable Webhooks**, set **Webhook URL** to `https://<function-url>/auth-webhook`, and under **Enabled Events** select `send.otp`, `send.magic_link`, `user.created`, and, if you use the [Organization plugin](https://neon.com/docs/auth/guides/plugins/organization), `organization.invitation.accepted`.
+`neon functions get` prints the function's public URL. Point the branch's Managed Better Auth webhook at it:
+
+```bash
+neon neon-auth config webhook update --enabled \
+  --url https://<function-url>/auth-webhook \
+  --enabled-events send.otp send.magic_link user.created
+```
 
 > Replace `<function-url>` with the URL from `neon functions get loopsemail`.
+
+If you use the [Organization plugin](https://neon.com/docs/auth/guides/plugins/organization), also select `organization.invitation.accepted` under **Auth** > **Configuration** > **Webhooks** in the [Neon Console](https://console.neon.tech). The CLI doesn't accept that event yet, and it replaces the whole event list, so running the command again removes `organization.invitation.accepted`.
 
 Managed Better Auth doesn't send test events, so sign in to your app with an email code or magic link. The send appears on the Loops [Transactional](https://app.loops.so/transactional) page, and new users appear in your Loops audience.
 
@@ -109,15 +117,16 @@ Managed Better Auth doesn't send test events, so sign in to your app with an ema
 - `405`: a method other than `POST`
 - `409`: an `Idempotency-Key` used in the last 24 hours
 - `413`: a `/send-event` body over 100 KB
-- `422`: no transactional ID set for the email type, or Loops rejected the event
+- `422`: no transactional ID set for the email type, an SMS code, or Loops rejected the event
 - `502`: Loops or the Managed Better Auth signing keys could not be reached, or Loops failed to send
-- `503`: `LOOPS_API_KEY` or `NEON_AUTH_BASE_URL` is unset, or `LOOPS_FUNCTION_TOKEN` is unset or shorter than 32 characters
+- `503`: `LOOPS_API_KEY` or `NEON_AUTH_JWKS_URL` is unset, or `LOOPS_FUNCTION_TOKEN` is unset or shorter than 32 characters
 
-`/auth-webhook` logs every error as `[loops-email] <status>: <reason>`. Your app's sign-in or reset request still succeeds when the webhook fails, so the logs are where a missing email shows up. Neon retries a webhook after a `5xx`, so a retry can occasionally send the same code twice. It doesn't retry a `4xx`.
+`/auth-webhook` logs every error as `[loops-email] <status>: <reason>`. When `/auth-webhook` fails a `send.magic_link` event, the user's request fails with `WEBHOOK_DELIVERY_FAILED`. When it fails an email code from `send.otp`, Managed Better Auth still tells your app the code was sent, so the user waits for an email that never arrives and the function logs are the only place it shows up. Set a transactional ID for every email type your app sends. Neon retries a webhook after a `5xx` but not after a `4xx`. The function skips an event it already handled, but a retry that reaches another instance can occasionally send the same code twice.
 
 ## Notes
 
 - Neon Functions strip `X-Neon-*` request headers, so Managed Better Auth also sends its signature headers as `Neon-Better-Auth-*`. The function reads either name.
 - Each branch has one webhook URL. Don't subscribe it to `user.before_create`, which expects an allow or deny response this function doesn't return.
+- Loops doesn't send SMS, so this function returns `422` for `send.otp` events with `delivery_preference: "sms"` instead of emailing the code. The [Phone Number plugin](https://neon.com/docs/auth/guides/plugins/phone-number) needs a `send.otp` webhook that sends SMS, so it can't share the branch's webhook with this function.
 - Custom SMTP in Managed Better Auth doesn't work with Loops. Loops SMTP expects a JSON payload with a `transactionalId`, and Managed Better Auth sends its own email body.
 - To store Loops delivery, bounce, and unsubscribe events in Postgres, see [Store Loops webhook events in Postgres](https://neon.com/docs/guides/loops-webhooks).

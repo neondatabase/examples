@@ -28,6 +28,10 @@ const TEMPLATES: Record<string, { env: string; variable: string }> = {
 };
 
 const MAX_AGE_MS = 5 * 60 * 1000;
+// Refetch the signing keys for an unknown key ID at most this often, so requests with
+// made-up key IDs can't make the function fetch the keys on every request.
+const KEY_REFRESH_MS = 30 * 1000;
+const MAX_SENT_EVENTS = 1000;
 
 type NeonAuthEvent = {
 	event_id: string;
@@ -36,6 +40,7 @@ type NeonAuthEvent = {
 	event_data: {
 		otp_code?: string;
 		otp_type?: string;
+		delivery_preference?: string;
 		link_url?: string;
 		link_type?: string;
 		organization_name?: string;
@@ -50,27 +55,42 @@ class KeysUnavailable extends Error {}
 
 let client: LoopsClient | undefined;
 let signingKeys: SigningKey[] = [];
+let keysFetchedAt = 0;
+// IDs of events this instance already handled. Neon retries with the same event_id, so a
+// retry that reaches the same instance doesn't send the email again.
+const sentEvents = new Set<string>();
 
 function getClient(apiKey: string): LoopsClient {
 	client ??= new LoopsClient(apiKey);
 	return client;
 }
 
-async function getSigningKey(kid: string): Promise<crypto.KeyObject> {
+async function fetchSigningKeys(url: string): Promise<SigningKey[]> {
+	try {
+		const res = await fetch(url);
+		const { keys } = (await res.json()) as { keys?: SigningKey[] };
+		if (res.ok && Array.isArray(keys)) return keys;
+	} catch {}
+	throw new KeysUnavailable("Could not fetch the Managed Better Auth signing keys");
+}
+
+async function getSigningKey(kid: string, jwksUrl: string): Promise<crypto.KeyObject> {
 	let jwk = signingKeys.find((key) => key.kid === kid);
-	if (!jwk) {
-		// Fetch the keys on first use, and again when Neon rotates to a key we haven't seen.
-		const url = `${process.env.NEON_AUTH_BASE_URL}/.well-known/jwks.json`;
-		const res = await fetch(url).catch(() => null);
-		if (!res?.ok) throw new KeysUnavailable("Could not fetch the Managed Better Auth signing keys");
-		signingKeys = ((await res.json()) as { keys: SigningKey[] }).keys;
+	// Fetch the keys on first use, and again when Neon rotates to a key we haven't seen.
+	if (!jwk && Date.now() - keysFetchedAt > KEY_REFRESH_MS) {
+		signingKeys = await fetchSigningKeys(jwksUrl);
+		keysFetchedAt = Date.now();
 		jwk = signingKeys.find((key) => key.kid === kid);
 	}
 	if (!jwk) throw new Error(`Signing key ${kid} not found`);
 	return crypto.createPublicKey({ key: jwk, format: "jwk" });
 }
 
-async function verifyWebhook(rawBody: string, headers: Headers): Promise<NeonAuthEvent> {
+async function verifyWebhook(
+	rawBody: string,
+	headers: Headers,
+	jwksUrl: string,
+): Promise<NeonAuthEvent> {
 	// Neon Functions strip X-Neon-* request headers, so Managed Better Auth also sends
 	// each one as Neon-Better-Auth-*. Read that name first so this works on any host.
 	const header = (name: string) =>
@@ -92,7 +112,7 @@ async function verifyWebhook(rawBody: string, headers: Headers): Promise<NeonAut
 	const valid = crypto.verify(
 		null,
 		Buffer.from(`${jwsHeader}.${payload}`),
-		await getSigningKey(kid),
+		await getSigningKey(kid, jwksUrl),
 		Buffer.from(jwsSignature, "base64url"),
 	);
 	if (!valid) throw new Error("Invalid webhook signature");
@@ -110,13 +130,14 @@ async function handle(event: NeonAuthEvent, loops: LoopsClient): Promise<Respons
 	const { event_type, event_data, user } = event;
 
 	// A new user signed up: create their Loops contact, matched by the Managed Better Auth user ID.
+	// Only names that are set are sent, so an existing contact keeps the fields it has.
 	if (event_type === "user.created") {
-		const [firstName = "", ...rest] = (user.name ?? "").trim().split(/\s+/);
-		await loops.updateContact({
-			email: user.email,
-			userId: user.id,
-			properties: { firstName, lastName: rest.join(" "), source: "Neon" },
-		});
+		const [firstName, ...rest] = (user.name ?? "").trim().split(/\s+/);
+		const lastName = rest.join(" ");
+		const properties: Record<string, string> = {};
+		if (firstName) properties.firstName = firstName;
+		if (lastName) properties.lastName = lastName;
+		await loops.updateContact({ email: user.email, userId: user.id, properties });
 		return new Response(null, { status: 200 });
 	}
 
@@ -136,6 +157,12 @@ async function handle(event: NeonAuthEvent, loops: LoopsClient): Promise<Respons
 
 	if (event_type !== "send.otp" && event_type !== "send.magic_link") {
 		return Response.json({ ignored: event_type }, { status: 200 });
+	}
+
+	// Phone Number plugin codes go out by SMS, which Loops doesn't send. Emailing the code
+	// would let whoever reads the inbox verify a phone number they don't control.
+	if (event_type === "send.otp" && event_data.delivery_preference === "sms") {
+		return fail(422, "SMS codes aren't sent through Loops");
 	}
 
 	const type = event_type === "send.otp" ? event_data.otp_type : event_data.link_type;
@@ -163,23 +190,32 @@ export default {
 		if (request.method !== "POST") return fail(405, "Use POST");
 
 		const apiKey = process.env.LOOPS_API_KEY;
-		if (!apiKey || !process.env.NEON_AUTH_BASE_URL) {
+		const jwksUrl = process.env.NEON_AUTH_JWKS_URL;
+		if (!apiKey || !jwksUrl) {
 			return fail(503, "Set LOOPS_API_KEY and enable Managed Better Auth on this branch");
 		}
 
 		let event: NeonAuthEvent;
 		try {
-			event = await verifyWebhook(await request.text(), request.headers);
+			event = await verifyWebhook(await request.text(), request.headers, jwksUrl);
 		} catch (error) {
 			return fail(error instanceof KeysUnavailable ? 502 : 401, (error as Error).message);
 		}
 
+		if (sentEvents.has(event.event_id)) return new Response(null, { status: 200 });
+
 		try {
-			return await handle(event, getClient(apiKey));
+			const response = await handle(event, getClient(apiKey));
+			if (response.ok) {
+				sentEvents.add(event.event_id);
+				// A Set keeps insertion order, so this drops the oldest ID.
+				if (sentEvents.size > MAX_SENT_EVENTS) sentEvents.delete(sentEvents.values().next().value!);
+			}
+			return response;
 		} catch (error) {
 			// A 5xx tells Neon to retry the delivery. There's no Idempotency-Key: Loops marks
 			// a key as used even when the request fails, so a retry with the same key would
-			// never send. A retry can occasionally send the same code twice instead.
+			// never send. A retry that reaches another instance can send the same code twice instead.
 			return fail(502, (error as Error).message);
 		}
 	},
