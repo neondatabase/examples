@@ -29,6 +29,12 @@
 			"required": true
 		}
 	],
+	"triggers": [
+		{ "name": "workos-tick", "type": "schedule", "cron": "* * * * *", "path": "/tick" },
+		{ "name": "workos-backfill", "type": "schedule", "cron": "*/5 * * * *", "path": "/backfill" },
+		{ "name": "workos-reconcile", "type": "schedule", "cron": "30 * * * *", "path": "/reconcile" },
+		{ "name": "workos-reconcile-fresh", "type": "schedule", "cron": "0 3 * * 0", "path": "/reconcile/fresh" }
+	],
 	"features": [
 		"postgres",
 		{ "id": "function-triggers", "types": ["schedule"] }
