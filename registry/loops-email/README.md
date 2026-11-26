@@ -106,7 +106,7 @@ neon neon-auth config webhook update --enabled \
 
 > Replace `<function-url>` with the URL from `neon functions get loopsemail`.
 
-If you use the [Organization plugin](https://neon.com/docs/auth/guides/plugins/organization), also select `organization.invitation.accepted` under **Auth** > **Configuration** > **Webhooks** in the [Neon Console](https://console.neon.tech). The CLI doesn't accept that event yet, and it replaces the whole event list, so running the command again removes `organization.invitation.accepted`.
+If you use the [Organization plugin](https://neon.com/docs/auth/guides/plugins/organization), also select `organization.invitation.accepted` in the [Neon Console](https://console.neon.tech) under **Settings** > **Better Auth** > **Webhooks**. The CLI doesn't accept that event yet, and it replaces the whole event list, so running the command again removes `organization.invitation.accepted`.
 
 Managed Better Auth doesn't send test events, so sign in to your app with an email code or magic link. The send appears on the Loops [Transactional](https://app.loops.so/transactional) page, and new users appear in your Loops audience.
 

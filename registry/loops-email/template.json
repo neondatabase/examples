@@ -1,7 +1,7 @@
 {
 	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
 	"id": "loops-email",
-	"provider": "Neon",
+	"provider": "Loops",
 	"title": "Send email with Loops",
 	"description": "Send Managed Better Auth sign-in codes and links as Loops transactional emails, sync new users to Loops, and send Loops events that start workflows.",
 	"categories": ["email", "auth"],
