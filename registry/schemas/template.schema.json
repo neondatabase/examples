@@ -83,6 +83,53 @@
 				}
 			}
 		},
+		"triggers": {
+			"type": "array",
+			"description": "Function Triggers that neon functions new declares in neon.ts, keyed by name. A trigger is written only when the operation it names is scaffolded. Names must be unique within the template, and operation must name one of this template's operations.",
+			"items": {
+				"oneOf": [
+					{
+						"type": "object",
+						"required": ["name", "type", "cron"],
+						"additionalProperties": false,
+						"properties": {
+							"name": { "$ref": "#/$defs/triggerName" },
+							"type": { "const": "schedule" },
+							"cron": {
+								"type": "string",
+								"pattern": "^[0-9*][0-9*,/-]*( [0-9*][0-9*,/-]*){4}$",
+								"description": "A numeric five-field cron expression in UTC, fields separated by single spaces, each field starting with a digit or *."
+							},
+							"operation": { "$ref": "#/$defs/triggerOperation" },
+							"path": { "$ref": "#/$defs/triggerPath" }
+						}
+					},
+					{
+						"type": "object",
+						"required": ["name", "type", "bucket"],
+						"additionalProperties": false,
+						"properties": {
+							"name": { "$ref": "#/$defs/triggerName" },
+							"type": { "const": "storage_object_created" },
+							"bucket": {
+								"type": "string",
+								"pattern": "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$",
+								"description": "The Object Storage bucket to watch, 3-63 characters. neon functions new does not declare it; it asks the user to run neon config add bucket when neon.ts lacks it."
+							},
+							"prefix": {
+								"type": "string",
+								"minLength": 1,
+								"maxLength": 1024,
+								"pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]+$",
+								"description": "An exact object-key prefix, such as images/, of at most 1024 UTF-8 bytes with no control characters. Omit it to match every key in the bucket."
+							},
+							"operation": { "$ref": "#/$defs/triggerOperation" },
+							"path": { "$ref": "#/$defs/triggerPath" }
+						}
+					}
+				]
+			}
+		},
 		"features": {
 			"type": "array",
 			"minItems": 1,
@@ -127,6 +174,22 @@
 		"triggerType": {
 			"enum": ["schedule", "storage_object_created"],
 			"description": "schedule: a cron schedule. storage_object_created: an object upload to an Object Storage bucket."
+		},
+		"triggerName": {
+			"type": "string",
+			"pattern": "^[a-z0-9][a-z0-9-]{0,62}$",
+			"description": "Up to 63 lowercase letters, digits, and hyphens. It becomes the trigger's key in neon.ts."
+		},
+		"triggerOperation": {
+			"type": "string",
+			"pattern": "^[a-z0-9][a-z0-9-]*$",
+			"description": "The id of the operation whose function the trigger calls. Required when the template has operations, and not allowed when it has none."
+		},
+		"triggerPath": {
+			"type": "string",
+			"maxLength": 2048,
+			"pattern": "^\\/[A-Za-z0-9\\-._~!$&'()*+,;=:@%/?]*$",
+			"description": "The URL path the trigger posts to, at most 2048 characters, written as functionPath (left out when it is /). Not allowed on a router operation's trigger, which posts to the operation's route."
 		}
 	},
 	"allOf": [
@@ -135,6 +198,30 @@
 			"then": {
 				"required": ["operations"],
 				"properties": { "operations": { "items": { "required": ["slug"] } } }
+			}
+		},
+		{
+			"if": { "required": ["operations"] },
+			"then": {
+				"properties": { "triggers": { "items": { "required": ["operation"] } } }
+			},
+			"else": {
+				"properties": {
+					"triggers": { "items": { "not": { "required": ["operation"] } } }
+				}
+			}
+		},
+		{
+			"if": { "properties": { "layout": { "const": "router" } } },
+			"then": {
+				"properties": {
+					"triggers": {
+						"items": {
+							"if": { "required": ["operation"] },
+							"then": { "not": { "required": ["path"] } }
+						}
+					}
+				}
 			}
 		}
 	]

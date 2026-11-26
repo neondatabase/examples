@@ -82,8 +82,9 @@ a sibling from the template folder.
 | `provider` | no | Who built and maintains the template, shown in listings. Defaults to `Neon`. Use `Neon` for templates Neon writes, even when they wrap a third-party SDK, and give the index entry the `first-party` category. Name another company only when that company wrote the template, and give the index entry `partner` if Neon works with that company closely, otherwise `community`. |
 | `layout` | yes | `router` or `separate`; see below. |
 | `dependencies` | no | Exact `name@version` pins, scoped packages included. No ranges, no `latest`. The version a reviewer approved is the version that gets installed. |
-| `environment` | no | `UPPER_SNAKE` names, each with a description and an optional `required`. The CLI declares each one on every scaffolded function in `neon.ts` as `{ value: process.env.<NAME>, required }` and adds it, with the description as a comment, to the project's `.env.example`. Write the description for someone filling that file in. |
+| `environment` | no | `UPPER_SNAKE` names, each with a description and an optional `required`. The CLI declares each one on every scaffolded function in `neon.ts` as `process.env.<NAME>!` and adds it, with the description as a comment, to the project's `.env.example`. Write the description for someone filling that file in. See [`required`](#required). |
 | `operations` | no | 1-40 entries. Omit them for a single-module template. |
+| `triggers` | no | Function Triggers the CLI declares in `neon.ts` next to the function. See [`triggers`](#triggers). |
 | `features` | no | The Neon products the template uses, shown as Built with on its neon.com page. Display-only; the CLI does not use it to scaffold. See [`features`](#features). |
 
 Each operation needs:
@@ -111,7 +112,9 @@ CLI scaffolds as `index.ts`. Set `layout` to `router`.
 
 ### `required`
 
-Set `required` on each `environment` entry to say when the variable must be set. The CLI copies it into the declaration in `neon.ts`:
+Set `required` on each `environment` entry to say when the variable must be set. Once the CLI
+supports it, it copies `required` into the declaration in `neon.ts` as
+`{ value: process.env.<NAME>, required }`:
 
 | `required` | Unset on `neon deploy` | Unset in `neon dev` |
 | --- | --- | --- |
@@ -119,7 +122,67 @@ Set `required` on each `environment` entry to say when the variable must be set.
 | `"default-branch"` | fails on the project's default branch; left out of the deployment elsewhere | runs without it |
 | `false` | left out of the deployment | runs without it |
 
-Use `false` only when the module handles the variable being unset, for example an SDK that stays disabled without its key. `neon` 9.3.0 and later write `required`; older versions ignore it and write `process.env.<NAME>!`.
+Use `false` only when the module handles the variable being unset, for example an SDK that stays
+disabled without its key. No released version of `neon` writes `required` yet: they ignore it and
+write `process.env.<NAME>!`, which makes `neon.ts` fail to load wherever the variable is unset.
+The CLI change is
+[neondatabase/neon-pkgs#1078](https://github.com/neondatabase/neon-pkgs/pull/1078); update this
+paragraph with the version that ships it.
+
+### `triggers`
+
+List the Function Triggers the template needs, and `neon functions new` writes them to `triggers`
+in `neon.ts` after the function. `neon` 9.11.0 and later write them. Older versions ignore the
+field, so keep the README's manual `neon.ts` steps for them (see below).
+
+```json
+"triggers": [
+	{ "name": "cleanup", "type": "schedule", "cron": "0 * * * *", "path": "/__scheduled" },
+	{ "name": "describe-uploads", "type": "storage_object_created", "bucket": "uploads", "prefix": "images/", "path": "/object" }
+]
+```
+
+| Field | Rule |
+| --- | --- |
+| `name` | Up to 63 lowercase letters, digits, and hyphens, unique within the template. It becomes the trigger's key in `neon.ts`. |
+| `type` | `schedule` or `storage_object_created`. |
+| `cron` | `schedule` only, and required there. A numeric five-field cron expression in UTC, such as `0 * * * *`, with single spaces between fields, each field starting with a digit or `*`. Day and month names (`MON`) and macros (`@hourly`) are not allowed. |
+| `bucket` | `storage_object_created` only, and required there. The bucket to watch: 3-63 lowercase letters, digits, dots, and hyphens. |
+| `prefix` | `storage_object_created` only, optional. An exact object-key prefix, such as `images/`, of at most 1024 UTF-8 bytes with no control characters. Omit it to match every key. |
+| `operation` | Required when the template has `operations`, and not allowed when it has none. The id of the operation whose function the trigger calls. The trigger is written only when that operation is scaffolded. |
+| `path` | Optional. The URL path the trigger posts to, starting with `/`, at most 2048 characters. A query string is allowed. Not allowed on the trigger of a `router` operation, which always posts to the operation's `route`. |
+
+What the CLI writes for each layout:
+
+| Template | `function` in `neon.ts` | `functionPath` in `neon.ts` |
+| --- | --- | --- |
+| No `operations` | The scaffolded slug | `path` |
+| `router` with `operations` | The scaffolded slug | The operation's `route` |
+| `separate` | The operation's `slug` | `path` |
+
+The CLI leaves `functionPath` out when it is `/`, which is the default. Each trigger takes one line:
+
+```ts
+triggers: {
+  cleanup: { type: "schedule", function: "jalcodrop", cron: "0 * * * *", functionPath: "/__scheduled" },
+},
+```
+
+- When `neon.ts` already declares a trigger with the same name, the CLI leaves that declaration as
+  it is. If it differs from the template's, the CLI prints the template's declaration to add by
+  hand.
+- The CLI never declares a bucket. A `storage_object_created` trigger must name a bucket that
+  `neon.ts` declares, so when `neon.ts` lacks it, the CLI tells the user to run
+  `neon config add bucket <name>`, and `neon.ts` does not load until they do. Declaring a bucket
+  sets its access, which is why the CLI leaves it to the user. If the template needs a
+  `public_read` bucket, say so in the README.
+- With `--no-add-to-config`, the CLI prints a `neon triggers create` command for each trigger
+  instead. A storage trigger's bucket must exist on the branch before that command runs.
+- Keep the `function-triggers` entry in [`features`](#features). `triggers` does not add the Built
+  with badge.
+
+In the README, describe what the CLI writes, then keep the manual `triggers` snippet under a step
+for `neon` versions older than 9.11.0. Remove it once those versions are no longer in use.
 
 ### `features`
 
@@ -137,7 +200,7 @@ template uses nothing else.
 | `realtime` | Realtime | Uses Neon Realtime. A WebSocket from `upgradeWebSocket` alone is Functions, not Realtime. |
 | `object-storage` | Object Storage | Reads or writes a bucket. |
 | `ai-gateway` | AI Gateway | Calls models through AI Gateway. |
-| `function-triggers` | Function Triggers | Sets up a trigger, which its README adds to `triggers` in `neon.ts`. |
+| `function-triggers` | Function Triggers | Sets up a trigger, declared in [`triggers`](#triggers) or added to `neon.ts` by its README. |
 
 Write each feature as its id. For `function-triggers`, prefer the object form, which names the
 trigger types the template sets up: `schedule` for a cron schedule and `storage_object_created`
@@ -288,7 +351,10 @@ and call each route or function once.
 The `$schema` field must be the neon.com URL
 (`https://neon.com/functions/registry/schemas/template.schema.json`), which is served from
 `schemas/` in this folder. It gives editor completion; the CLI's parser is what actually decides.
-A template that passes the schema but fails the commands above is not ready.
+A template that passes the schema but fails the commands above is not ready. The CLI also
+validates `template.json` against the schema neon.com serves, not the one in your checkout, so a
+template that uses a field neon.com does not serve yet fails to load until the schema change is
+merged and live.
 
 ## Review checklist
 
