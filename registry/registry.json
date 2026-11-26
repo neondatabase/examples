@@ -297,6 +297,16 @@
 			"description": "Chunk and embed text with Neon AI Gateway, then recall it with a cosine HNSW search in Lakebase Postgres.",
 			"path": "pgvector-memory/template.json",
 			"categories": ["first-party"]
+		},
+		{
+			"id": "groundmail-email",
+			"provider": "Groundmail",
+			"title": "Send email with Groundmail",
+			"description": "Send transactional email through Groundmail with HTML, text or a saved template, and an idempotency key so a retry sends once.",
+			"path": "groundmail-email/template.json",
+			"categories": ["community"],
+			"logo": "https://groundmail.dev/icon.svg",
+			"website": "https://groundmail.dev/?utm_source=neon&utm_medium=template&utm_campaign=neon-functions"
 		}
 	]
 }
