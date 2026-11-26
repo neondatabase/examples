@@ -1,0 +1,71 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "loops-email",
+	"provider": "Neon",
+	"title": "Send email with Loops",
+	"description": "Send Managed Better Auth sign-in codes and links as Loops transactional emails, sync new users to Loops, and send Loops events that start workflows.",
+	"categories": ["email", "auth"],
+	"layout": "router",
+	"dependencies": ["loops@7.5.0"],
+	"environment": [
+		{
+			"name": "LOOPS_API_KEY",
+			"description": "An API key from app.loops.so/settings?page=api. Keep it on the server.",
+			"required": true
+		},
+		{
+			"name": "LOOPS_OTP_SIGNIN_TRANSACTIONAL_ID",
+			"description": "Transactional ID of the Loops email for sign-in codes. The email uses the otpCode data variable.",
+			"required": false
+		},
+		{
+			"name": "LOOPS_OTP_VERIFICATION_TRANSACTIONAL_ID",
+			"description": "Transactional ID of the Loops email for email verification codes. The email uses the otpCode data variable.",
+			"required": false
+		},
+		{
+			"name": "LOOPS_OTP_PASSWORD_RESET_TRANSACTIONAL_ID",
+			"description": "Transactional ID of the Loops email for password reset codes. The email uses the otpCode data variable.",
+			"required": false
+		},
+		{
+			"name": "LOOPS_MAGIC_LINK_TRANSACTIONAL_ID",
+			"description": "Transactional ID of the Loops email for magic sign-in links. The email uses the magicLinkUrl data variable.",
+			"required": false
+		},
+		{
+			"name": "LOOPS_VERIFY_EMAIL_TRANSACTIONAL_ID",
+			"description": "Transactional ID of the Loops email for email verification links. The email uses the verificationUrl data variable.",
+			"required": false
+		},
+		{
+			"name": "LOOPS_RESET_PASSWORD_TRANSACTIONAL_ID",
+			"description": "Transactional ID of the Loops email for password reset links. The email uses the resetPasswordUrl data variable.",
+			"required": false
+		},
+		{
+			"name": "LOOPS_FUNCTION_TOKEN",
+			"description": "Only for the /send-event route. Callers send this random token of at least 32 characters, for example from openssl rand -hex 32, as Authorization: Bearer <token>. Neon Function URLs are public, so the route requires it.",
+			"required": false
+		}
+	],
+	"operations": [
+		{
+			"id": "auth-webhook",
+			"title": "Managed Better Auth webhook",
+			"description": "Receives signed Managed Better Auth webhooks. Sends send.otp and send.magic_link as Loops transactional emails, creates a Loops contact on user.created, and sends a joinedOrganization event on organization.invitation.accepted.",
+			"source": "functions/auth-webhook.ts",
+			"route": "/auth-webhook",
+			"recommended": true
+		},
+		{
+			"id": "send-event",
+			"title": "Send a Loops event",
+			"description": "POST an email or userId, an eventName, and optional eventProperties to start a Loops workflow from your backend. An optional Idempotency-Key header is passed to Loops.",
+			"source": "functions/send-event.ts",
+			"route": "/send-event",
+			"recommended": false
+		}
+	],
+	"features": ["auth"]
+}

@@ -128,6 +128,14 @@
 			"categories": ["first-party"]
 		},
 		{
+			"id": "loops-email",
+			"provider": "Neon",
+			"title": "Send email with Loops",
+			"description": "Send Managed Better Auth sign-in codes and links as Loops transactional emails, sync new users to Loops, and send Loops events that start workflows.",
+			"path": "loops-email/template.json",
+			"categories": ["first-party"]
+		},
+		{
 			"id": "mastra",
 			"provider": "Mastra",
 			"title": "Mastra agent with Postgres memory",
