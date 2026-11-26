@@ -146,11 +146,11 @@ field, so keep the README's manual `neon.ts` steps for them (see below).
 | --- | --- |
 | `name` | Up to 63 lowercase letters, digits, and hyphens, unique within the template. It becomes the trigger's key in `neon.ts`. |
 | `type` | `schedule` or `storage_object_created`. |
-| `cron` | `schedule` only, and required there. A numeric five-field cron expression in UTC, such as `0 * * * *`, with single spaces between fields. Day and month names (`MON`) and macros (`@hourly`) are not allowed. |
+| `cron` | `schedule` only, and required there. A numeric five-field cron expression in UTC, such as `0 * * * *`, with single spaces between fields, each field starting with a digit or `*`. Day and month names (`MON`) and macros (`@hourly`) are not allowed. |
 | `bucket` | `storage_object_created` only, and required there. The bucket to watch: 3-63 lowercase letters, digits, dots, and hyphens. |
-| `prefix` | `storage_object_created` only, optional. An exact object-key prefix, such as `images/`. Omit it to match every key. |
+| `prefix` | `storage_object_created` only, optional. An exact object-key prefix, such as `images/`, of at most 1024 UTF-8 bytes with no control characters. Omit it to match every key. |
 | `operation` | Required when the template has `operations`, and not allowed when it has none. The id of the operation whose function the trigger calls. The trigger is written only when that operation is scaffolded. |
-| `path` | Optional. The URL path the trigger posts to, starting with `/`. Not allowed on the trigger of a `router` operation, which always posts to the operation's `route`. |
+| `path` | Optional. The URL path the trigger posts to, starting with `/`, at most 2048 characters. A query string is allowed. Not allowed on the trigger of a `router` operation, which always posts to the operation's `route`. |
 
 What the CLI writes for each layout:
 
@@ -169,14 +169,15 @@ triggers: {
 ```
 
 - When `neon.ts` already declares a trigger with the same name, the CLI leaves that declaration as
-  it is and prints this template's declaration to add by hand.
+  it is. If it differs from the template's, the CLI prints the template's declaration to add by
+  hand.
 - The CLI never declares a bucket. A `storage_object_created` trigger must name a bucket that
   `neon.ts` declares, so when `neon.ts` lacks it, the CLI tells the user to run
   `neon config add bucket <name>`, and `neon.ts` does not load until they do. Declaring a bucket
   sets its access, which is why the CLI leaves it to the user. If the template needs a
   `public_read` bucket, say so in the README.
 - With `--no-add-to-config`, the CLI prints a `neon triggers create` command for each trigger
-  instead.
+  instead. A storage trigger's bucket must exist on the branch before that command runs.
 - Keep the `function-triggers` entry in [`features`](#features). `triggers` does not add the Built
   with badge.
 

@@ -97,8 +97,8 @@
 							"type": { "const": "schedule" },
 							"cron": {
 								"type": "string",
-								"pattern": "^[0-9*,/-]+( [0-9*,/-]+){4}$",
-								"description": "A numeric five-field cron expression in UTC, fields separated by single spaces."
+								"pattern": "^[0-9*][0-9*,/-]*( [0-9*][0-9*,/-]*){4}$",
+								"description": "A numeric five-field cron expression in UTC, fields separated by single spaces, each field starting with a digit or *."
 							},
 							"operation": { "$ref": "#/$defs/triggerOperation" },
 							"path": { "$ref": "#/$defs/triggerPath" }
@@ -120,7 +120,8 @@
 								"type": "string",
 								"minLength": 1,
 								"maxLength": 1024,
-								"description": "An exact object-key prefix, such as images/. Omit it to match every key in the bucket."
+								"pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]+$",
+								"description": "An exact object-key prefix, such as images/, of at most 1024 UTF-8 bytes with no control characters. Omit it to match every key in the bucket."
 							},
 							"operation": { "$ref": "#/$defs/triggerOperation" },
 							"path": { "$ref": "#/$defs/triggerPath" }
@@ -186,8 +187,9 @@
 		},
 		"triggerPath": {
 			"type": "string",
-			"pattern": "^\\/[A-Za-z0-9\\-._~/]*$",
-			"description": "The URL path the trigger posts to, written as functionPath (left out when it is /). Not allowed on a router operation's trigger, which posts to the operation's route."
+			"maxLength": 2048,
+			"pattern": "^\\/[A-Za-z0-9\\-._~!$&'()*+,;=:@%/?]*$",
+			"description": "The URL path the trigger posts to, at most 2048 characters, written as functionPath (left out when it is /). Not allowed on a router operation's trigger, which posts to the operation's route."
 		}
 	},
 	"allOf": [
