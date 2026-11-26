@@ -128,6 +128,16 @@
 			"categories": ["first-party"]
 		},
 		{
+			"id": "loops-email",
+			"provider": "Loops",
+			"title": "Send email with Loops",
+			"description": "Send Managed Better Auth sign-in codes and links as Loops transactional emails, sync new users to Loops, and send Loops events that start workflows.",
+			"path": "loops-email/template.json",
+			"categories": ["partner"],
+			"logo": "https://app.loops.so/favicon.svg",
+			"website": "https://loops.so/"
+		},
+		{
 			"id": "mastra",
 			"provider": "Mastra",
 			"title": "Mastra agent with Postgres memory",
