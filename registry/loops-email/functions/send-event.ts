@@ -30,7 +30,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-// Loops event and contact properties are flat: strings, numbers, and booleans.
 function isFlatRecord(value: unknown): value is Record<string, Scalar> {
 	return (
 		isRecord(value) &&
@@ -82,7 +81,6 @@ export default {
 			return jsonError("contactProperties must be an object of strings, numbers, and booleans", 400);
 		}
 
-		// Pass the caller's Idempotency-Key through to Loops, which rejects a key used in the last 24 hours.
 		const idempotencyKey = request.headers.get("idempotency-key");
 		if (idempotencyKey !== null && (idempotencyKey === "" || idempotencyKey.length > 100)) {
 			return jsonError("Idempotency-Key must be 1-100 characters", 400);
@@ -99,8 +97,6 @@ export default {
 			});
 			return Response.json({ sent: true }, { status: 200 });
 		} catch (error) {
-			// Loops marks a key as used even when the request failed, so a 409 doesn't prove
-			// the event was sent. Report it and let the caller decide.
 			if (idempotencyKey && error instanceof APIError && error.statusCode === 409) {
 				return jsonError("This Idempotency-Key was already used in the last 24 hours", 409);
 			}
