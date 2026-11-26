@@ -21,9 +21,7 @@ with-trpc/
 ├── src/
 │   ├── index.ts        # Hono app + tRPC middleware (the function entry)
 │   ├── router.ts       # tRPC procedures (list / byId / create / delete)
-│   ├── env.ts          # DATABASE_URL helper
 │   └── db/
-│       ├── client.ts   # pg pool + Drizzle
 │       └── schema.ts   # todos table
 └── package.json
 ```

@@ -42,7 +42,7 @@ echo "RESEND_FUNCTION_TOKEN=$RESEND_FUNCTION_TOKEN" >> .env.local
 neon dev
 ```
 
-Call the URL that `neon dev` prints (the default is `http://localhost:8787/`). Send an email:
+Call the URL that `neon dev` prints, which defaults to `http://localhost:8787/`. Send an email:
 
 ```bash
 curl -s http://localhost:8787/send \
@@ -72,7 +72,7 @@ The body takes `html`, `text`, or both. `to` can be a string or an array of up t
 
 </Operations>
 
-`to` is a string or an array of up to 50 addresses. The subject can be up to 200 characters on one line, and `html` and `text` can be up to 100,000 characters each. A missing or shorter-than-32-character `RESEND_FUNCTION_TOKEN` returns `503`, a wrong token returns `401`, a malformed body returns `400`, a body over 500,000 bytes returns `413`, and any other path or method returns `404` or `405`.
+`to` is a string or an array of up to 50 addresses. The subject can be up to 200 characters on one line, and `html` and `text` can be up to 100,000 characters each. If `RESEND_FUNCTION_TOKEN` is unset or shorter than 32 characters, the function returns `503`. A wrong token returns `401`, a malformed body returns `400`, a body over 500,000 bytes returns `413`, and any other path or method returns `404` or `405`.
 
 ## Deploy
 
@@ -100,5 +100,5 @@ curl -s https://<function-url>/send \
 
 - `RESEND_FUNCTION_TOKEN` is required and must be at least 32 characters. If it is unset or too short, the function returns `503`, and a wrong token returns `401`.
 - The function caps input at 50 recipients, a 200-character subject, and 100,000 characters each for `html` and `text`.
-- The function returns `503` when `RESEND_API_KEY`, `RESEND_FROM`, or a 32+ character `RESEND_FUNCTION_TOKEN` is missing, `401` for a wrong token, and `502` when Resend rejects the message or the API is unavailable.
+- The function returns `503` when `RESEND_API_KEY`, `RESEND_FROM`, or a `RESEND_FUNCTION_TOKEN` of at least 32 characters is missing, `401` for a wrong token, and `502` when Resend rejects the message or the API is unavailable.
 - Resend's sandbox sender `onboarding@resend.dev` only delivers to the account owner. Use a verified domain for real recipients.

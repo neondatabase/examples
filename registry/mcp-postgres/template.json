@@ -3,7 +3,7 @@
 	"id": "mcp-postgres",
 	"provider": "Neon",
 	"title": "MCP server backed by Postgres",
-	"description": "A Hono MCP server exposing create, list, update, and delete tools backed by a Postgres database.",
+	"description": "A Hono MCP server with create, list, update, and delete tools for a todo list stored in Postgres.",
 	"categories": ["mcp"],
 	"layout": "router",
 	"dependencies": [
@@ -17,8 +17,9 @@
 	"environment": [
 		{
 			"name": "MCP_API_KEY",
-			"description": "Random token (for example, from openssl rand -hex 32) that MCP clients send as Authorization: Bearer <token>; required because the function URL is public.",
+			"description": "MCP clients send this random token as Authorization: Bearer <token>, and you can generate it with openssl rand -hex 32. The function requires it because its URL is public.",
 			"required": true
 		}
-	]
+	],
+	"features": ["postgres"]
 }

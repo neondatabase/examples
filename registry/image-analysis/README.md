@@ -25,7 +25,7 @@ neon config add ai-gateway
 
 You can also set `aiGateway: true` in `neon.ts`.
 
-AI Gateway requires a paid Neon plan with prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started).
+AI Gateway requires prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started) and [prepaid credits](https://neon.com/docs/ai-gateway/prepaid-credits).
 
 Deploy once so Neon provisions the gateway and injects `NEON_AI_GATEWAY_BASE_URL` and `NEON_AI_GATEWAY_TOKEN` into `.env.local`:
 
@@ -39,14 +39,14 @@ neon deploy
 neon dev
 ```
 
-Call the URL that `neon dev` prints (the default is `http://localhost:8787/`). Upload an image:
+Upload an image to the URL that `neon dev` prints, which defaults to `http://localhost:8787/`:
 
 ```bash
 curl -X POST http://localhost:8787/ \
   -F "image=@./photo.jpg"
 ```
 
-Example response:
+The response looks like this:
 
 ```json
 {
@@ -69,4 +69,4 @@ A missing image returns `400`, an image over 10 MB returns `413`, a non-image fi
 
 This template doesn't authenticate requests, so anyone with the function URL can call it and spend AI Gateway credits. Add authentication before you expose it.
 
-The template uses `gpt-5-mini`, which accepts image input. Change `MODEL` in `functions/index.ts` to use another vision model from the [AI Gateway catalog](https://neon.com/docs/ai-gateway/overview#available-models).
+The template uses `gpt-5-mini`, which accepts image input. Change `MODEL` in `functions/imageanalysis/index.ts` to use another vision model from the [AI Gateway catalog](https://neon.com/docs/ai-gateway/overview#available-models).

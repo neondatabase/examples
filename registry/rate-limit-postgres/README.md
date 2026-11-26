@@ -96,4 +96,4 @@ The conflict update is atomic, so concurrent requests in different function inst
 
 - `key` is whatever the caller sends. In a real app, derive it from the authenticated user, the API key, or the client IP instead of trusting the body.
 - Change `LIMIT` and `WINDOW_SECONDS` to tune the policy. The window is fixed, not sliding, so a burst at the end of one window and the start of the next can reach twice the limit.
-- Old keys stay in the table forever. Delete them with a scheduled job or Postgres `pg_cron` if you want to reclaim space.
+- The function never deletes old keys. Delete them with a scheduled job or Postgres `pg_cron` if you want to reclaim space.

@@ -1,0 +1,18 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "google-adk",
+	"provider": "Neon",
+	"title": "Fact-checking agent with Google ADK",
+	"description": "Send a claim to a Google ADK agent that verifies it with Google Search on Gemini and returns a verdict and its sources through Neon AI Gateway.",
+	"categories": ["ai", "agents"],
+	"layout": "router",
+	"dependencies": ["@google/adk@2.5.0"],
+	"environment": [
+		{
+			"name": "FACT_CHECK_FUNCTION_TOKEN",
+			"description": "A random token of at least 32 characters, for example from openssl rand -hex 32, that callers send as Authorization: Bearer <token>. Neon Function URLs are public, so the function requires it.",
+			"required": true
+		}
+	],
+	"features": ["ai-gateway"]
+}

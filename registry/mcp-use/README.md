@@ -8,18 +8,18 @@ The example tools create, update, delete, and search events in Postgres. Adapt t
 
 All four tools share one MCP endpoint and database table:
 
-| Tool            | Inputs and behavior                                                                                                                                                                             |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `create_event`  | Requires `title` and `startsAt`. Optional `location`, `description`, and `url`. Returns the created event.                                                                                      |
-| `update_event`  | Requires `id`. Changes only supplied fields; returns an error if no fields are supplied or the event is missing. Optional text fields cannot be cleared.                                        |
-| `delete_event`  | Deletes an event by `id` and returns it; returns an error if it is missing.                                                                                                                     |
-| `search_events` | Searches `title`, `location`, and `description` case-insensitively. Optional `from` (inclusive) and `to` (exclusive). Results sort by start time, then ID. `limit` defaults to 20, maximum 100. |
+| Tool            | Inputs and behavior                                                                                                                                                                                                                     |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `create_event`  | Requires `title` and `startsAt`, and accepts an optional `location`, `description`, and `url`. Returns the created event.                                                                                                               |
+| `update_event`  | Requires `id` and changes only the fields you supply. Returns an error if you supply no fields or the event does not exist. You cannot clear the optional text fields.                                                                  |
+| `delete_event`  | Deletes an event by `id` and returns it, or returns an error if the event does not exist.                                                                                                                                               |
+| `search_events` | Searches `title`, `location`, and `description`, ignoring case. The optional `from` bound is inclusive and the optional `to` bound is exclusive. Results sort by start time, then by ID. `limit` defaults to 20, with a maximum of 100. |
 
-Times must be ISO 8601 strings with `Z` or an explicit UTC offset, such as `2026-11-20T18:00:00-08:00`. Postgres stores the instant as `timestamptz`; responses serialize dates in UTC. If both search bounds are provided, `from` must precede `to`.
+Times must be ISO 8601 strings with `Z` or an explicit UTC offset, such as `2026-11-20T18:00:00-08:00`. Postgres stores the instant as `timestamptz`, and responses serialize dates in UTC. If you pass both search bounds, `from` must be earlier than `to`.
 
 ## Scaffold
 
-Use a Neon project in a region that supports Functions. In your project directory:
+Use a Neon project in a region that supports Functions. Run these commands in your project directory:
 
 ```bash
 npm install -g neon@latest
@@ -28,19 +28,19 @@ neon link
 neon functions new mcp-use --slug mcpuse -y
 ```
 
-The CLI copies `functions/mcpuse/index.ts`, installs the pinned dependencies, and declares the function in `neon.ts`. It also adds the custom variable to `.env.example`. Neon injects `DATABASE_URL` from the linked branch automatically.
+The CLI copies `functions/mcpuse/index.ts`, installs the pinned dependencies, and declares the function in `neon.ts`. It also adds the custom variable to `.env.example`. Neon injects `DATABASE_URL` from the linked branch.
 
 ## Configuration
 
 <EnvironmentVariables>
 
-| Variable      | Description                                                                                                                                                                  |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MCP_API_KEY` | Random token of at least 32 characters, for example from `openssl rand -hex 32`. Every request must send `Authorization: Bearer <token>` because the function URL is public. |
+| Variable      | Description                                                                                                                                                                    |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `MCP_API_KEY` | A random token of at least 32 characters, for example from `openssl rand -hex 32`. Every request must send `Authorization: Bearer <token>` because the function URL is public. |
 
 </EnvironmentVariables>
 
-Append a new token to the `.env.local` file created by `neon link`, preserving `DATABASE_URL`:
+Append a new token to the `.env.local` file that `neon link` created, without replacing `DATABASE_URL`:
 
 ```bash
 export MCP_API_KEY="$(openssl rand -hex 32)"
@@ -71,7 +71,7 @@ All callers with this shared key can read, edit, and delete all events. A missin
 neon dev
 ```
 
-Use the URL printed by `neon dev` (shown here as `http://localhost:8787`). In another terminal, set `MCP_API_KEY` to the same token and connect with the mcp-use client CLI:
+Use the URL that `neon dev` prints. The examples here use `http://localhost:8787`. In another terminal, set `MCP_API_KEY` to the same token and connect with the mcp-use client CLI:
 
 ```bash
 npx mcp-use client connect neon-example http://localhost:8787/mcp \
@@ -89,7 +89,7 @@ npx mcp-use client neon-example tools call search_events \
   '{"query":"Product demo"}'
 ```
 
-Remove the saved client connection when finished:
+Remove the saved client connection when you finish:
 
 ```bash
 npx mcp-use client remove neon-example
@@ -108,4 +108,4 @@ Pass `--env .env.local` so `neon.ts` can resolve the custom key during deploymen
 
 ## Storage
 
-The table contains `id`, `title`, `starts_at`, `location`, `description`, `url`, `created_at`, and `updated_at`. The first tool call runs `CREATE TABLE IF NOT EXISTS`; the database role must be able to create this table. Initialization is shared within a function instance, and a failed initialization is retried on the next tool call. Existing tables are not migrated automatically.
+The table contains `id`, `title`, `starts_at`, `location`, `description`, `url`, `created_at`, and `updated_at`. The first tool call runs `CREATE TABLE IF NOT EXISTS`, so the database role must be able to create this table. Tool calls in one function instance share a single initialization, and the next tool call retries a failed initialization. The function does not migrate an existing table.

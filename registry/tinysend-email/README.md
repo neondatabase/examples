@@ -15,7 +15,7 @@ The CLI writes `functions/tinysendemail/`, declares the function in `neon.ts`, a
 
 ## Configure Tinysend
 
-Create an API key at [app.tinysend.com/account/tokens](https://app.tinysend.com/account/tokens). Every account has a mailbox on tinysend.com to send from; to send from your own domain, add it in Tinysend first.
+Create an API key at [app.tinysend.com/account/tokens](https://app.tinysend.com/account/tokens). Every account has a mailbox on tinysend.com to send from. To send from your own domain, add the domain in Tinysend first.
 
 Add the values to `.env.local` without replacing the Neon values already there:
 
@@ -30,9 +30,9 @@ echo "TINYSEND_FUNCTION_TOKEN=$TINYSEND_FUNCTION_TOKEN" >> .env.local
 
 <EnvironmentVariables>
 
-- `TINYSEND_API_KEY`: An API key (`sk_...`) from app.tinysend.com/account/tokens. Keep it server-side.
-- `TINYSEND_FROM`: Optional. The mailbox to send from when a request names none, for example `hello@yourdomain.com`.
-- `TINYSEND_FUNCTION_TOKEN`: A random token of at least 32 characters, for example from `openssl rand -hex 32`, that callers send as `Authorization: Bearer <token>`. Neon Function URLs are public, so the function requires it.
+- `TINYSEND_API_KEY`: The Tinysend API key, which looks like `sk_...`. Create it at app.tinysend.com/account/tokens and keep it server-side.
+- `TINYSEND_FROM`: This optional variable sets the mailbox to send from when a request does not name one, for example `hello@yourdomain.com`.
+- `TINYSEND_FUNCTION_TOKEN`: Callers send this random token as `Authorization: Bearer <token>`. It must be at least 32 characters long, and `openssl rand -hex 32` generates one. Neon Function URLs are public, so the function requires it.
 
 </EnvironmentVariables>
 
@@ -42,7 +42,7 @@ echo "TINYSEND_FUNCTION_TOKEN=$TINYSEND_FUNCTION_TOKEN" >> .env.local
 neon dev
 ```
 
-Call the URL that `neon dev` prints (the default is `http://localhost:8787/`). Send an email:
+Call the URL that `neon dev` prints, which defaults to `http://localhost:8787/`. Send an email:
 
 ```bash
 curl -s http://localhost:8787/send-email \
@@ -67,7 +67,7 @@ curl -s http://localhost:8787/send-email \
 }
 ```
 
-Sending the same `idempotency-key` again returns this answer and sends nothing.
+If you send the same `idempotency-key` again, the function returns this response and sends no new email.
 
 ## Routes
 
@@ -79,7 +79,7 @@ Sending the same `idempotency-key` again returns this answer and sends nothing.
 
 </Operations>
 
-`to`, `from` and `reply_to` are email addresses, and `from` must be one of your Tinysend mailboxes. Send `text`, `html` or both. `subject` can be up to 998 characters and `tag` up to 120. `metadata` is an object of string values. An `Idempotency-Key` header makes a retry return the first send.
+`to`, `from` and `reply_to` are email addresses, and `from` must be one of your Tinysend mailboxes. The body must include `text`, `html` or both. `subject` can be up to 998 characters, and `tag` can be up to 120. `metadata` is an object of string values. With an `Idempotency-Key` header, a retry returns the first send instead of sending again.
 
 ## Deploy
 

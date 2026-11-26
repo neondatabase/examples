@@ -1,6 +1,6 @@
 # Live poll over WebSockets
 
-This template is a poll API that runs as a [Neon Function](https://neon.com/docs/compute/functions/overview). Clients vote over HTTP, and the function pushes the results to every connected client over a WebSocket. Votes live in [Lakebase Postgres](https://neon.com/lakebase), so results stay in sync across clients and isolates.
+This template is a poll API that runs as a [Neon Function](https://neon.com/docs/compute/functions/overview). Clients vote over HTTP, and the function pushes the results to every connected client over a WebSocket. The function stores votes in [Lakebase Postgres](https://neon.com/lakebase), so results stay in sync across clients and isolates.
 
 - [`upgradeWebSocket`](https://neon.com/docs/compute/functions/websockets) from `@neon/functions` turns a `GET /ws` request into a live socket.
 - [`pg`](https://node-postgres.com) reads and writes the votes through a connection pool that the function registers with `attachDatabasePool`.
@@ -25,7 +25,7 @@ The CLI writes `functions/livepoll/index.ts`, declares `livepoll` in `neon.ts`, 
 neon dev
 ```
 
-`neon dev` serves every function declared in `neon.ts` and prints its URL (the default is `http://localhost:8787/`). Connect a WebSocket client, then vote from a second terminal:
+`neon dev` serves every function declared in `neon.ts` and prints its URL, which defaults to `http://localhost:8787/`. Connect a WebSocket client, then vote from a second terminal:
 
 ```bash
 # Terminal 1: prints the current counts, then a frame per change
@@ -50,8 +50,8 @@ The HTTP routes work on their own too. `GET /` prints the route index, `GET /res
 | --- | --- | --- |
 | `GET` | `/` | Plain-text index of the routes |
 | `GET` | `/results` | Current counts as JSON |
-| `POST` | `/vote` | `{ "optionId": "ws", "voterId": "<random id>" }`; returns the updated counts |
-| `GET` | `/ws` | WebSocket upgrade; pushes `{ "type": "results" }` frames and `{ "type": "ping" }` keepalives |
+| `POST` | `/vote` | Takes `{ "optionId": "ws", "voterId": "<random id>" }` and returns the updated counts |
+| `GET` | `/ws` | Upgrades to a WebSocket that pushes `{ "type": "results" }` frames and `{ "type": "ping" }` keepalives |
 
 </Operations>
 

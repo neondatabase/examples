@@ -1,51 +1,45 @@
-import { parseTrigger } from "@neon/functions/hono";
-import { eq, sql } from "drizzle-orm";
-import { Hono } from "hono";
-import { getDb } from "./db/client.js";
-import { counters } from "./db/schema.js";
+import { Hono } from 'hono';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { eq, sql } from 'drizzle-orm';
+import { Pool } from 'pg';
+import { parseEnv } from '@neon/env';
+import { attachDatabasePool } from '@neon/functions';
+import { parseTrigger } from '@neon/functions/hono';
+import config from '../neon';
+import { counters } from './db/schema';
 
-const db = getDb();
+const { postgres } = parseEnv(config, ['DATABASE_URL']);
+const pool = new Pool({ connectionString: postgres.databaseUrl, max: 5 });
+attachDatabasePool(pool);
+const db = drizzle(pool);
+
 const COUNTER_ID = 1;
 
-async function readCount(): Promise<number> {
-  const [row] = await db
-    .select({ value: counters.value })
-    .from(counters)
-    .where(eq(counters.id, COUNTER_ID));
-  return row?.value ?? 0;
+async function readCount() {
+  const [counter] = await db.select().from(counters).where(eq(counters.id, COUNTER_ID));
+  return counter?.value ?? 0;
 }
 
-async function incrementCount(): Promise<number> {
-  const [row] = await db
+async function incrementCount() {
+  const [counter] = await db
     .insert(counters)
     .values({ id: COUNTER_ID, value: 1 })
-    .onConflictDoUpdate({
-      target: counters.id,
-      set: { value: sql`${counters.value} + 1` },
-    })
-    .returning({ value: counters.value });
-  if (!row) {
-    throw new Error("counter upsert returned no row");
-  }
-  return row.value;
+    .onConflictDoUpdate({ target: counters.id, set: { value: sql`${counters.value} + 1` } })
+    .returning();
+  return counter.value;
 }
 
 const app = new Hono();
 
-app.get("/", (c) => c.text("Neon cron counter. GET /counter, POST /cron"));
+app.get('/', (c) => c.text('Neon cron counter. GET /counter, POST /cron'));
 
-app.get("/counter", async (c) => c.json({ value: await readCount() }));
+app.get('/counter', async (c) => c.json({ value: await readCount() }));
 
-app.post("/cron", async (c) => {
-  const invocation = await parseTrigger(c);
+app.post('/cron', async (c) => {
+  const { invocationId, trigger } = await parseTrigger(c);
   const value = await incrementCount();
-  console.info("[cron]", {
-    invocationId: invocation.invocationId,
-    triggerName: invocation.trigger.name,
-    scheduledAt: invocation.data.scheduledAt,
-    value,
-  });
-  return c.json({ value, invocationId: invocation.invocationId });
+  console.info(`[cron] ${trigger.name} ran, counter is ${value}`);
+  return c.json({ value, invocationId });
 });
 
 export default app;

@@ -41,7 +41,7 @@ export default defineConfig({
 });
 ```
 
-AI Gateway and Object Storage require a project in a supported region. AI Gateway also requires a paid Neon plan with prepaid credits. See [AI Gateway get started](https://neon.com/docs/ai-gateway/get-started) and [Object Storage get started](https://neon.com/docs/storage/get-started).
+AI Gateway and Object Storage require a project in a supported region. AI Gateway also requires prepaid credits. See [AI Gateway get started](https://neon.com/docs/ai-gateway/get-started), [prepaid credits](https://neon.com/docs/ai-gateway/prepaid-credits), and [Object Storage get started](https://neon.com/docs/storage/get-started).
 
 Deploy once so Neon creates the bucket and injects the `AWS_*` and `NEON_AI_GATEWAY_*` variables into `.env.local`:
 
@@ -63,7 +63,7 @@ curl -X POST http://localhost:8787/ \
   -d '{"prompt":"An astronaut drinking coffee in a neon-lit cafe, cinematic lighting"}'
 ```
 
-Example response:
+The response looks like this:
 
 ```json
 {
@@ -85,10 +85,10 @@ The presigned URL is valid for one hour. The bucket is private, so the object ha
 
 | Field | Rule |
 | --- | --- |
-| `prompt` | Required. A non-empty string up to 2,000 characters. |
+| `prompt` | A required string of 1 to 2,000 characters after trimming whitespace. |
 
 The function only accepts `POST /`.
 
 This template doesn't authenticate requests, so anyone with the function URL can call it and spend AI Gateway credits. Add authentication before you expose it.
 
-The template uses `gpt-5-mini` to call the `gpt-image-2` image-generation tool, which makes a 1024x1024 low-quality JPEG. Change `MODEL`, `IMAGE_MODEL`, or the tool options in `functions/index.ts` to tune cost and output.
+The template uses `gpt-5-mini` to call the `gpt-image-2` image-generation tool, which makes a 1024x1024 low-quality JPEG. Change `MODEL`, `IMAGE_MODEL`, or the tool options in `functions/imagegeneration/index.ts` to tune cost and output.

@@ -7,7 +7,7 @@ export default defineConfig({
   },
   functions: {
     imagegen: {
-      name: 'AI SDK image agent',
+      name: 'AI SDK image generator',
       source: 'src/index.ts',
     },
   },

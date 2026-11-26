@@ -10,12 +10,12 @@
 	"environment": [
 		{
 			"name": "NOTRA_API_KEY",
-			"description": "Notra API key (ntra_...) from the API Keys page at app.usenotra.com, with the read and write scopes of the routes you scaffold. Keep this server-side.",
+			"description": "A Notra API key, starting with ntra_, from the API Keys page at app.usenotra.com. Give it the read and write scopes of the routes you scaffold, and keep it server-side.",
 			"required": true
 		},
 		{
 			"name": "NOTRA_FUNCTION_TOKEN",
-			"description": "Random token (at least 32 characters, for example from openssl rand -hex 32) callers send as Authorization: Bearer <token>; required because Neon Function URLs are public.",
+			"description": "Callers send this random token of at least 32 characters as Authorization: Bearer <token>, and you can generate it with openssl rand -hex 32. The function requires it because Neon Function URLs are public.",
 			"required": true
 		}
 	],
@@ -23,7 +23,7 @@
 		{
 			"id": "projects",
 			"title": "List projects",
-			"description": "POST to list your Notra projects and their ids, which every other route takes.",
+			"description": "Send a POST request to list your Notra projects and their ids. Every other route takes a project id.",
 			"source": "functions/projects.ts",
 			"route": "/projects",
 			"recommended": true
@@ -31,7 +31,7 @@
 		{
 			"id": "scan",
 			"title": "Start a visibility scan",
-			"description": "POST a projectId to ask ChatGPT, Perplexity, Gemini and the other tracked engines every prompt of the project; returns a scanId.",
+			"description": "POST a projectId to ask ChatGPT, Perplexity, Gemini and the other tracked engines every prompt of the project. The route returns a scanId.",
 			"source": "functions/scan.ts",
 			"route": "/scan",
 			"recommended": true
@@ -47,7 +47,7 @@
 		{
 			"id": "visibility",
 			"title": "Read visibility per engine",
-			"description": "POST a projectId and optional days (1-365) to get mention rate, citations, and average position per AI engine.",
+			"description": "POST a projectId to get mention rate, citations, and average position per AI engine. You can set days to a number from 1 to 365.",
 			"source": "functions/visibility.ts",
 			"route": "/visibility",
 			"recommended": true
@@ -55,7 +55,7 @@
 		{
 			"id": "competitor-share",
 			"title": "Read competitor share",
-			"description": "POST a projectId and optional days (1-365) to get how often each brand is mentioned in the answers.",
+			"description": "POST a projectId to get how often each brand is mentioned in the answers. You can set days to a number from 1 to 365.",
 			"source": "functions/competitor-share.ts",
 			"route": "/competitor-share",
 			"recommended": false
@@ -63,7 +63,7 @@
 		{
 			"id": "content-gaps",
 			"title": "List content gaps",
-			"description": "POST a projectId to list prompts where competitors are mentioned and you are not, plus Search Console and AI search queries you are missing from.",
+			"description": "POST a projectId to list the prompts whose answers mention competitors but not you. The route also lists Search Console and AI search queries that you are missing from.",
 			"source": "functions/content-gaps.ts",
 			"route": "/content-gaps",
 			"recommended": false

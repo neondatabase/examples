@@ -1,0 +1,21 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "sql-alerts",
+	"provider": "Neon",
+	"title": "Alert on SQL thresholds",
+	"description": "Post to Slack on a cron when a SQL check is past its threshold.",
+	"categories": ["observability"],
+	"layout": "router",
+	"dependencies": [
+		"@neon/functions@0.11.0",
+		"@types/pg@8.23.1",
+		"pg@8.23.1"
+	],
+	"environment": [
+		{
+			"name": "SLACK_WEBHOOK_URL",
+			"description": "Slack incoming webhook URL for the channel that should get the alerts.",
+			"required": true
+		}
+	]
+}

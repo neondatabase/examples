@@ -1,20 +1,20 @@
 # Mirror WorkOS data into Postgres
 
-Keeps a copy of your WorkOS users, organizations, memberships, directories, and more in the branch's Postgres, so you can join them with your own tables in SQL. [WorkOS Postgres Sync](https://github.com/workos/sync-engine) does the work: a backfill loads what already exists, a poll of the Events API keeps it current, and a periodic reconcile catches drift the event stream cannot see. Function Triggers run each piece on a schedule, and a WorkOS webhook makes the function poll right away.
+This function keeps a copy of your WorkOS users, organizations, memberships, directories, and more in the branch's Postgres, so you can join them with your own tables in SQL. [WorkOS Postgres Sync](https://github.com/workos/sync-engine) does the work: a backfill loads what already exists, a poll of the Events API keeps it current, and a periodic reconcile catches drift the event stream cannot see. Function Triggers run each piece on a schedule, and a WorkOS webhook makes the function poll right away.
 
 ## How it works
 
-| Route                   | Called by                         | Purpose                                                                         |
-| ----------------------- | --------------------------------- | ------------------------------------------------------------------------------- |
-| `POST /tick`            | schedule trigger, every minute    | Poll the Events API once and apply what is new                                  |
-| `POST /backfill`        | schedule trigger, every 5 minutes | Load one slice of existing data; a no-op once every stream is complete          |
-| `POST /reconcile`       | schedule trigger, hourly          | Continue the reconcile pass in progress and repair drift; a no-op once complete |
-| `POST /reconcile/fresh` | schedule trigger, weekly          | Start a new reconcile pass                                                      |
-| `POST /webhook`         | WorkOS                            | Verify the delivery's signature, then poll now                                  |
-| `GET /status`           | you, with a bearer token          | Per-stream counts, poll age, lag, and oversized streams                         |
-| `GET /`                 | you                               | Route index                                                                     |
+| Route                   | Called by                         | Purpose                                                                                  |
+| ----------------------- | --------------------------------- | ---------------------------------------------------------------------------------------- |
+| `POST /tick`            | schedule trigger, every minute    | Poll the Events API once and apply what is new                                           |
+| `POST /backfill`        | schedule trigger, every 5 minutes | Load one slice of existing data, or do nothing once every stream is complete             |
+| `POST /reconcile`       | schedule trigger, hourly          | Continue the reconcile pass in progress and repair drift, or do nothing once it finishes |
+| `POST /reconcile/fresh` | schedule trigger, weekly          | Start a new reconcile pass                                                               |
+| `POST /webhook`         | WorkOS                            | Verify the delivery's signature, then poll now                                           |
+| `GET /status`           | you, with a bearer token          | Report per-stream counts, poll age, lag, and oversized streams                           |
+| `GET /`                 | you                               | List the routes                                                                          |
 
-Every invocation is bounded, idempotent, and resumable, so short triggers keep the mirror current instead of one long-lived process. Trigger routes accept only Neon trigger deliveries. The webhook route accepts only deliveries signed with your endpoint's secret, and the status route needs a token you choose. The mirror is a read model: read from it for joins, dashboards, and analytics, and keep writes on the WorkOS API.
+Every invocation is bounded, idempotent, and resumable, so short triggers keep the mirror current instead of one long-lived process. Trigger routes accept only Neon trigger deliveries. The webhook route accepts only deliveries signed with your endpoint's secret, and the status route needs a token you choose. The mirror is a read model. Read from it for joins, dashboards, and analytics, and keep writes on the WorkOS API.
 
 ## Scaffold it
 
@@ -32,7 +32,7 @@ The CLI writes `functions/workossync/index.ts`, declares the function in `neon.t
 ## Configure WorkOS
 
 1. In the [WorkOS Dashboard](https://dashboard.workos.com), open **API Keys** and create a secret key for the environment to mirror.
-2. Add the three values to `.env.local`, keeping the Neon values already there. The webhook secret can be a placeholder until the endpoint exists, below. The status token is anything long and random; it guards `GET /status` because function URLs are public.
+2. Add the three values to `.env.local`, keeping the Neon values already there. The webhook secret can be a placeholder until the endpoint exists, below. The status token can be any long random string. It guards `GET /status` because function URLs are public.
 
 ```bash
 echo 'WORKOS_API_KEY=sk_...' >> .env.local
@@ -99,7 +99,7 @@ The first `/backfill` delivery creates the schema and starts loading. `/tick` ru
 
 ## Point a webhook at it
 
-1. In the WorkOS Dashboard, open **Webhooks** and add an endpoint whose URL is the function's `invocation_url` plus `/webhook`. Select any events; the delivery is only a nudge to poll, so the selection does not change what is mirrored.
+1. In the WorkOS Dashboard, open **Webhooks** and add an endpoint whose URL is the function's `invocation_url` plus `/webhook`. Select any events. A delivery only tells the function to poll, so the selection does not change what is mirrored.
 2. Copy the endpoint's signing secret into `.env.local` as `WORKOS_WEBHOOK_SECRET` and run `neon deploy --env .env.local` again.
 
 ## Try it
@@ -108,7 +108,7 @@ The first `/backfill` delivery creates the schema and starts loading. `/tick` ru
 curl -H "Authorization: Bearer $WORKOS_SYNC_STATUS_TOKEN" <invocation_url>/status
 ```
 
-Then query the mirror. The `_live` views hide deleted rows; the base tables keep them as tombstones.
+Then query the mirror. The `_live` views hide deleted rows, and the base tables keep them as tombstones.
 
 ```sql
 SELECT o.name AS organization, u.email, m.role_slug
@@ -144,7 +144,7 @@ curl -H "Authorization: Bearer $WORKOS_SYNC_STATUS_TOKEN" http://localhost:8787/
 
 - `GET /status` reports row counts and timestamps, not row contents.
 - `MAX_PAGES` and `MAX_EVENTS_PER_TICK` at the top of the module bound each invocation. Each response reports `pages`. Raise the budget until a slice uses most of the 15-minute limit but still finishes before the next trigger fires.
-- A reconcile cannot pause inside a stream, so a stream whose listing alone needs more than `MAX_PAGES` pages is abandoned on the page after the budget, rolled back, and reported `oversized`, in that response and in `GET /status`. The hourly slices skip it and the weekly fresh pass tries it again. Add its name to `RECONCILE_EXCLUDE` at the top of the module, and reconcile it on its own schedule from a host without a time limit with `npx workos-sync-postgres reconcile --repair --streams <name>` against the same `DATABASE_URL`.
+- A reconcile cannot pause inside a stream. If a stream's listing alone needs more than `MAX_PAGES` pages, the reconcile abandons that stream on the page after the budget, rolls it back, and reports it as `oversized` in that response and in `GET /status`. The hourly slices skip it and the weekly fresh pass tries it again. Add its name to `RECONCILE_EXCLUDE` at the top of the module, and reconcile it on its own schedule from a host without a time limit with `npx workos-sync-postgres reconcile --repair --streams <name>` against the same `DATABASE_URL`.
 - Every row carries an `_env` column, set from `ENVIRONMENT` at the top of the module. Rename it to match the WorkOS environment, or add entries to `environments` to mirror several.
-- The injected pooled `DATABASE_URL` is fine; the engine works in short transactions and holds at most one connection per phase.
+- The injected pooled `DATABASE_URL` works, because the engine uses short transactions and holds at most one connection per phase.
 - The [sync-engine docs](https://github.com/workos/sync-engine/tree/main/docs) cover the schema, the consistency model, and operations.

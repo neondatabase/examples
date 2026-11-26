@@ -3,7 +3,7 @@
 	"id": "workos-sync",
 	"provider": "WorkOS",
 	"title": "Mirror WorkOS data into Postgres",
-	"description": "Backfill, tail the Events API, and reconcile drift on a cron, with a WorkOS webhook nudge. Join users, organizations, and memberships in SQL.",
+	"description": "Backfill WorkOS data, poll the Events API, and reconcile drift on a schedule. A WorkOS webhook triggers an immediate poll. Join users, organizations, and memberships in SQL.",
 	"categories": ["sync"],
 	"layout": "router",
 	"dependencies": [
@@ -15,18 +15,22 @@
 	"environment": [
 		{
 			"name": "WORKOS_API_KEY",
-			"description": "Secret API key (sk_...) for the WorkOS environment to mirror, from API Keys in the WorkOS Dashboard.",
+			"description": "The secret API key, starting with sk_, for the WorkOS environment to mirror. Create it under API Keys in the WorkOS Dashboard.",
 			"required": true
 		},
 		{
 			"name": "WORKOS_WEBHOOK_SECRET",
-			"description": "Signing secret of the WorkOS webhook endpoint that points at this function's /webhook route. Any placeholder works until the endpoint exists.",
+			"description": "The signing secret of the WorkOS webhook endpoint that points at this function's /webhook route. Any placeholder works until the endpoint exists.",
 			"required": true
 		},
 		{
 			"name": "WORKOS_SYNC_STATUS_TOKEN",
-			"description": "Bearer token that GET /status requires, since function URLs are public. Any long random string, for example from `openssl rand -hex 32`.",
+			"description": "GET /status requires this bearer token because function URLs are public. Use any long random string, for example from `openssl rand -hex 32`.",
 			"required": true
 		}
+	],
+	"features": [
+		"postgres",
+		{ "id": "function-triggers", "types": ["schedule"] }
 	]
 }

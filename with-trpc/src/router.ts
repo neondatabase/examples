@@ -1,41 +1,37 @@
-import { eq } from "drizzle-orm";
-import { initTRPC, TRPCError } from "@trpc/server";
-import { z } from "zod";
-import type { getDb } from "./db/client.js";
-import { todos } from "./db/schema.js";
+import { initTRPC, TRPCError } from '@trpc/server';
+import { eq } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { z } from 'zod';
+import { todos } from './db/schema';
 
-export type Context = {
-  db: ReturnType<typeof getDb>;
-};
+const t = initTRPC.context<{ db: NodePgDatabase }>().create();
 
-const t = initTRPC.context<Context>().create();
+const todoId = z.number().int().positive();
+
+function notFound(id: number) {
+  return new TRPCError({ code: 'NOT_FOUND', message: `No todo with id ${id}` });
+}
 
 export const appRouter = t.router({
-  list: t.procedure.query(async ({ ctx }) => {
-    return ctx.db.select().from(todos);
-  }),
+  list: t.procedure.query(({ ctx }) => ctx.db.select().from(todos)),
 
-  byId: t.procedure.input(z.number().int().positive()).query(async ({ ctx, input }) => {
-    const [row] = await ctx.db.select().from(todos).where(eq(todos.id, input));
-    if (!row) {
-      throw new TRPCError({ code: "NOT_FOUND", message: `No todo with id ${input}` });
-    }
-    return row;
+  byId: t.procedure.input(todoId).query(async ({ ctx, input }) => {
+    const [todo] = await ctx.db.select().from(todos).where(eq(todos.id, input));
+    if (!todo) throw notFound(input);
+    return todo;
   }),
 
   create: t.procedure
     .input(z.object({ text: z.string().trim().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      const [row] = await ctx.db.insert(todos).values({ text: input.text }).returning();
-      return row;
+      const [todo] = await ctx.db.insert(todos).values({ text: input.text }).returning();
+      return todo;
     }),
 
-  delete: t.procedure.input(z.number().int().positive()).mutation(async ({ ctx, input }) => {
-    const [row] = await ctx.db.delete(todos).where(eq(todos.id, input)).returning();
-    if (!row) {
-      throw new TRPCError({ code: "NOT_FOUND", message: `No todo with id ${input}` });
-    }
-    return row;
+  delete: t.procedure.input(todoId).mutation(async ({ ctx, input }) => {
+    const [todo] = await ctx.db.delete(todos).where(eq(todos.id, input)).returning();
+    if (!todo) throw notFound(input);
+    return todo;
   }),
 });
 

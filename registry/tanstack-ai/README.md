@@ -31,7 +31,7 @@ Enable AI Gateway on the linked branch:
 neon config add ai-gateway
 ```
 
-You can also set `aiGateway: true` in `neon.ts`. AI Gateway requires a paid Neon plan with prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started).
+You can also set `aiGateway: true` in `neon.ts`. AI Gateway requires prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started) and [prepaid credits](https://neon.com/docs/ai-gateway/prepaid-credits).
 
 Function URLs are public, so every route requires a bearer token. Generate one and add it to `.env.local`:
 
@@ -102,7 +102,7 @@ curl "$URL/extract" \
   -d '{ "text": "Ada Lovelace joined Neon in London on March 3, 2026. Great news!" }'
 ```
 
-Example response:
+The response looks like this:
 
 ```json
 {
@@ -138,7 +138,7 @@ curl "$URL/summarize" \
 | `400` | The body is not JSON or fails validation. |
 | `401` | The bearer token is missing or wrong. |
 | `405` | The method is not `POST`. |
-| `429` | AI Gateway rate limit or daily spend cap reached. |
+| `429` | The request hit the AI Gateway rate limit or daily spend cap. |
 | `502` | The model request failed, or AI Gateway rejected the branch credentials. |
 | `503` | `TANSTACK_AI_FUNCTION_TOKEN` is unset or shorter than 32 characters, or AI Gateway is not enabled. |
 

@@ -20,9 +20,7 @@ with-cron-job/
 ├── .env.example        # Required environment variables
 ├── src/
 │   ├── index.ts        # Hono app: GET /counter and POST /cron
-│   ├── env.ts          # DATABASE_URL helper
 │   └── db/
-│       ├── client.ts   # pg pool + Drizzle
 │       └── schema.ts   # counters table
 └── package.json
 ```

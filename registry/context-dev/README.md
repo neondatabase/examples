@@ -6,11 +6,11 @@ This Neon Function searches the web and news, reads pages, answers questions, an
 
 | Route | Default | What it does |
 | --- | --- | --- |
-| `POST /web-search` | yes | `{ query, numResults? }` finds current source URLs. `numResults` is 1-10 (default 10). |
-| `POST /web-scrape` | yes | `{ url }` returns up to 50,000 characters of Markdown and source metadata for an HTTP(S) page. |
-| `POST /web-answers` | no | `{ task, mode? }` returns a sourced answer. `mode` is `fast` (the default) or `ultra`. |
-| `POST /brand-retrieve` | no | `{ domain }` returns company identity, logo, colors, and social links. |
-| `POST /news-search` | no | `{ query }` or `{ domain }`, plus optional `limit` (1-10) and `cursor`, finds news articles. Pass the returned cursor for the next page. |
+| `POST /web-search` | yes | `{ query, numResults? }` finds current source URLs. `numResults` is a number from 1 to 10 and defaults to 10. |
+| `POST /web-scrape` | yes | `{ url }` returns up to 50,000 characters of Markdown and source metadata for an HTTP or HTTPS page. |
+| `POST /web-answers` | no | `{ task, mode? }` returns a sourced answer. `mode` is `fast` or `ultra` and defaults to `fast`. |
+| `POST /brand-retrieve` | no | `{ domain }` returns the company's identity, logo, colors, and social links. |
+| `POST /news-search` | no | `{ query }` or `{ domain }` finds news articles. The optional `limit` is a number from 1 to 10, and passing the returned `cursor` gets the next page. |
 
 </Operations>
 
@@ -39,8 +39,8 @@ echo "CONTEXT_FUNCTION_TOKEN=$CONTEXT_FUNCTION_TOKEN" >> .env.local
 
 <EnvironmentVariables>
 
-- `CONTEXT_DEV_API_KEY`: A Context.dev API key with `data:execute` access. Keep it server-side.
-- `CONTEXT_FUNCTION_TOKEN`: A random token of at least 32 characters that callers send as `Authorization: Bearer <token>`. Neon Function URLs are public, so the function requires it.
+- `CONTEXT_DEV_API_KEY` is a Context.dev API key with `data:execute` access. Keep it on the server.
+- `CONTEXT_FUNCTION_TOKEN` is a random token of at least 32 characters that callers send as `Authorization: Bearer <token>`. Neon Function URLs are public, so the function requires it.
 
 </EnvironmentVariables>
 
@@ -50,7 +50,7 @@ echo "CONTEXT_FUNCTION_TOKEN=$CONTEXT_FUNCTION_TOKEN" >> .env.local
 neon dev
 ```
 
-Call the URL that `neon dev` prints (the default is `http://localhost:8787/`). Search the web:
+Call the URL that `neon dev` prints, which defaults to `http://localhost:8787/`. To search the web:
 
 ```bash
 curl -s http://localhost:8787/web-search \
@@ -59,7 +59,7 @@ curl -s http://localhost:8787/web-search \
   -d '{"query":"Neon serverless Postgres branching","numResults":3}'
 ```
 
-Read a page as Markdown:
+To read a page as Markdown:
 
 ```bash
 curl -s http://localhost:8787/web-scrape \
@@ -87,7 +87,7 @@ neon functions get contextdev
 | `401` | The bearer token is missing or wrong. |
 | `402` | Context.dev credits are exhausted. |
 | `405` | The method is not `POST`. |
-| `429` | Context.dev rate limit reached. |
+| `429` | The request hit Context.dev's rate limit. |
 | `502` | Context.dev rejected `CONTEXT_DEV_API_KEY`, could not read the page, or the request failed. |
 | `503` | `CONTEXT_DEV_API_KEY` is unset, or `CONTEXT_FUNCTION_TOKEN` is unset or shorter than 32 characters. |
 

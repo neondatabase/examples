@@ -31,7 +31,7 @@ Enable AI Gateway on the linked branch:
 neon config add ai-gateway
 ```
 
-You can also set `aiGateway: true` in `neon.ts`. AI Gateway requires a paid Neon plan with prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started).
+You can also set `aiGateway: true` in `neon.ts`. AI Gateway requires prepaid credits and a project in a supported region. See the [AI Gateway quickstart](https://neon.com/docs/ai-gateway/get-started) and [prepaid credits](https://neon.com/docs/ai-gateway/prepaid-credits).
 
 Function URLs are public, so every route requires a bearer token. Generate one and add it to `.env.local`:
 
@@ -106,7 +106,7 @@ const { messages, sendMessage } = useChat({
 });
 ```
 
-`/chat` and `/history` answer CORS preflight requests from any origin, because the bearer token grants access whatever the origin.
+`/chat` and `/history` answer CORS preflight requests from any origin, because the bearer token grants access regardless of the origin.
 
 User messages may contain text parts and file parts. A file part needs a `mediaType` and a `data:` URL, which is how `useChat` sends attached files. `/chat` accepts only `data:` URLs because Mastra would fetch any other URL from inside the function. It drops every other field of a user message part.
 
@@ -166,7 +166,7 @@ Mastra stores the run's state as a snapshot in Postgres, so any instance can res
 
 ## Where the data lives
 
-`PostgresStore` creates Mastra's tables in a `mastra` schema on first use, so they stay out of your `public` schema and there's no migration step. Memory is in `mastra.mastra_threads`, `mastra.mastra_messages`, and `mastra.mastra_resources` (the per-user working memory). Workflow runs are in `mastra.mastra_workflow_snapshot`.
+`PostgresStore` creates Mastra's tables in a `mastra` schema on first use, so they stay out of your `public` schema and there's no migration step. Memory is in `mastra.mastra_threads` and `mastra.mastra_messages`, and the per-user working memory is in `mastra.mastra_resources`. Workflow runs are in `mastra.mastra_workflow_snapshot`.
 
 ```sql
 SELECT id, "workingMemory" FROM mastra.mastra_resources;
@@ -178,9 +178,9 @@ SELECT id, "workingMemory" FROM mastra.mastra_resources;
 | --- | --- |
 | `400` | The body is not JSON or fails validation. |
 | `401` | The bearer token is missing or wrong. |
-| `404` | `/chat`: the thread belongs to another `resourceId`. `/history`: no such thread for this `resourceId`. `/review`: no such run. |
+| `404` | For `/chat`, the thread belongs to another `resourceId`. For `/history`, the thread doesn't exist for this `resourceId`. For `/review`, the run doesn't exist. |
 | `405` | The method is not `POST`. |
-| `409` | `/chat`: a message id already belongs to another thread. `/review`: the run is not awaiting review. |
+| `409` | For `/chat`, a message id already belongs to another thread. For `/review`, the run is not awaiting review. |
 | `502` | The model, database, or workflow failed. The function logs the cause. |
 | `503` | `MASTRA_FUNCTION_TOKEN` is unset or shorter than 32 characters, or `DATABASE_URL` or AI Gateway is missing. |
 
