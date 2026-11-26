@@ -53,6 +53,9 @@
 			"required": false
 		}
 	],
+	"triggers": [
+		{ "name": "cleanup", "type": "schedule", "cron": "0 * * * *", "path": "/__scheduled" }
+	],
 	"features": [
 		"object-storage",
 		{ "id": "function-triggers", "types": ["schedule"] }
