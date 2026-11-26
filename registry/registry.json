@@ -133,7 +133,7 @@
 			"title": "Send email with Loops",
 			"description": "Send Managed Better Auth sign-in codes and links as Loops transactional emails, sync new users to Loops, and send Loops events that start workflows.",
 			"path": "loops-email/template.json",
-			"categories": ["first-party"]
+			"categories": ["partner"]
 		},
 		{
 			"id": "mastra",
