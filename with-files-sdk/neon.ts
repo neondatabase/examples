@@ -2,7 +2,7 @@ import { defineConfig } from '@neon/config/v1';
 
 export default defineConfig({
   buckets: {
-    assets: { access: 'public_read' },
+    uploads: { access: 'public_read' },
   },
   functions: {
     ingest: {
@@ -17,7 +17,7 @@ export default defineConfig({
     'on-upload': {
       type: 'storage_object_created',
       function: 'ingest',
-      bucket: 'assets',
+      bucket: 'uploads',
       prefix: 'logos/',
       functionPath: '/object',
     },
