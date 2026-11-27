@@ -28,6 +28,24 @@
 			"enum": ["router", "separate"],
 			"description": "router generates one function that dispatches on URL path; separate deploys each operation as its own function."
 		},
+		"runtime": {
+			"enum": ["nodejs24", "python314"],
+			"description": "The runtime of the function the template scaffolds; nodejs24 when left out. A python314 template is a uv project: neon functions new copies its files as they are, locks it with uv lock, and declares the function with runtime: \"python314\" and the template's entrypoint."
+		},
+		"entrypoint": {
+			"type": "string",
+			"pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*:[A-Za-z_][A-Za-z0-9_]*$",
+			"description": "python314 only, and required there. The ASGI app as module:attr, such as main:app."
+		},
+		"files": {
+			"type": "array",
+			"minItems": 1,
+			"maxItems": 100,
+			"uniqueItems": true,
+			"contains": { "const": "pyproject.toml" },
+			"items": { "type": "string", "minLength": 1, "maxLength": 255 },
+			"description": "python314 only, and required there. The project's files, relative to functions/, copied into the function's directory as they are. Must include pyproject.toml; leave uv.lock out, since neon functions new creates it."
+		},
 		"dependencies": {
 			"type": "array",
 			"items": {
@@ -193,6 +211,20 @@
 		}
 	},
 	"allOf": [
+		{
+			"if": { "required": ["runtime"], "properties": { "runtime": { "const": "python314" } } },
+			"then": {
+				"required": ["entrypoint", "files"],
+				"properties": {
+					"layout": { "const": "router" },
+					"operations": false,
+					"dependencies": { "maxItems": 0 }
+				}
+			},
+			"else": {
+				"not": { "anyOf": [{ "required": ["entrypoint"] }, { "required": ["files"] }] }
+			}
+		},
 		{
 			"if": { "properties": { "layout": { "const": "separate" } } },
 			"then": {

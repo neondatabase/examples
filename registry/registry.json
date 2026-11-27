@@ -12,6 +12,14 @@
 			"categories": ["first-party"]
 		},
 		{
+			"id": "python",
+			"provider": "Neon",
+			"title": "Python function",
+			"description": "A minimal Python Neon Function, built with FastAPI, that answers every request with a JSON response.",
+			"path": "python/template.json",
+			"categories": ["first-party"]
+		},
+		{
 			"id": "context-dev",
 			"provider": "Context.dev",
 			"title": "Context.dev web data",
