@@ -307,6 +307,16 @@
 			"categories": ["community"],
 			"logo": "https://groundmail.dev/icon.svg",
 			"website": "https://groundmail.dev/?utm_source=neon&utm_medium=template&utm_campaign=neon-functions"
+		},
+		{
+			"id": "autosend-email",
+			"provider": "AutoSend",
+			"title": "Send email with AutoSend",
+			"description": "Send transactional email from an AutoSend template or your own HTML, and send AutoSend events that start automations.",
+			"path": "autosend-email/template.json",
+			"categories": ["partner"],
+			"logo": "https://autosend.com/favicon_32.png",
+			"website": "https://autosend.com/"
 		}
 	]
 }

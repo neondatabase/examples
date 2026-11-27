@@ -1,0 +1,44 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "autosend-email",
+	"provider": "AutoSend",
+	"title": "Send email with AutoSend",
+	"description": "Send transactional email from an AutoSend template or your own HTML, and send AutoSend events that start automations.",
+	"categories": ["email"],
+	"layout": "router",
+	"environment": [
+		{
+			"name": "AUTOSEND_API_KEY",
+			"description": "A project API key, which starts with AS_, from your AutoSend project's API keys settings. Keep it on the server.",
+			"required": true
+		},
+		{
+			"name": "AUTOSEND_FROM",
+			"description": "The default sender for /send-email, on a domain verified in AutoSend, for example Acme <hello@mail.example.com>. A request can set another sender in its from field.",
+			"required": false
+		},
+		{
+			"name": "AUTOSEND_FUNCTION_TOKEN",
+			"description": "Callers send this random token as Authorization: Bearer <token>. It must be at least 32 characters long, and openssl rand -hex 32 generates one. Neon Function URLs are public, so the function requires it.",
+			"required": true
+		}
+	],
+	"operations": [
+		{
+			"id": "send-email",
+			"title": "Send an email",
+			"description": "POST to, and either a templateId with optional dynamicData or a subject with html or text. The from and replyTo fields are optional.",
+			"source": "functions/send-email.ts",
+			"route": "/send-email",
+			"recommended": true
+		},
+		{
+			"id": "send-event",
+			"title": "Send an AutoSend event",
+			"description": "POST an email or contactId, an eventName, and optional eventProperties to record an AutoSend event, which can start an automation.",
+			"source": "functions/send-event.ts",
+			"route": "/send-event",
+			"recommended": true
+		}
+	]
+}
