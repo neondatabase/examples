@@ -18,6 +18,7 @@ schemas/
   README.md                  # required; neon.com renders it on the template page
   functions/
     <operation>.ts           # one module per operation
+                             # (a Python template: its uv project's files, see below)
 ```
 
 Listing fetches `registry.json` from neon.com, the same way `neon bootstrap` fetches
@@ -109,6 +110,44 @@ A `separate` template scaffolds one Neon function per selected operation, each u
 
 If you omit `operations`, the template ships exactly one module at `functions/index.ts`, which the
 CLI scaffolds as `index.ts`. Set `layout` to `router`.
+
+### Python templates
+
+A Python template sets `runtime` to `python314` and ships a uv project instead of TypeScript
+modules:
+
+```json
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "python",
+	"provider": "Neon",
+	"title": "Python function",
+	"description": "A minimal Python Neon Function, built with FastAPI, that answers every request with a JSON response.",
+	"categories": ["api"],
+	"layout": "router",
+	"runtime": "python314",
+	"entrypoint": "main:app",
+	"files": ["pyproject.toml", "main.py"]
+}
+```
+
+| Field | Rule |
+| --- | --- |
+| `runtime` | `python314`. Leave it out for a Node template. |
+| `entrypoint` | Required. The ASGI app as `module:attr`, such as `main:app`. The CLI writes it to `neon.ts` as the function's `entrypoint`. |
+| `files` | Required. The project's files, relative to `functions/`, including `pyproject.toml`. Each one is copied into the function's directory as it is, keeping its subdirectory. Leave `uv.lock` out. |
+
+- `layout` is `router`, and there are no `operations` or `dependencies`. The project's
+  dependencies go in its `pyproject.toml`, pinned exactly (`fastapi==0.165.0`) for the same
+  reason as npm `dependencies`.
+- The CLI declares the function with `runtime: "python314"` and the template's `entrypoint`, so
+  a deploy needs nothing more. Its install step is `uv lock` in the new directory, run with the
+  CLI's own uv where a Node template runs `npm install`, and creating `neon.ts` for it installs
+  no npm packages.
+- The app is an ASGI app (FastAPI, Starlette, Litestar, Quart, or Django through its `asgi.py`),
+  and does no network work at import time, as for modules.
+- CLI versions without Python functions list a Python template and then fail to load it, because
+  they look for `functions/index.ts`.
 
 ### `required`
 

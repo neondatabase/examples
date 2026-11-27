@@ -1,0 +1,13 @@
+{
+	"$schema": "https://neon.com/functions/registry/schemas/template.schema.json",
+	"id": "python",
+	"provider": "Neon",
+	"title": "Python function",
+	"description": "A minimal Python Neon Function, built with FastAPI, that answers every request with a JSON response.",
+	"categories": ["api"],
+	"layout": "router",
+	"runtime": "python314",
+	"entrypoint": "main:app",
+	"files": ["pyproject.toml", "main.py"],
+	"environment": []
+}
