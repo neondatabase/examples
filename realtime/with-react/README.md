@@ -49,6 +49,8 @@ Create and seed the todo table:
 npm run db:setup
 ```
 
+`db:setup` creates `realtime_todos` only if it doesn't exist, and leaves an existing table as it is. Other Realtime examples use the same table name with different columns, so if the branch already has a `realtime_todos` table, link a new Neon project instead.
+
 ## Run the app
 
 ```bash

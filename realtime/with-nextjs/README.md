@@ -37,7 +37,7 @@ Append a cookie secret to `.env.local`. Managed Better Auth uses it to sign the 
 printf '\nNEON_AUTH_COOKIE_SECRET=%s\n' "$(openssl rand -base64 32)" >> .env.local
 ```
 
-Create the `realtime_next_todos` table, then start the app. `db:setup` runs `drizzle-kit push`, which applies `src/lib/schema.ts` to the linked branch:
+Create the `realtime_next_todos` table, then start the app. `db:setup` runs `src/setup.mts`, which creates the table and its index on the linked branch if they don't exist yet:
 
 ```bash
 npm run db:setup
@@ -82,7 +82,7 @@ The [SSR](https://neon.com/docs/realtime/guides/ssr), [reactivity](https://neon.
   }
   ```
 
-- **Drizzle.** `src/lib/realtime.ts` passes `drizzleAdapter()` to `createRealtime`. It compiles the query builder to SQL and never executes it. The server read awaits the same builder. Live rows use PostgreSQL's result column names as keys, so `src/lib/schema.ts` declares snake_case columns to match. The browser passes `drizzleParsers` from `@neon/realtime-drizzle/client` to `createRealtimeClient`, so live rows parse the way Drizzle parses server rows: `created_at` stays a `Date` and `completed` a boolean. To change the schema, edit `src/lib/schema.ts` and run `npm run db:push`.
+- **Drizzle.** `src/lib/realtime.ts` passes `drizzleAdapter()` to `createRealtime`. It compiles the query builder to SQL and never executes it. The server read awaits the same builder. Live rows use PostgreSQL's result column names as keys, so `src/lib/schema.ts` declares snake_case columns to match. The browser passes `drizzleParsers` from `@neon/realtime-drizzle/client` to `createRealtimeClient`, so live rows parse the way Drizzle parses server rows: `created_at` stays a `Date` and `completed` a boolean. To change the schema, edit `src/lib/schema.ts` and `src/setup.mts` to match, then alter the existing table with SQL or your migration tool, since `db:setup` doesn't change a table that already exists.
 - **Keeping the subscription alive across re-renders.** [`useLiveQuery`](https://neon.com/docs/realtime/guides/reactivity#uselivequery) restarts its subscription when it gets a new sealed-query object, and that rejects every pending `awaitTxId()`. A server re-render sends one even when the query hasn't changed: `router.refresh()`, a Server Action that revalidates or sets a cookie, or navigating to `/` from `/`. So the example follows three rules:
   1. `src/app/todo-list.tsx` keeps the first sealed query it gets (`useState(sealedQuery)`). Renewals go through `refreshQuery`, not new props.
   2. `<RealtimeRoot>` is keyed on `sealedQuery.queryFingerprint`, so a different query (a deploy that changed the SQL) remounts the list.
@@ -142,8 +142,8 @@ The [SSR](https://neon.com/docs/realtime/guides/ssr), [reactivity](https://neon.
 realtime/with-nextjs/
 ├── neon.ts                              # Neon policy: Managed Better Auth, Realtime allowedOrigins
 ├── .env.example                         # Every variable, and where it comes from
-├── drizzle.config.ts                    # drizzle-kit push config; preloads .env.local
 └── src/
+    ├── setup.mts                        # `npm run db:setup`: creates realtime_next_todos if it doesn't exist
     ├── proxy.ts                         # Managed Better Auth middleware: HTTP redirect for signed-out loads of /
     ├── auth/
     │   ├── server.ts                    # getAuth, getUser
@@ -158,7 +158,7 @@ realtime/with-nextjs/
     ├── lib/
     │   ├── query-client.ts              # TanStack Query client for Better Auth UI
     │   ├── env.ts                       # Lazy, validated server env; database name from DATABASE_URL
-    │   ├── load-env.ts                  # Preloads .env.local for drizzle-kit (CLI only)
+    │   ├── load-env.ts                  # Preloads .env.local for src/setup.mts (CLI only)
     │   ├── schema.ts                    # Drizzle table: realtime_next_todos
     │   ├── db.ts                        # Lazy pg pool + Drizzle
     │   ├── realtime.ts                  # Lazy Realtime server, seals queries
