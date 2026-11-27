@@ -299,6 +299,14 @@
 			"categories": ["first-party"]
 		},
 		{
+			"id": "lakebase-search-memory",
+			"provider": "Neon",
+			"title": "Hybrid memory with Lakebase Search",
+			"description": "Embed text with Neon AI Gateway, then recall it with vector, BM25 keyword, or hybrid search in Lakebase Postgres.",
+			"path": "lakebase-search-memory/template.json",
+			"categories": ["first-party"]
+		},
+		{
 			"id": "groundmail-email",
 			"provider": "Groundmail",
 			"title": "Send email with Groundmail",
